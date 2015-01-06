@@ -4,23 +4,17 @@
 # This script creates symlinks from the home directory to any desired dotfiles in ~/dotfiles
 ############################
 
-########## Variables
-
-dir=.
 olddir=tmp
-files="zshrc"
-
-##########
+files="zshrc tigrc vimrc"
 
 # create dotfiles_old in homedir
-echo "Creating $olddir for backup of any existing dotfiles in ~"
 mkdir -p $olddir
-echo "...done"
 
 # move any existing dotfiles in homedir to dotfiles_old directory, then create symlinks 
+echo "Linking:"
 for file in $files; do
-    echo "Moving any existing dotfiles from ~ to $olddir"
+    # echo "Moving $file to $olddir"
     mv ~/.$file $olddir
-    echo "Creating symlink to $file in home directory."
-    ln -s $dir/$file ~/.$file
+    ln -s $(pwd)/$file ~/.$file
+    echo "    $file -> ~/.$file"
 done
