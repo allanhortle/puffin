@@ -5,7 +5,7 @@
 ############################
 
 olddir=tmp
-files="zshrc tigrc vimrc"
+files="zshrc tigrc vimrc tmux.conf"
 
 # create dotfiles_old in homedir
 mkdir -p $olddir
@@ -14,7 +14,7 @@ mkdir -p $olddir
 echo "Linking:"
 for file in $files; do
     # echo "Moving $file to $olddir"
-    mv ~/.$file $olddir
+    mv -f ~/.$file $olddir
     ln -s $(pwd)/$file ~/.$file
     echo "    $file -> ~/.$file"
 done
