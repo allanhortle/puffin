@@ -13,5 +13,5 @@ source $ZSH/oh-my-zsh.sh
 alias tat='tmux new -s `basename $PWD`'
 alias tr='source-file ~/.tmux.conf'
 
-source "zshrc.local"
+source ~/.zshrc.local
 
