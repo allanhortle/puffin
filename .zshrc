@@ -12,7 +12,7 @@ export ZSH=$HOME/.oh-my-zsh
 
 
 
-plugins=(git tmux)
+plugins=(git git-flow brew tmux)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -24,15 +24,6 @@ r="%{$fg[red]%}"
 y="%{$fg[yellow]%}"
 w="%{$fg[white]%}"
 m="%{$fg[magenta]%}"
-
-_b="%{$bg[blue]%}"
-_g="%{$bg[green]%}"
-_c="%{$bg[cyan]%}"
-_r="%{$bg[red]%}"
-_y="%{$bg[yellow]%}"
-_w="%{$bg[white]%}"
-_m="%{$bg[magenta]%}"
-
 res="%{$reset_color%}"
 
 # Modify the colors and symbols in these variables as desired.
