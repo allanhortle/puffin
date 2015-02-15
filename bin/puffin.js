@@ -1,58 +1,54 @@
 #!/usr/bin/env node
 'use strict';
 
-/**
- * Module dependencies.
- */
-
 var program = require('commander');
-var log = require('../lib/logger.js').puffin;
+var util = require('util');
+var prompt = require('prompt');
+
+var log = require('../lib/logger.js');
 var pkg = require('../package.json');
-
 var install = require('../lib/install.js');
+var reload = require('../lib/reload.js');
 
+prompt.message = '';
+prompt.delimiter = "";
+// prompt.start();
 
 process.title = 'puffin';
-
-
-
 program
 	.version(pkg.version)
-	.option('-p, --peppers', 'Add peppers')
-	.option('-P, --pineapple', 'Add pineapple')
-	.option('-b, --bbq', 'Add bbq sauce')
-	.option('-c, --cheese [type]', 'Add the specified type of cheese [marble]', 'marble');
-
-
-// $ deploy setup stage
-// $ deploy setup
-program
-  .command('setup [env]')
-  .description('run setup commands for all envs')
-  .action(function(env){
-	env = env || 'all';
-	console.log('setup for %s env(s)', env);
-  });
+	.option('-f, --force', 'Force');
 
 program
 	.command('install')
 	.description('Run brew install commands')
-	.action(install);
+	.action(install)
+;
 
 program
 	.command('reload')
-	.description('Run brew install commands')
-	.action(function(env){
+	.description('rsync the dotfiles')
+	.option('-f, --force', 'Force')
+	.action(function (cmd, options) {
+		if (program.force) {
+			reload();
+		} else {
+			prompt.get([{
+				name: 'sure',
+			    description: 'Are you sure you want to reload and overwite your dotfiles? (y/N)'
+			}], function (err, result) {
+				if (err) {
+					return console.log('');
+				}
+				if (result.sure === 'y') {
+					reload();
+				}
+			});
+		}
 
-	});
 
-program
-	.command('reload')
-	.description('Run brew install commands')
-	.action(function(env){
-		child_process.execFileSync('./bin/brew.sh');
-	});
-
+	})
+;
 
 
 program.parse(process.argv);

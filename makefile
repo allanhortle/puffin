@@ -1,2 +1,0 @@
-link:
-	. ./bin/symlink.sh

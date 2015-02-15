@@ -1,20 +1,19 @@
+# Path to your oh-my-zsh installation.
 export ZSH=$HOME/.oh-my-zsh
 
-
-# # Adapted from code found at <https://gist.github.com/1712320>.
-
-# # setopt prompt_subst
-# # autoload -U colors && colors # Enable colors in prompt
-
-
-
-
-
-
+ENABLE_CORRECTION="true"
 
 plugins=(git git-flow brew tmux)
 
+export PATH=$HOME/bin:/usr/local/bin:$PATH
+
 source $ZSH/oh-my-zsh.sh
+
+
+
+
+
+
 
 b="%{$fg[blue]%}"
 bl="%{$fg[black]%}"

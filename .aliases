@@ -6,6 +6,10 @@ alias softlimit='ulimit -n 2048'
 
 alias g='git'
 
+rad() {
+	echo 'new';
+}
+
 # Add all and commit with message
 alias gc='git add -A :/ && git commit -am'
 
