@@ -1,0 +1,30 @@
+{
+  "name": "puffin",
+  "version": "0.1.0",
+  "description": "Dot Files",
+  "main": "index.js",
+  "bin": {
+    "puffin": "bin/puffin.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/allanhortle/puffin.git"
+  },
+  "keywords": [
+    "dotfiles"
+  ],
+  "author": "Allan Hortle",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/allanhortle/puffin/issues"
+  },
+  "homepage": "https://github.com/allanhortle/puffin",
+  "dependencies": {
+    "commander": "^2.6.0",
+    "shelljs": "^0.3.0",
+    "winston": "^0.9.0"
+  }
+}
