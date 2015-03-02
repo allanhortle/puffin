@@ -8,6 +8,23 @@ function ip() {
 }
 
 
+#--------------------------------------------------------------------
+# any function from http://onethingwell.org/post/14669173541/any
+# search for running processes
+#--------------------------------------------------------------------
+
+function any() {
+    emulate -L zsh
+    unsetopt KSH_ARRAYS
+    if [[ -z "$1" ]] ; then
+        echo "any - grep for process(es) by keyword" >&2
+        echo "Usage: any " >&2 ; return 1
+    else
+        ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"
+    fi
+}
+
+
 # # # Simple calculator
 # # function calc() {
 # # 	local result="";
@@ -121,20 +138,7 @@ function ip() {
 # 	fi;
 # }
 
-# #--------------------------------------------------------------------
-# # any function from http://onethingwell.org/post/14669173541/any
-# # search for running processes
-# #--------------------------------------------------------------------
-# function any() {
-#     emulate -L zsh
-#     unsetopt KSH_ARRAYS
-#     if [[ -z "$1" ]] ; then
-#         echo "any - grep for process(es) by keyword" >&2
-#         echo "Usage: any " >&2 ; return 1
-#     else
-#         ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"
-#     fi
-# }
+
 
 
 # #--------------------------------------------------------------------------
@@ -160,57 +164,57 @@ function ip() {
 #     -e "s/\(\[STDOUT\].*\)/$fg[green]\1$reset_color/g" \
 # }
 
-# #--------------------------------------------------------------------------
-# # Git Prompt Functions
-# #--------------------------------------------------------------------------
+#--------------------------------------------------------------------------
+# Git Prompt Functions
+#--------------------------------------------------------------------------
 
-# # Show different symbols as appropriate for various Git repository states
-# parse_git_state() {
+# Show different symbols as appropriate for various Git repository states
+parse_git_state() {
 
-#   # Compose this value via multiple conditional appends.
-#   local GIT_STATE=""
+  # Compose this value via multiple conditional appends.
+  local GIT_STATE=""
 
-#   local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
-#   if [ "$NUM_AHEAD" -gt 0 ]; then
-#     GIT_STATE=$GIT_STATE${ZSH_THEME_GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
-#   fi
+  local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
+  if [ "$NUM_AHEAD" -gt 0 ]; then
+    GIT_STATE=$GIT_STATE${ZSH_THEME_GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
+  fi
 
-#   local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
-#   if [ "$NUM_BEHIND" -gt 0 ]; then
-#     GIT_STATE=$GIT_STATE${ZSH_THEME_GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
-#   fi
+  local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
+  if [ "$NUM_BEHIND" -gt 0 ]; then
+    GIT_STATE=$GIT_STATE${ZSH_THEME_GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
+  fi
 
-#   local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
-#   if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
-#     GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_MERGING
-#   fi
+  local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
+  if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
+    GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_MERGING
+  fi
 
-#   if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
-#     GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_UNTRACKED
-#   fi
+  if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
+    GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_UNTRACKED
+  fi
 
-#   if ! git diff --quiet 2> /dev/null; then
-#     GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_MODIFIED
-#   fi
+  if ! git diff --quiet 2> /dev/null; then
+    GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_MODIFIED
+  fi
 
-#   if ! git diff --cached --quiet 2> /dev/null; then
-#     GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_STAGED
-#   fi
+  if ! git diff --cached --quiet 2> /dev/null; then
+    GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_STAGED
+  fi
 
-#   if [[ -n $GIT_STATE ]]; then
-#     echo "$ZSH_THEME_GIT_PROMPT_PREFIX$GIT_STATE$ZSH_THEME_GIT_PROMPT_SUFFIX"
-#   fi
+  if [[ -n $GIT_STATE ]]; then
+    echo "$ZSH_THEME_GIT_PROMPT_PREFIX$GIT_STATE$ZSH_THEME_GIT_PROMPT_SUFFIX"
+  fi
 
-# }
+}
 
-# # If inside a Git repository, print its branch and state
-# git_prompt_info() {
-# 	local git_where="$(parse_git_branch)"
-# 	[ -n "$git_where" ] && echo "$ZSH_THEME_GIT_PROMPT_PREFIX${git_where#(refs/heads/|tags/)}$ZSH_THEME_GIT_PROMPT_SUFFIX$(parse_git_state)"
-# }
+# If inside a Git repository, print its branch and state
+git_prompt_info() {
+	local git_where="$(parse_git_branch)"
+	[ -n "$git_where" ] && echo "$ZSH_THEME_GIT_PROMPT_PREFIX${git_where#(refs/heads/|tags/)}$ZSH_THEME_GIT_PROMPT_SUFFIX$(parse_git_state)"
+}
 
-# # Show Git branch/tag, or name-rev if on detached head
-# parse_git_branch() {
-#   (git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD) 2> /dev/null
-# }
+# Show Git branch/tag, or name-rev if on detached head
+parse_git_branch() {
+  (git symbolic-ref -q HEAD || git name-rev --name-only --no-undefined --always HEAD) 2> /dev/null
+}
 
