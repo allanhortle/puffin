@@ -2,6 +2,7 @@
 export ZSH=$HOME/.oh-my-zsh
 
 ENABLE_CORRECTION="true"
+DISABLE_AUTO_TITLE="true"
 
 plugins=(git git-flow brew tmux)
 
