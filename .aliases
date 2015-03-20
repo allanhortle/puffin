@@ -28,6 +28,7 @@ alias grm='git update-index --assume-unchanged'
 #--------------------------------------------------------------------------
 
 alias npml='npm list --depth=0'
+alias npm_patch_pub='npm version patch && git push --follow-tags && npm publish'
 
 
 #--------------------------------------------------------------------------
