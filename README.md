@@ -28,7 +28,8 @@ Uses [homebrew] to install dependencies.
 * massren
 * reattach-to-user-namespace
 * tmux
-* tig
+* [tig]
+* [fasd]
 * git
 * node (Just to make sure you dont need sudo)
 
@@ -54,5 +55,7 @@ For example you may choose to place some environment variables in `.zshrc.local`
 
 
 [homebrew]: http://brew.sh/
+[fasd]: https://github.com/clvv/fasd
+[tig]: https://github.com/jonas/tig
 [node]: https://nodejs.org/
 [oh-my-zsh]: https://github.com/robbyrussell/oh-my-zsh
