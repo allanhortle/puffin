@@ -1,1 +1,5 @@
 syntax on
+
+if [ -f ~/.tigrc.local]; then
+    source ~/.tigrc.local
+fi
