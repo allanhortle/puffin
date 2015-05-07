@@ -40,11 +40,9 @@ PROMPT=$'${b}%c$(git_prompt_info) ${b}=> ${res}'
 RPROMPT="${g}%M [%D{%H:%M:%S}]${res}"
 
 
-
-
-source ~/.zshrc.local
-
-
+if [ -f ~/.zshrc.local ]; then
+	source ~/.zshrc.local
+fi
 # Load the shell dotfiles, and then some:
 # * ~/.path can be used to extend `$PATH`.
 # * ~/.extra can be used for other settings you don’t want to commit.
