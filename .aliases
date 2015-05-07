@@ -13,7 +13,7 @@ alias gc='git add -A :/ && git commit -am'
 alias ga='git add -A :/'
 
 # Better Fetch
-alias gf='git fetch -p'
+alias gf='git fetch -p --all'
 
 # Hacky way to update Git
 alias gg='g | clear'
