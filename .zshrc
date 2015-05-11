@@ -5,7 +5,7 @@
 export ZSH=$HOME/.oh-my-zsh
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git git-flow brew tmux)
+plugins=(git brew tmux)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
