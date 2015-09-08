@@ -912,9 +912,9 @@
 	<key>Hotkey</key>
 	<true/>
 	<key>HotkeyChar</key>
-	<integer>96</integer>
+	<integer>27</integer>
 	<key>HotkeyCode</key>
-	<integer>50</integer>
+	<integer>53</integer>
 	<key>HotkeyModifiers</key>
 	<integer>524576</integer>
 	<key>IRMemory</key>
@@ -930,21 +930,13 @@
 	<key>MaxVertically</key>
 	<false/>
 	<key>NSColorPanelMode</key>
-	<string>65535</string>
-	<key>NSColorPanelVisibleSwatchRows</key>
-	<integer>10</integer>
+	<string>13370000</string>
 	<key>NSColorPickerSlidersDefaults</key>
-	<string>3</string>
+	<string>1</string>
 	<key>NSFontPanelAttributes</key>
-	<string>1, 4</string>
-	<key>NSFontPanelPreviewHeight</key>
-	<real>0.0</real>
+	<string>1, 1</string>
 	<key>NSNavLastRootDirectory</key>
-	<string>~/Github/puffin/extras</string>
-	<key>NSNavPanelExpandedSizeForOpenMode</key>
-	<string>{944, 663}</string>
-	<key>NSNavPanelExpandedSizeForSaveMode</key>
-	<string>{712, 448}</string>
+	<string>~/github/puffin/extras</string>
 	<key>NSNavPanelExpandedStateForSaveMode</key>
 	<true/>
 	<key>NSQuotedKeystrokeBinding</key>
@@ -964,7 +956,7 @@
 		BAtzdHJlYW10eXBlZIHoA4QBQISEhAhOU1N0cmluZwGEhAhOU09iamVjdACF
 		hAErATGG
 		</data>
-		<string>319</string>
+		<string>302</string>
 	</array>
 	<key>NSTableView Hidden Columns KeyBingingTable</key>
 	<array/>
@@ -976,23 +968,15 @@
 		<integer>1</integer>
 	</dict>
 	<key>NSWindow Frame NSColorPanel</key>
-	<string>1972 758 222 319 0 0 2560 1417 </string>
+	<string>701 176 315 533 0 0 1920 1057 </string>
 	<key>NSWindow Frame NSFontPanel</key>
-	<string>545 187 725 441 0 0 2560 1418 </string>
+	<string>894 169 703 355 0 0 1920 1057 </string>
 	<key>NSWindow Frame Preferences</key>
-	<string>1008 433 924 485 0 0 2560 1440 </string>
+	<string>731 216 924 485 0 0 1920 1080 </string>
 	<key>NSWindow Frame SUStatusFrame</key>
-	<string>1141 948 384 129 0 0 2560 1417 </string>
-	<key>NSWindow Frame UKCrashReporter</key>
-	<string>230 833 592 584 0 0 2560 1417 </string>
+	<string>2054 651 384 129 1920 0 1920 1057 </string>
 	<key>NSWindow Frame iTerm Window 0</key>
-	<string>377 189 1410 376 0 0 2560 1440 </string>
-	<key>NSWindow Frame iTerm Window 1</key>
-	<string>440 120 1410 376 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 2</key>
-	<string>461 97 1410 376 0 0 2560 1417 </string>
-	<key>NSWindow Frame iTerm Window 3</key>
-	<string>688 58 1410 376 0 0 2560 1417 </string>
+	<string>0 0 1920 1080 0 0 1920 1057 </string>
 	<key>New Bookmarks</key>
 	<array>
 		<dict>
@@ -1557,9 +1541,9 @@
 		</dict>
 	</array>
 	<key>NoSyncTimeOfLastPromo</key>
-	<real>454900961.96837997</real>
+	<real>453520112.06348503</real>
 	<key>NoSyncTimeOfLastPromoDownload</key>
-	<real>456849062.39938599</real>
+	<real>460694627.77150702</real>
 	<key>OnlyWhenMoreTabs</key>
 	<false/>
 	<key>OpenArrangementAtStartup</key>
@@ -1608,7 +1592,7 @@
 		</dict>
 	</dict>
 	<key>PrefsCustomFolder</key>
-	<string>/Users/allan.hortle/Github/puffin/extras</string>
+	<string>/Users/allan/github/puffin/extras</string>
 	<key>PromptOnClose</key>
 	<true/>
 	<key>PromptOnQuit</key>
@@ -1626,7 +1610,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2015-06-25T23:07:51Z</date>
+	<date>2015-08-08T02:43:42Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>Show Toolbelt</key>
@@ -1660,8 +1644,6 @@
 	</array>
 	<key>TripleClickSelectsFullWrappedLines</key>
 	<false/>
-	<key>UKCrashReporterLastCrashReportDate</key>
-	<real>1433208192</real>
 	<key>URLHandlersByGuid</key>
 	<dict/>
 	<key>UseBorder</key>

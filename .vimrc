@@ -1,5 +1,6 @@
 syntax on
-
+colorscheme galea 
+set background=dark
 set nocompatible              " be iMproved, required
 filetype off                  " required
 
@@ -10,6 +11,7 @@ Plugin 'gmarik/Vundle.vim'
 
 " plugin from http://vim-scripts.org/vim/scripts.html
 Plugin 'mattn/emmet-vim'
+Plugin 'isRuslan/vim-es6'
 Plugin 'kien/ctrlp.vim'
 Plugin 'Lokaltog/vim-easymotion'
 Plugin 'terryma/vim-multiple-cursors'
@@ -31,11 +33,6 @@ filetype plugin indent on    " required
 "
 " see :h vundle for more details or wiki for FAQ
 " Put your non-Plugin stuff after this line
-set wildignore+=/node_modules
-let g:ctrlp_custom_ignore = {
-  \ 'dir':  '\v[\/]\.(git|hg|svn)$',
-  \ 'file': '\v\.(exe|so|dll)$',
-  \ }
-
+let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
 let g:ctrlp_show_hidden = 1
 map <C-n> :NERDTreeToggle<CR>
