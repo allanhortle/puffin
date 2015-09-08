@@ -5,7 +5,7 @@
 export ZSH=$HOME/.oh-my-zsh
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git brew tmux)
+plugins=(git brew tmux npm)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
@@ -38,6 +38,7 @@ RPROMPT="${g}%M [%D{%H:%M:%S}]${res}"
 ## Loading Configs ##
 
 eval "$(fasd --init auto)"
+
 if [ -f ~/.zshrc.local ]; then
 	source ~/.zshrc.local
 fi
