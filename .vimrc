@@ -26,11 +26,10 @@ filetype plugin indent on    " required
 "
 " see :h vundle for more details or wiki for FAQ
 " Put your non-Plugin stuff after this line
-" let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
+let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
 let g:ctrlp_show_hidden = 1
 map <C-o> :NERDTreeToggle<CR>
 
-syntax on
 set background=dark
 set nocompatible              " be iMproved, required
 filetype off                  " required
@@ -40,4 +39,5 @@ set shiftwidth=4
 set softtabstop=4
 set number
 
+syntax on
 colorscheme galea
