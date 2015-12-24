@@ -12,6 +12,7 @@ Plugin 'terryma/vim-multiple-cursors'
 Plugin 'scrooloose/nerdtree'
 Plugin 'pangloss/vim-javascript'
 Plugin 'mxw/vim-jsx'
+Plugin 'bling/vim-airline'
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -29,6 +30,7 @@ let g:ctrlp_show_hidden = 1
 " Nerd Tree
 "
 map <C-o> :NERDTreeToggle<CR>
+let NERDTreeShowHidden=1
 
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
@@ -63,7 +65,7 @@ set statusline=%t[%{strlen(&fenc)?&fenc:'none'},%{&ff}]%h%m%r%y%=%c,%l/%L\ %P
 
 " jsx files
 let g:jsx_ext_required = 0
-
+autocmd BufNewFile,BufRead *.json set syntax=javascript
 syntax reset
 syntax on
 colorscheme galea
