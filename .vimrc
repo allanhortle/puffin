@@ -13,11 +13,19 @@ Plugin 'scrooloose/nerdtree'
 Plugin 'pangloss/vim-javascript'
 Plugin 'mxw/vim-jsx'
 Plugin 'bling/vim-airline'
+Plugin 'tpope/vim-surround'
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
 
+
+"
+" Airline
+"
+let g:airline_left_sep=''
+let g:airline_right_sep=''
+let g:airline_theme='bubblegum'
 
 "
 " Ctrl P
@@ -31,6 +39,7 @@ let g:ctrlp_show_hidden = 1
 "
 map <C-o> :NERDTreeToggle<CR>
 let NERDTreeShowHidden=1
+let g:NERDTreeWinPos='right'
 
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
@@ -59,6 +68,7 @@ set shiftwidth=4
 set softtabstop=4
 set number
 set hlsearch
+set splitleft
 
 " status line
 set statusline=%t[%{strlen(&fenc)?&fenc:'none'},%{&ff}]%h%m%r%y%=%c,%l/%L\ %P

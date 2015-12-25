@@ -7,8 +7,10 @@ let GREEN = 2
 let YELLOW = 3
 let BLUE = 4
 let ORANGE = 6
+let BLACK = 0
 let WHITE = "white"
 
+highlight VertSplit ctermfg=DarkGray ctermbg=DarkGray
 highlight Constant ctermfg=Blue
 highlight Cursor ctermbg=Green
 
