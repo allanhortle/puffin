@@ -51,3 +51,8 @@ highlight MatchParen ctermbg=GREEN
 
 " Javascript
 highlight javaScriptReserved ctermfg=RED 
+
+
+" Markdown
+highlight markdownHeadingDelimiter ctermfg=YELLOW
+highlight Title ctermfg=YELLOW
