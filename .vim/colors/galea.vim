@@ -21,7 +21,7 @@ highlight LineNr        ctermfg=DarkGray
 highlight Identifier ctermfg=6		
 highlight Function ctermfg=WHITE
 
-highlight Statement 	ctermfg=WHITE
+highlight Statement 	ctermfg=RED
 highlight Conditional 	ctermfg=RED
 highlight Repeat 	ctermfg=RED
 highlight Label 	ctermfg=RED

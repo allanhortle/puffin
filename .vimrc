@@ -1,8 +1,11 @@
 "
 " Vundle
 "
+set nocompatible              " be iMproved, required
+filetype off                  " required
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
+
 Plugin 'gmarik/Vundle.vim'
 Plugin 'mattn/emmet-vim'
 Plugin 'isRuslan/vim-es6'
@@ -15,7 +18,6 @@ Plugin 'mxw/vim-jsx'
 Plugin 'bling/vim-airline'
 Plugin 'tpope/vim-surround'
 
-" All of your Plugins must be added before the following line
 call vundle#end()            " required
 filetype plugin indent on    " required
 
@@ -26,6 +28,7 @@ filetype plugin indent on    " required
 let g:airline_left_sep=''
 let g:airline_right_sep=''
 let g:airline_theme='bubblegum'
+
 
 "
 " Ctrl P
@@ -39,7 +42,8 @@ let g:ctrlp_show_hidden = 1
 "
 map <C-o> :NERDTreeToggle<CR>
 let NERDTreeShowHidden=1
-let g:NERDTreeWinPos='right'
+"let g:NERDTreeWinPos='right'
+let NERDTreeQuitOnOpen=1
 
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
@@ -57,26 +61,32 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 
 
 "
-" syntax
+" Syntax Highlighting
+"
+
+" jsx files
+let g:jsx_ext_required = 0
+autocmd BufNewFile,BufRead *.json set syntax=javascript
+
+
+"
+" UI
 "
 set background=dark
-set nocompatible              " be iMproved, required
-filetype off                  " required
-
 set expandtab
 set shiftwidth=4
 set softtabstop=4
 set number
 set hlsearch
-set splitleft
+set splitright
 
 " status line
 set statusline=%t[%{strlen(&fenc)?&fenc:'none'},%{&ff}]%h%m%r%y%=%c,%l/%L\ %P
 
-" jsx files
-let g:jsx_ext_required = 0
-autocmd BufNewFile,BufRead *.json set syntax=javascript
 syntax reset
 syntax on
 colorscheme galea
 
+if filereadable("~/.vimrc.local")
+    so '~/.vimrc.local'
+endif
