@@ -22,6 +22,11 @@ Plugin 'tpope/vim-surround'
 call vundle#end()            " required
 filetype plugin indent on    " required
 
+"
+" General Vim
+"
+set swpfile
+set dir=~/tmp
 
 "
 " Airline
