@@ -7,8 +7,10 @@ let GREEN = 2
 let YELLOW = 3
 let BLUE = 4
 let ORANGE = 6
+let BLACK = 0
 let WHITE = "white"
 
+highlight VertSplit ctermfg=DarkGray ctermbg=DarkGray
 highlight Constant ctermfg=Blue
 highlight Cursor ctermbg=Green
 
@@ -19,7 +21,7 @@ highlight LineNr        ctermfg=DarkGray
 highlight Identifier ctermfg=6		
 highlight Function ctermfg=WHITE
 
-highlight Statement 	ctermfg=WHITE
+highlight Statement 	ctermfg=RED
 highlight Conditional 	ctermfg=RED
 highlight Repeat 	ctermfg=RED
 highlight Label 	ctermfg=RED
@@ -49,3 +51,8 @@ highlight MatchParen ctermbg=GREEN
 
 " Javascript
 highlight javaScriptReserved ctermfg=RED 
+
+
+" Markdown
+highlight markdownHeadingDelimiter ctermfg=YELLOW
+highlight Title ctermfg=YELLOW

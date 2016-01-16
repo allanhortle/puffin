@@ -3,7 +3,7 @@ Puffin
 
 What's up? Puffins, that's what.
 
-A CLI tool for keeping dotfiles and brew dependencies in sync. The goal is to have one consistent dev environment across any computer. 
+A CLI tool for keeping dotfiles and brew dependencies in sync. The goal is to have one consistent dev environment across any computer.
 
 Requires:
 * [homebrew]
