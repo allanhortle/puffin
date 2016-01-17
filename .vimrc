@@ -25,8 +25,6 @@ filetype plugin indent on    " required
 "
 " General Vim
 "
-set swpfile
-set dir=~/tmp
 
 "
 " Airline
@@ -46,7 +44,6 @@ let g:airline#extensions#tabline#fnamemod = ':t'
 "
 " Ctrl P
 "
-let g:ctrlp_custom_ignore = 'node_modules\|DS_Store\|git'
 let g:ctrlp_show_hidden = 1
 
 
