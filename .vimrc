@@ -26,6 +26,7 @@ call plug#end()
 "
 " General Vim
 "
+set rtp+=~/.fzf
 
 "
 " Airline
@@ -47,15 +48,10 @@ let g:airline#extensions#tabline#fnamemod = ':t'
 "
 map <C-o> :NERDTreeToggle<CR>
 let NERDTreeShowHidden=1
-"let g:NERDTreeWinPos='right'
 let NERDTreeQuitOnOpen=1
 
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
-" Open Nerd tree on open if empty buffer
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 
 
 "
