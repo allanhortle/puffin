@@ -20,6 +20,7 @@ Plug 'bling/vim-airline'
 Plug 'tpope/vim-surround'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/fzf.vim'
+Plug 'cakebaker/scss-syntax.vim'
 
 call plug#end() 
 
