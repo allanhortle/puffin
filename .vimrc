@@ -20,12 +20,14 @@ Plug 'bling/vim-airline'
 Plug 'tpope/vim-surround'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/fzf.vim'
+Plug 'cakebaker/scss-syntax.vim'
 
 call plug#end() 
 
 "
 " General Vim
 "
+set rtp+=~/.fzf
 
 "
 " Airline
@@ -47,7 +49,6 @@ let g:airline#extensions#tabline#fnamemod = ':t'
 "
 map <C-o> :NERDTreeToggle<CR>
 let NERDTreeShowHidden=1
-"let g:NERDTreeWinPos='right'
 let NERDTreeQuitOnOpen=1
 
 " close if nerd tree is the only buffer

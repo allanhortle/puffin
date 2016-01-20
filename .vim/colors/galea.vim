@@ -56,3 +56,72 @@ highlight javaScriptReserved ctermfg=RED
 " Markdown
 highlight markdownHeadingDelimiter ctermfg=YELLOW
 highlight Title ctermfg=YELLOW
+
+
+"
+" CSS
+"
+
+highlight scssProperty ctermfg=RED
+highlight scssComment ctermfg=DarkGray
+"Yellow
+highlight scssAmpersand ctermfg=YELLOW
+highlight scssSelector ctermfg=YELLOW
+highlight scssSelectorChar ctermfg=YELLOW
+highlight scssSelectorName ctermfg=YELLOW
+highlight cssPseudoClassId ctermfg=YELLOW
+highlight cssNoise ctermfg=YELLOW
+
+"Red
+highlight scssInclude ctermfg=RED
+highlight scssFunctionName ctermfg=RED
+highlight scssContent ctermfg=RED
+highlight scssReturn ctermfg=RED
+highlight scssExtend ctermfg=RED
+highlight scssImport ctermfg=RED
+highlight scssDebug ctermfg=RED
+highlight scssWarn ctermfg=RED
+highlight scssError ctermfg=RED
+highlight scssIf ctermfg=RED
+highlight scssElse ctermfg=RED
+highlight scssElse ctermfg=RED
+highlight scssWhile ctermfg=RED
+highlight scssFor ctermfg=RED
+highlight scssForKeyword ctermfg=RED
+highlight scssAtRoot ctermfg=RED
+highlight scssMixinName ctermfg=RED
+highlight cssTextProp ctermfg=RED
+highlight cssAnimationProp ctermfg=RED
+highlight cssAuralProp ctermfg=RED
+highlight cssBackgroundProp ctermfg=RED
+highlight cssBorderProp ctermfg=RED
+highlight cssBoxProp ctermfg=RED
+highlight cssColorProp ctermfg=RED
+highlight cssContentForPagedMediaProp ctermfg=RED
+highlight cssDimensionProp ctermfg=RED
+highlight cssFlexibleBoxProp ctermfg=RED
+highlight cssFontDescriptorProp ctermfg=RED
+highlight cssFontProp ctermfg=RED
+highlight cssGeneratedContentProp ctermfg=RED
+highlight cssGridProp ctermfg=RED
+highlight cssHyerlinkProp ctermfg=RED
+highlight cssIEUIProp ctermfg=RED
+highlight cssLineboxProp ctermfg=RED
+highlight cssListProp ctermfg=RED
+highlight cssMarqueeProp ctermfg=RED
+highlight cssMediaProp ctermfg=RED
+highlight cssMobileTextProp ctermfg=RED
+highlight cssMultiColumnProp ctermfg=RED
+highlight cssPagedMediaProp ctermfg=RED
+highlight cssPageProp ctermfg=RED
+highlight cssPositioningProp ctermfg=RED
+highlight cssPrintProp ctermfg=RED
+highlight cssProp ctermfg=RED
+highlight cssRenderProp ctermfg=RED
+highlight cssRubyProp ctermfg=RED
+highlight cssSpeechProp ctermfg=RED
+highlight cssTableProp ctermfg=RED
+highlight cssTextProp ctermfg=RED
+highlight cssTransformProp ctermfg=RED
+highlight cssTransitionProp ctermfg=RED
+highlight cssUIProp ctermfg=RED
