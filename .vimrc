@@ -42,8 +42,6 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
 
 
-
-
 "
 " Nerd Tree
 "
@@ -54,10 +52,6 @@ let NERDTreeQuitOnOpen=1
 
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
-" Open Nerd tree on open if empty buffer
-autocmd StdinReadPre * let s:std_in=1
-autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTree | endif
 
 
 "
