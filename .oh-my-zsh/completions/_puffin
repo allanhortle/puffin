@@ -1,0 +1,16 @@
+#compdef puffin
+
+_puffin() {
+  local state
+
+  _arguments \
+    '1: :->command'\
+    '*: :->flag'
+
+  case $state in
+    (command) _arguments '1:commands:(install reload)' ;;
+			(*) compadd "$@" -f 
+  esac
+}
+
+_puffin "$@"
