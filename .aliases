@@ -23,6 +23,36 @@ alias gwhoops='git commit --amend -C HEAD'
 
 alias grm='git update-index --assume-unchanged'
 
+
+alias grm='git update-index --assume-unchanged'
+#--------------------------------------------------------------------------
+# FZF
+#--------------------------------------------------------------------------
+
+# fe [FUZZY PATTERN] - Open the selected file with the default editor
+#   - Bypass fuzzy finder if there's only one match (--select-1)
+#   - Exit if there's no match (--exit-0)
+fe() {
+  IFS='
+'
+  local declare files=($(fzf-tmux --query="$1" --select-1 --exit-0))
+  [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
+  unset IFS
+}
+
+# Fuzz git branch searching
+fbr() {
+  local branches branch
+  branches=$(git branch -vv) &&
+  branch=$(echo "$branches" | fzf +m) &&
+  git checkout $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
+}
+
+v() {
+  local file
+  file="$(fasd -Rfl "$1" | fzf -1 -0 --no-sort +m)" && vim "${file}" || return 1
+}
+
 #--------------------------------------------------------------------------
 # Node
 #--------------------------------------------------------------------------
