@@ -32,7 +32,6 @@ call plug#end()
 " General Vim
 "
 set rtp+=~/.fzf
-set spell spelllang=en_au
 set wrap linebreak nolist
 set background=dark
 set expandtab
@@ -83,6 +82,7 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 "
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 set pastetoggle=<F2>
+map <F5> :setlocal spell! spelllang=en_au<CR>
 
 " Normal mode
 nnoremap <C-p> :Files<CR>
