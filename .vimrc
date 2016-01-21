@@ -21,6 +21,7 @@ Plug 'tpope/vim-surround'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/fzf.vim'
 Plug 'cakebaker/scss-syntax.vim'
+Plug 'jiangmiao/auto-pairs'
 
 call plug#end() 
 
@@ -59,6 +60,7 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 " Keyboard Mappings
 "
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+set pastetoggle=<F2>
 
 " Normal mode
 nnoremap <C-p> :Files<CR>
@@ -81,6 +83,7 @@ nnoremap <Leader>0 :10b<CR>
 "
 "Insert Mode
 imap <c-x><c-l> <plug>(fzf-complete-line)
+inoremap <leader>; <C-o>A;
 
 "
 " Syntax Highlighting
