@@ -92,31 +92,12 @@ autocmd BufNewFile,BufRead *.json set syntax=javascript
 
 
 "
-" UI
+" User Interface
 "
 
 " status line
 set statusline=%t[%{strlen(&fenc)?&fenc:'none'},%{&ff}]%h%m%r%y%=%c,%l/%L\ %P
 
-set background=dark
-set expandtab
-set splitright
-set hidden
-set nowrap                      " don't wrap lines
-set tabstop=4                   " a tab is four spaces
-set softtabstop=4
-set backspace=indent,eol,start  " allow backspacing over everything in insert mode
-set autoindent                  " always set autoindenting on
-set copyindent                  " copy the previous indentation on autoindenting
-set number                      " always show line numbers
-set shiftwidth=4                " number of spaces to use for autoindenting
-set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
-set showmatch                   " set show matching 
-set ignorecase                  " ignore case when searching
-set smartcase                   " ignore case if search pattern is all lowercase case-sensitive otherwise
-set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
-set hlsearch                    " highlight search terms
-set incsearch                   " show search matches as you type
 
 
 syntax reset
