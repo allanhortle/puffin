@@ -9,21 +9,22 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 
-Plug 'gmarik/Vundle.vim'
-Plug 'mattn/emmet-vim'
-Plug 'isRuslan/vim-es6'
-Plug 'scrooloose/nerdtree'
-Plug 'scrooloose/nerdcommenter'
-Plug 'pangloss/vim-javascript'
-Plug 'mxw/vim-jsx'
 Plug 'bling/vim-airline'
-Plug 'tpope/vim-surround'
+Plug 'cakebaker/scss-syntax.vim'
+Plug 'gabrielelana/vim-markdown'
+Plug 'gmarik/Vundle.vim'
+Plug 'godlygeek/tabular'
+Plug 'isRuslan/vim-es6'
+Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/fzf.vim'
-Plug 'cakebaker/scss-syntax.vim'
-Plug 'jiangmiao/auto-pairs'
-Plug 'godlygeek/tabular'
-Plug 'gabrielelana/vim-markdown'
+Plug 'mattn/emmet-vim'
+Plug 'mxw/vim-jsx'
+Plug 'pangloss/vim-javascript'
+Plug 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdtree'
+Plug 'tpope/vim-surround'
+Plug 'vim-scripts/camelcasemotion'
 
 call plug#end() 
 
