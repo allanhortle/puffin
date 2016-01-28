@@ -11,6 +11,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'bling/vim-airline'
 Plug 'cakebaker/scss-syntax.vim'
+Plug 'sheerun/vim-polyglot'
 Plug 'gabrielelana/vim-markdown'
 Plug 'gmarik/Vundle.vim'
 Plug 'godlygeek/tabular'
@@ -23,6 +24,8 @@ Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
+Plug 'sirver/ultisnips'
+Plug 'honza/vim-snippets'
 Plug 'tpope/vim-surround'
 Plug 'vim-scripts/camelcasemotion'
 
@@ -50,6 +53,7 @@ set smartcase                   " ignore case if search pattern is all lower-cas
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
 set hlsearch                    " highlight search terms
 set incsearch                   " show search matches as you type
+set t_Co=256
 
 "
 " Airline
@@ -83,6 +87,7 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 set pastetoggle=<F2>
 map <F5> :setlocal spell! spelllang=en_au<CR>
+map <F3> :set wrap!<CR>
 
 " Normal mode
 nnoremap <C-p> :Files<CR>

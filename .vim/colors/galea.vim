@@ -1,4 +1,4 @@
-highlight clear
+:""
 syntax reset
 let g:colors_name = "Galea"
 
@@ -10,118 +10,145 @@ let ORANGE = 6
 let BLACK = 0
 let WHITE = "white"
 
-highlight VertSplit ctermfg=DarkGray ctermbg=DarkGray
-highlight Constant ctermfg=Blue
-highlight Cursor ctermbg=Green
+let GREY = 242
+let LIGHT_GREY= 244
 
-highlight Comment 	ctermfg=DarkGray	
-highlight LineNr        ctermfg=DarkGray
+fun! <SID>GALEA_HI(group, fg, bg, attr)
+    if a:fg != ""
+        exec "hi " . a:group . " ctermfg=" . a:fg
+    endif
+    if a:bg != ""
+        exec "hi " . a:group . " ctermbg=" . a:bg
+    endif
+    if a:attr != ""
+        exec "hi " . a:group . " cterm=" . a:attr
+    endif
+endfun
 
-" Variables
-highlight Identifier ctermfg=6		
-highlight Function ctermfg=WHITE
+" Vim
+call <SID>GALEA_HI('ColorColumn'  , RED    , ''         , '')
+call <SID>GALEA_HI('ColorColumn'  , WHITE  , ''         , '')
+call <SID>GALEA_HI('Comment'      , GREY   , ''         , '')
+call <SID>GALEA_HI('Constant'     , BLUE   , ''         , '')
+call <SID>GALEA_HI('CursorColumn' , WHITE  , ''         , '')
+call <SID>GALEA_HI('CursorLine'   , WHITE  , ''         , '')
+call <SID>GALEA_HI('Directory'    , WHITE  , ''         , '')
+call <SID>GALEA_HI('FoldColumn'   , WHITE  , ''         , '')
+call <SID>GALEA_HI('Folded'       , WHITE  , ''         , '')
+call <SID>GALEA_HI('LineNr'       , GREY   , ''         , '')
+call <SID>GALEA_HI('MatchParen'   , WHITE  , ''         , '')
+call <SID>GALEA_HI('ModeMsg'      , WHITE  , ''         , '')
+call <SID>GALEA_HI('MoreMsg'      , WHITE  , ''         , '')
+call <SID>GALEA_HI('NonText'      , GREY   , ''         , '')
+call <SID>GALEA_HI('PMenu'        , WHITE  , GREY       , '')
+call <SID>GALEA_HI('PMenuSel'     , GREY   , GREEN      , '')
+call <SID>GALEA_HI('Question'     , ''     , GREY       , '')
+call <SID>GALEA_HI('Search'       , 'NONE' , LIGHT_GREY , '')
+call <SID>GALEA_HI('SignColumn'   , WHITE  , ''         , '')
+call <SID>GALEA_HI('SpecialKey'   , WHITE  , ''         , '')
+call <SID>GALEA_HI('StatusLine'   , WHITE  , ''         , '')
+call <SID>GALEA_HI('StatusLineNC' , WHITE  , ''         , '')
+call <SID>GALEA_HI('TabLine'      , WHITE  , ''         , '')
+call <SID>GALEA_HI('VertSplit'    , GREY   , GREY       , '')
+call <SID>GALEA_HI('Visual'       , 'NONE' , LIGHT_GREY , '')
+call <SID>GALEA_HI('WarningMsg'   , WHITE  , ''         , '')
 
-highlight Statement 	ctermfg=RED
-highlight Conditional 	ctermfg=RED
-highlight Repeat 	ctermfg=RED
-highlight Label 	ctermfg=RED
-highlight Exception 	ctermfg=RED
+" Basic
+call <SID>GALEA_HI('Identifier'  , 6      , '' , '')
+call <SID>GALEA_HI('Function'    , WHITE  , '' , '')
+call <SID>GALEA_HI('Statement'   , RED    , '' , '')
+call <SID>GALEA_HI('Conditional' , RED    , '' , '')
+call <SID>GALEA_HI('Repeat'      , RED    , '' , '')
+call <SID>GALEA_HI('Label'       , RED    , '' , '')
+call <SID>GALEA_HI('Exception'   , RED    , '' , '')
+call <SID>GALEA_HI('Special'     , RED    , '' , '')
+call <SID>GALEA_HI('Constant'    , BLUE   , '' , '')
+call <SID>GALEA_HI('Type'        , YELLOW , '' , '')
+call <SID>GALEA_HI('String'      , 2      , '' , '')
+call <SID>GALEA_HI('Character'   , 2      , '' , '')
+call <SID>GALEA_HI('Number'      , BLUE   , '' , '')
 
-highlight Constant 	ctermfg=BLUE
 
-"highlight Type 		ctermfg=DarkGray
-highlight String	ctermfg=2
-highlight Character	ctermfg=2
-highlight Number	ctermfg=BLUE
-" highlight Boolean	ctermfg=DarkGrey
-" highlight Float		ctermfg=DarkGrey
 
-" highlight Special 	ctermfg=DarkGray	
-" highlight Todo 		ctermfg=DarkGray
-"
 " XML
-highlight xmlTag        ctermfg=YELLOW
-highlight xmlTagName     ctermfg=YELLOW
-highlight xmlEndTag    ctermfg=YELLOW
-highlight xmlAttrib    ctermfg=YELLOW
-highlight xmlEqual    ctermfg=YELLOW
+call <SID>GALEA_HI('xmlTag'     , YELLOW , '' , '')
+call <SID>GALEA_HI('xmlTagName' , YELLOW , '' , '')
+call <SID>GALEA_HI('xmlEndTag'  , YELLOW , '' , '')
+call <SID>GALEA_HI('xmlAttrib'  , YELLOW , '' , '')
+call <SID>GALEA_HI('xmlEqual'   , YELLOW , '' , '')
+
 
 " Misc
-highlight MatchParen ctermbg=GREEN 
+call <SID>GALEA_HI('MatchParen', '', GREY, '')
+
 
 " Javascript
-highlight javaScriptReserved ctermfg=RED 
+call <SID>GALEA_HI('javaScriptReserved', RED, '', '')
 
 
 " Markdown
-highlight markdownHeadingDelimiter ctermfg=YELLOW
-highlight Title ctermfg=YELLOW
+call <SID>GALEA_HI('markdownHeadingDelimiter' , YELLOW , '' , '')
+call <SID>GALEA_HI('Title'                    , YELLOW , '' , '')
 
 
-"
 " CSS
-"
-
-highlight scssProperty ctermfg=RED
-highlight scssComment ctermfg=DarkGray
-"Yellow
-highlight scssAmpersand ctermfg=YELLOW
-highlight scssSelector ctermfg=YELLOW
-highlight scssSelectorChar ctermfg=YELLOW
-highlight scssSelectorName ctermfg=YELLOW
-highlight cssPseudoClassId ctermfg=YELLOW
-highlight cssNoise ctermfg=YELLOW
-
-"Red
-highlight scssInclude ctermfg=RED
-highlight scssFunctionName ctermfg=RED
-highlight scssContent ctermfg=RED
-highlight scssReturn ctermfg=RED
-highlight scssExtend ctermfg=RED
-highlight scssImport ctermfg=RED
-highlight scssDebug ctermfg=RED
-highlight scssWarn ctermfg=RED
-highlight scssError ctermfg=RED
-highlight scssIf ctermfg=RED
-highlight scssElse ctermfg=RED
-highlight scssElse ctermfg=RED
-highlight scssWhile ctermfg=RED
-highlight scssFor ctermfg=RED
-highlight scssForKeyword ctermfg=RED
-highlight scssAtRoot ctermfg=RED
-highlight scssMixinName ctermfg=RED
-highlight cssTextProp ctermfg=RED
-highlight cssAnimationProp ctermfg=RED
-highlight cssAuralProp ctermfg=RED
-highlight cssBackgroundProp ctermfg=RED
-highlight cssBorderProp ctermfg=RED
-highlight cssBoxProp ctermfg=RED
-highlight cssColorProp ctermfg=RED
-highlight cssContentForPagedMediaProp ctermfg=RED
-highlight cssDimensionProp ctermfg=RED
-highlight cssFlexibleBoxProp ctermfg=RED
-highlight cssFontDescriptorProp ctermfg=RED
-highlight cssFontProp ctermfg=RED
-highlight cssGeneratedContentProp ctermfg=RED
-highlight cssGridProp ctermfg=RED
-highlight cssHyerlinkProp ctermfg=RED
-highlight cssIEUIProp ctermfg=RED
-highlight cssLineboxProp ctermfg=RED
-highlight cssListProp ctermfg=RED
-highlight cssMarqueeProp ctermfg=RED
-highlight cssMediaProp ctermfg=RED
-highlight cssMobileTextProp ctermfg=RED
-highlight cssMultiColumnProp ctermfg=RED
-highlight cssPagedMediaProp ctermfg=RED
-highlight cssPageProp ctermfg=RED
-highlight cssPositioningProp ctermfg=RED
-highlight cssPrintProp ctermfg=RED
-highlight cssProp ctermfg=RED
-highlight cssRenderProp ctermfg=RED
-highlight cssRubyProp ctermfg=RED
-highlight cssSpeechProp ctermfg=RED
-highlight cssTableProp ctermfg=RED
-highlight cssTextProp ctermfg=RED
-highlight cssTransformProp ctermfg=RED
-highlight cssTransitionProp ctermfg=RED
-highlight cssUIProp ctermfg=RED
+call <SID>GALEA_HI('scssProperty'                , RED    , '' , '')
+call <SID>GALEA_HI('scssComment'                 , GREY   , '' , '')
+call <SID>GALEA_HI('scssAmpersand'               , YELLOW , '' , '')
+call <SID>GALEA_HI('scssSelector'                , YELLOW , '' , '')
+call <SID>GALEA_HI('scssSelectorChar'            , YELLOW , '' , '')
+call <SID>GALEA_HI('scssSelectorName'            , YELLOW , '' , '')
+call <SID>GALEA_HI('cssPseudoClassId'            , YELLOW , '' , '')
+call <SID>GALEA_HI('cssNoise'                    , YELLOW , '' , '')
+call <SID>GALEA_HI('scssInclude'                 , RED    , '' , '')
+call <SID>GALEA_HI('scssFunctionName'            , RED    , '' , '')
+call <SID>GALEA_HI('scssContent'                 , RED    , '' , '')
+call <SID>GALEA_HI('scssReturn'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssExtend'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssImport'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssDebug'                   , RED    , '' , '')
+call <SID>GALEA_HI('scssWarn'                    , RED    , '' , '')
+call <SID>GALEA_HI('scssError'                   , RED    , '' , '')
+call <SID>GALEA_HI('scssIf'                      , RED    , '' , '')
+call <SID>GALEA_HI('scssElse'                    , RED    , '' , '')
+call <SID>GALEA_HI('scssElse'                    , RED    , '' , '')
+call <SID>GALEA_HI('scssWhile'                   , RED    , '' , '')
+call <SID>GALEA_HI('scssFor'                     , RED    , '' , '')
+call <SID>GALEA_HI('scssForKeyword'              , RED    , '' , '')
+call <SID>GALEA_HI('scssAtRoot'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssMixinName'               , RED    , '' , '')
+call <SID>GALEA_HI('cssTextProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssAnimationProp'            , RED    , '' , '')
+call <SID>GALEA_HI('cssAuralProp'                , RED    , '' , '')
+call <SID>GALEA_HI('cssBackgroundProp'           , RED    , '' , '')
+call <SID>GALEA_HI('cssBorderProp'               , RED    , '' , '')
+call <SID>GALEA_HI('cssBoxProp'                  , RED    , '' , '')
+call <SID>GALEA_HI('cssColorProp'                , RED    , '' , '')
+call <SID>GALEA_HI('cssContentForPagedMediaProp' , RED    , '' , '')
+call <SID>GALEA_HI('cssDimensionProp'            , RED    , '' , '')
+call <SID>GALEA_HI('cssFlexibleBoxProp'          , RED    , '' , '')
+call <SID>GALEA_HI('cssFontDescriptorProp'       , RED    , '' , '')
+call <SID>GALEA_HI('cssFontProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssGeneratedContentProp'     , RED    , '' , '')
+call <SID>GALEA_HI('cssGridProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssHyerlinkProp'             , RED    , '' , '')
+call <SID>GALEA_HI('cssIEUIProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssLineboxProp'              , RED    , '' , '')
+call <SID>GALEA_HI('cssListProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssMarqueeProp'              , RED    , '' , '')
+call <SID>GALEA_HI('cssMediaProp'                , RED    , '' , '')
+call <SID>GALEA_HI('cssMobileTextProp'           , RED    , '' , '')
+call <SID>GALEA_HI('cssMultiColumnProp'          , RED    , '' , '')
+call <SID>GALEA_HI('cssPagedMediaProp'           , RED    , '' , '')
+call <SID>GALEA_HI('cssPageProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssPositioningProp'          , RED    , '' , '')
+call <SID>GALEA_HI('cssPrintProp'                , RED    , '' , '')
+call <SID>GALEA_HI('cssProp'                     , RED    , '' , '')
+call <SID>GALEA_HI('cssRenderProp'               , RED    , '' , '')
+call <SID>GALEA_HI('cssRubyProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssSpeechProp'               , RED    , '' , '')
+call <SID>GALEA_HI('cssTableProp'                , RED    , '' , '')
+call <SID>GALEA_HI('cssTextProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssTransformProp'            , RED    , '' , '')
+call <SID>GALEA_HI('cssTransitionProp'           , RED    , '' , '')
+call <SID>GALEA_HI('cssUIProp'                   , RED    , '' , '')
