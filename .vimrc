@@ -28,6 +28,7 @@ Plug 'sirver/ultisnips'
 Plug 'honza/vim-snippets'
 Plug 'tpope/vim-surround'
 Plug 'vim-scripts/camelcasemotion'
+Plug 'bentayloruk/vim-react-es6-snippets'
 
 call plug#end() 
 
