@@ -1,9 +1,11 @@
-:""
+hi clear
 syntax reset
 let g:colors_name = "Galea"
 
 let RED = 1
+let RED_DARK = 9
 let GREEN = 2 
+let GREEN_DARK = 10 
 let YELLOW = 3
 let BLUE = 4
 let ORANGE = 6
@@ -24,6 +26,11 @@ fun! <SID>GALEA_HI(group, fg, bg, attr)
         exec "hi " . a:group . " cterm=" . a:attr
     endif
 endfun
+
+call <SID>GALEA_HI('DiffAdd'      , 'NONE'   , GREEN_DARK         , '')
+call <SID>GALEA_HI('DiffDelete'   , RED_DARK    , RED_DARK         , '')
+call <SID>GALEA_HI('DiffChange'   , 'NONE'   , 12         , '')
+call <SID>GALEA_HI('DiffText'     , 'NONE' , 12         , '')
 
 " Vim
 call <SID>GALEA_HI('ColorColumn'  , RED    , ''         , '')
@@ -70,12 +77,16 @@ call <SID>GALEA_HI('Number'      , BLUE   , '' , '')
 
 
 
-" XML
+" XML/HTML
 call <SID>GALEA_HI('xmlTag'     , YELLOW , '' , '')
 call <SID>GALEA_HI('xmlTagName' , YELLOW , '' , '')
 call <SID>GALEA_HI('xmlEndTag'  , YELLOW , '' , '')
 call <SID>GALEA_HI('xmlAttrib'  , YELLOW , '' , '')
 call <SID>GALEA_HI('xmlEqual'   , YELLOW , '' , '')
+call <SID>GALEA_HI('htmlTag'   , YELLOW , '' , '')
+call <SID>GALEA_HI('htmlTagName'   , YELLOW , '' , '')
+call <SID>GALEA_HI('htmlEndTag'   , YELLOW , '' , '')
+call <SID>GALEA_HI('htmlTagN'   , BLUE , '' , '')
 
 
 " Misc
@@ -92,32 +103,7 @@ call <SID>GALEA_HI('Title'                    , YELLOW , '' , '')
 
 
 " CSS
-call <SID>GALEA_HI('scssProperty'                , RED    , '' , '')
-call <SID>GALEA_HI('scssComment'                 , GREY   , '' , '')
-call <SID>GALEA_HI('scssAmpersand'               , YELLOW , '' , '')
-call <SID>GALEA_HI('scssSelector'                , YELLOW , '' , '')
-call <SID>GALEA_HI('scssSelectorChar'            , YELLOW , '' , '')
-call <SID>GALEA_HI('scssSelectorName'            , YELLOW , '' , '')
-call <SID>GALEA_HI('cssPseudoClassId'            , YELLOW , '' , '')
-call <SID>GALEA_HI('cssNoise'                    , YELLOW , '' , '')
-call <SID>GALEA_HI('scssInclude'                 , RED    , '' , '')
-call <SID>GALEA_HI('scssFunctionName'            , RED    , '' , '')
-call <SID>GALEA_HI('scssContent'                 , RED    , '' , '')
-call <SID>GALEA_HI('scssReturn'                  , RED    , '' , '')
-call <SID>GALEA_HI('scssExtend'                  , RED    , '' , '')
-call <SID>GALEA_HI('scssImport'                  , RED    , '' , '')
-call <SID>GALEA_HI('scssDebug'                   , RED    , '' , '')
-call <SID>GALEA_HI('scssWarn'                    , RED    , '' , '')
-call <SID>GALEA_HI('scssError'                   , RED    , '' , '')
-call <SID>GALEA_HI('scssIf'                      , RED    , '' , '')
-call <SID>GALEA_HI('scssElse'                    , RED    , '' , '')
-call <SID>GALEA_HI('scssElse'                    , RED    , '' , '')
-call <SID>GALEA_HI('scssWhile'                   , RED    , '' , '')
-call <SID>GALEA_HI('scssFor'                     , RED    , '' , '')
-call <SID>GALEA_HI('scssForKeyword'              , RED    , '' , '')
-call <SID>GALEA_HI('scssAtRoot'                  , RED    , '' , '')
-call <SID>GALEA_HI('scssMixinName'               , RED    , '' , '')
-call <SID>GALEA_HI('cssTextProp'                 , RED    , '' , '')
+
 call <SID>GALEA_HI('cssAnimationProp'            , RED    , '' , '')
 call <SID>GALEA_HI('cssAuralProp'                , RED    , '' , '')
 call <SID>GALEA_HI('cssBackgroundProp'           , RED    , '' , '')
@@ -139,16 +125,44 @@ call <SID>GALEA_HI('cssMarqueeProp'              , RED    , '' , '')
 call <SID>GALEA_HI('cssMediaProp'                , RED    , '' , '')
 call <SID>GALEA_HI('cssMobileTextProp'           , RED    , '' , '')
 call <SID>GALEA_HI('cssMultiColumnProp'          , RED    , '' , '')
-call <SID>GALEA_HI('cssPagedMediaProp'           , RED    , '' , '')
+call <SID>GALEA_HI('cssNoise'                    , YELLOW , '' , '')
 call <SID>GALEA_HI('cssPageProp'                 , RED    , '' , '')
+call <SID>GALEA_HI('cssPagedMediaProp'           , RED    , '' , '')
 call <SID>GALEA_HI('cssPositioningProp'          , RED    , '' , '')
 call <SID>GALEA_HI('cssPrintProp'                , RED    , '' , '')
 call <SID>GALEA_HI('cssProp'                     , RED    , '' , '')
+call <SID>GALEA_HI('cssPseudoClassId'            , YELLOW , '' , '')
 call <SID>GALEA_HI('cssRenderProp'               , RED    , '' , '')
 call <SID>GALEA_HI('cssRubyProp'                 , RED    , '' , '')
 call <SID>GALEA_HI('cssSpeechProp'               , RED    , '' , '')
 call <SID>GALEA_HI('cssTableProp'                , RED    , '' , '')
+call <SID>GALEA_HI('cssTagName'                  , YELLOW , '' , '')
+call <SID>GALEA_HI('cssTextProp'                 , RED    , '' , '')
 call <SID>GALEA_HI('cssTextProp'                 , RED    , '' , '')
 call <SID>GALEA_HI('cssTransformProp'            , RED    , '' , '')
 call <SID>GALEA_HI('cssTransitionProp'           , RED    , '' , '')
 call <SID>GALEA_HI('cssUIProp'                   , RED    , '' , '')
+call <SID>GALEA_HI('cssUnicodeEscape'            , GREEN    , '' , '')
+call <SID>GALEA_HI('scssAmpersand'               , YELLOW , '' , '')
+call <SID>GALEA_HI('scssAtRoot'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssComment'                 , GREY   , '' , '')
+call <SID>GALEA_HI('scssContent'                 , RED    , '' , '')
+call <SID>GALEA_HI('scssDebug'                   , RED    , '' , '')
+call <SID>GALEA_HI('scssElse'                    , RED    , '' , '')
+call <SID>GALEA_HI('scssElse'                    , RED    , '' , '')
+call <SID>GALEA_HI('scssError'                   , RED    , '' , '')
+call <SID>GALEA_HI('scssExtend'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssFor'                     , RED    , '' , '')
+call <SID>GALEA_HI('scssForKeyword'              , RED    , '' , '')
+call <SID>GALEA_HI('scssFunctionName'            , RED    , '' , '')
+call <SID>GALEA_HI('scssIf'                      , RED    , '' , '')
+call <SID>GALEA_HI('scssImport'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssInclude'                 , RED    , '' , '')
+call <SID>GALEA_HI('scssMixinName'               , RED    , '' , '')
+call <SID>GALEA_HI('scssProperty'                , RED    , '' , '')
+call <SID>GALEA_HI('scssReturn'                  , RED    , '' , '')
+call <SID>GALEA_HI('scssSelector'                , YELLOW , '' , '')
+call <SID>GALEA_HI('scssSelectorChar'            , YELLOW , '' , '')
+call <SID>GALEA_HI('scssSelectorName'            , YELLOW , '' , '')
+call <SID>GALEA_HI('scssWarn'                    , RED    , '' , '')
+call <SID>GALEA_HI('scssWhile'                   , RED    , '' , '')

@@ -30,6 +30,7 @@ Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'vim-scripts/camelcasemotion'
 Plug 'unblevable/quick-scope'
+Plug 'bentayloruk/vim-react-es6-snippets'
 
 call plug#end() 
 
