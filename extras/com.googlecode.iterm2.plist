@@ -982,7 +982,7 @@
 	<key>NSWindow Frame NSFontPanel</key>
 	<string>545 187 725 307 0 0 2560 1417 </string>
 	<key>NSWindow Frame Preferences</key>
-	<string>2929 744 606 456 1920 -240 2560 1440 </string>
+	<string>614 744 606 456 0 0 1920 1200 </string>
 	<key>NSWindow Frame SUStatusFrame</key>
 	<string>1088 984 384 129 0 0 2560 1440 </string>
 	<key>NSWindow Frame SUUpdateAlert</key>
@@ -1411,13 +1411,13 @@
 				<key>Alpha Component</key>
 				<real>1</real>
 				<key>Blue Component</key>
-				<real>0.67800000000000005</real>
+				<real>0.83529411764705885</real>
 				<key>Color Space</key>
 				<string>Calibrated</string>
 				<key>Green Component</key>
-				<real>0.27000000000000002</real>
+				<real>0.70588235294117652</real>
 				<key>Red Component</key>
-				<real>0.023</real>
+				<real>0.5607843137254902</real>
 			</dict>
 			<key>Log Directory</key>
 			<string></string>
@@ -1707,7 +1707,7 @@
 	<key>SUHasLaunchedBefore</key>
 	<true/>
 	<key>SULastCheckTime</key>
-	<date>2016-01-22T00:57:01Z</date>
+	<date>2016-02-03T23:37:33Z</date>
 	<key>SavePasteHistory</key>
 	<false/>
 	<key>Show Toolbelt</key>
