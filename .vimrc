@@ -11,10 +11,10 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'bling/vim-airline'
 Plug 'cakebaker/scss-syntax.vim'
-Plug 'sheerun/vim-polyglot'
+Plug 'editorconfig/editorconfig-vim'
 Plug 'gabrielelana/vim-markdown'
-Plug 'gmarik/Vundle.vim'
 Plug 'godlygeek/tabular'
+Plug 'honza/vim-snippets'
 Plug 'isRuslan/vim-es6'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
@@ -24,16 +24,19 @@ Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
+Plug 'sheerun/vim-polyglot'
 Plug 'sirver/ultisnips'
-Plug 'honza/vim-snippets'
 Plug 'tpope/vim-surround'
+Plug 'tpope/vim-fugitive'
 Plug 'vim-scripts/camelcasemotion'
+Plug 'unblevable/quick-scope'
 
 call plug#end() 
 
 "
 " General Vim
 "
+set encoding=utf8
 set rtp+=~/.fzf
 set wrap linebreak nolist
 set background=dark
