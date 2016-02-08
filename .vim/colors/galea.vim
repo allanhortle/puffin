@@ -3,7 +3,9 @@ syntax reset
 let g:colors_name = "Galea"
 
 let RED = 1
+let RED_DARK = 9
 let GREEN = 2 
+let GREEN_DARK = 10 
 let YELLOW = 3
 let BLUE = 4
 let ORANGE = 6
@@ -24,6 +26,11 @@ fun! <SID>GALEA_HI(group, fg, bg, attr)
         exec "hi " . a:group . " cterm=" . a:attr
     endif
 endfun
+
+call <SID>GALEA_HI('DiffAdd'      , 'NONE'   , GREEN_DARK         , '')
+call <SID>GALEA_HI('DiffDelete'   , RED_DARK    , RED_DARK         , '')
+call <SID>GALEA_HI('DiffChange'   , 'NONE'   , 12         , '')
+call <SID>GALEA_HI('DiffText'     , 'NONE' , 12         , '')
 
 " Vim
 call <SID>GALEA_HI('ColorColumn'  , RED    , ''         , '')
