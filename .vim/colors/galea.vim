@@ -27,10 +27,10 @@ fun! <SID>GALEA_HI(group, fg, bg, attr)
     endif
 endfun
 
-call <SID>GALEA_HI('DiffAdd'      , 'NONE'   , GREEN_DARK         , '')
-call <SID>GALEA_HI('DiffDelete'   , RED_DARK    , RED_DARK         , '')
-call <SID>GALEA_HI('DiffChange'   , 'NONE'   , 12         , '')
-call <SID>GALEA_HI('DiffText'     , 'NONE' , 12         , '')
+call <SID>GALEA_HI('DiffAdd'      , GREEN   , 'NONE', '')
+call <SID>GALEA_HI('DiffDelete'   , RED     , 'NONE', '')
+call <SID>GALEA_HI('DiffChange'   , BLUE     , 'NONE', '')
+call <SID>GALEA_HI('DiffText'   , WHITE     , 'NONE', '')
 
 " Vim
 call <SID>GALEA_HI('ColorColumn'  , RED    , ''         , '')
