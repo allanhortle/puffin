@@ -116,6 +116,16 @@ nnoremap <Leader>0 :10b<CR>
 imap <c-x><c-l> <plug>(fzf-complete-line)
 inoremap <leader>; <C-o>A;
 
+function! s:Saving_scroll(cmd)
+  let save_scroll = &scroll
+  execute 'normal! ' . a:cmd
+  let &scroll = save_scroll
+endfunction
+nnoremap <C-J> :call <SID>Saving_scroll("1<C-V><C-D>")<CR>
+vnoremap <C-J> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-D>")<CR>
+nnoremap <C-K> :call <SID>Saving_scroll("1<C-V><C-U>")<CR>
+vnoremap <C-K> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-U>")<CR>
+
 "
 " Syntax Highlighting
 "
