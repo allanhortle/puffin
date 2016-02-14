@@ -3,14 +3,13 @@ syntax reset
 let g:colors_name = "Galea"
 
 let RED = 1
-let RED_DARK = 9
 let GREEN = 2 
-let GREEN_DARK = 10 
 let YELLOW = 3
 let BLUE = 4
 let ORANGE = 6
 let BLACK = 0
 let WHITE = "white"
+let NONE = "NONE"
 
 let GREY = 242
 let LIGHT_GREY= 244
@@ -55,6 +54,7 @@ call <SID>GALEA_HI('SignColumn'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('SpecialKey'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('StatusLine'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('StatusLineNC' , WHITE  , ''         , '')
+call <SID>GALEA_HI('SpellBad'     , RED  , 'NONE'         , '')
 call <SID>GALEA_HI('TabLine'      , WHITE  , ''         , '')
 call <SID>GALEA_HI('VertSplit'    , GREY   , GREY       , '')
 call <SID>GALEA_HI('Visual'       , 'NONE' , LIGHT_GREY , '')
@@ -101,6 +101,12 @@ call <SID>GALEA_HI('javaScriptReserved', RED, '', '')
 " Markdown
 call <SID>GALEA_HI('markdownHeadingDelimiter' , YELLOW , '' , '')
 call <SID>GALEA_HI('Title'                    , YELLOW , '' , '')
+call <SID>GALEA_HI('markdownBlockquote'       , BLUE , '' , '')
+call <SID>GALEA_HI('markdownBlockquoteDelimiter'       , BLUE , '' , '')
+call <SID>GALEA_HI('markdownItemDelimiter'       , GREEN , '' , '')
+call <SID>GALEA_HI('markdownItalic'       , ORANGE , '' , '')
+call <SID>GALEA_HI('markdownBold'       , ORANGE , '' , '')
+call <SID>GALEA_HI('markdownInlineDelimiter'       , ORANGE , '' , '')
 
 
 " CSS

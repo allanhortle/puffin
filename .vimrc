@@ -19,6 +19,7 @@ Plug 'isRuslan/vim-es6'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/fzf.vim'
+Plug 'junegunn/goyo.vim'
 Plug 'mattn/emmet-vim'
 Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
@@ -84,6 +85,10 @@ let NERDTreeQuitOnOpen=1
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
+"
+" Quick Scope
+let g:qs_first_occurrence_highlight_color = 244       " terminal vim
+let g:qs_second_occurrence_highlight_color = 245         " terminal vim
 
 "
 " Keyboard Mappings
