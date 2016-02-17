@@ -26,10 +26,10 @@ fun! <SID>GALEA_HI(group, fg, bg, attr)
     endif
 endfun
 
-call <SID>GALEA_HI('DiffAdd'      , GREEN   , 'NONE', '')
-call <SID>GALEA_HI('DiffDelete'   , RED     , 'NONE', '')
-call <SID>GALEA_HI('DiffChange'   , BLUE     , 'NONE', '')
-call <SID>GALEA_HI('DiffText'   , WHITE     , 'NONE', '')
+call <SID>GALEA_HI('DiffAdd'      , GREEN  , NONE, '')
+call <SID>GALEA_HI('DiffDelete'   , RED    , NONE, '')
+call <SID>GALEA_HI('DiffChange'   , BLUE   , NONE, '')
+call <SID>GALEA_HI('DiffText'     , WHITE  , NONE, '')
 
 " Vim
 call <SID>GALEA_HI('ColorColumn'  , RED    , ''         , '')
@@ -49,22 +49,22 @@ call <SID>GALEA_HI('NonText'      , GREY   , ''         , '')
 call <SID>GALEA_HI('PMenu'        , WHITE  , GREY       , '')
 call <SID>GALEA_HI('PMenuSel'     , GREY   , GREEN      , '')
 call <SID>GALEA_HI('Question'     , ''     , GREY       , '')
-call <SID>GALEA_HI('Search'       , 'NONE' , LIGHT_GREY , '')
+call <SID>GALEA_HI('Search'       , NONE   , LIGHT_GREY , '')
 call <SID>GALEA_HI('SignColumn'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('SpecialKey'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('StatusLine'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('StatusLineNC' , WHITE  , ''         , '')
-call <SID>GALEA_HI('SpellBad'     , RED  , 'NONE'         , '')
+call <SID>GALEA_HI('SpellBad'     , RED    , NONE       , '')
 call <SID>GALEA_HI('TabLine'      , WHITE  , ''         , '')
 call <SID>GALEA_HI('VertSplit'    , GREY   , GREY       , '')
-call <SID>GALEA_HI('Visual'       , 'NONE' , LIGHT_GREY , '')
+call <SID>GALEA_HI('Visual'       , NONE   , LIGHT_GREY , '')
 call <SID>GALEA_HI('WarningMsg'   , WHITE  , ''         , '')
 
 " Basic
 call <SID>GALEA_HI('Identifier'  , 6      , '' , '')
-call <SID>GALEA_HI('Function'    , WHITE  , '' , '')
-call <SID>GALEA_HI('Statement'   , RED    , '' , '')
-call <SID>GALEA_HI('PreProc'     , RED    , '' , '')
+call <SID>GALEA_HI('Function'    , WHITE, '' , '')
+call <SID>GALEA_HI('Statement'   , WHITE  , '' , '')
+call <SID>GALEA_HI('PreProc'     , WHITE    , '' , '')
 call <SID>GALEA_HI('Conditional' , RED    , '' , '')
 call <SID>GALEA_HI('Repeat'      , RED    , '' , '')
 call <SID>GALEA_HI('Label'       , RED    , '' , '')
@@ -95,7 +95,9 @@ call <SID>GALEA_HI('MatchParen', '', GREY, '')
 
 
 " Javascript
-call <SID>GALEA_HI('javaScriptReserved', RED, '', '')
+call <SID>GALEA_HI('javaScriptReserved',  RED, '', '')
+call <SID>GALEA_HI('javaScriptStatement', RED, '', '')
+call <SID>GALEA_HI('javaScriptFuncKeyword', RED, '', '')
 
 
 " Markdown

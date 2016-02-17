@@ -59,6 +59,7 @@ set smarttab                    " insert tabs on the start of a line according t
 set hlsearch                    " highlight search terms
 set incsearch                   " show search matches as you type
 set t_Co=256
+set mouse=a
 
 "
 " Airline

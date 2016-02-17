@@ -32,7 +32,7 @@ ZSH_THEME_GIT_PROMPT_MODIFIED="${y}●${res}"
 ZSH_THEME_GIT_PROMPT_STAGED="${g}●${res}"
 
 PROMPT=$'${b}%c$(git_prompt_info) ${b}=> ${res}'
-RPROMPT="${g}%M [%D{%H:%M:%S}]${res}"
+RPROMPT="${g}%M${res}"
 
 
 ## Loading Configs ##
