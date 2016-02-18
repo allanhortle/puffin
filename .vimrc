@@ -25,6 +25,7 @@ Plug 'mxw/vim-jsx'
 Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
+Plug 'scrooloose/syntastic'
 Plug 'sheerun/vim-polyglot'
 Plug 'sirver/ultisnips'
 Plug 'tpope/vim-surround'
@@ -61,38 +62,41 @@ set incsearch                   " show search matches as you type
 set t_Co=256
 set mouse=a
 
+
 "
+" ## PLUGINS ##
+"
+
 " Airline
-"
 let g:airline_left_sep=''
 let g:airline_right_sep=''
 let g:airline_theme='bubblegum'
 set laststatus=2
-
-" Enable the list of buffers
 let g:airline#extensions#tabline#enabled = 1
-
-" Show just the filename
 let g:airline#extensions#tabline#fnamemod = ':t'
 
 
-"
 " Nerd Tree
-"
 map <C-o> :NERDTreeToggle<CR>
 let NERDTreeShowHidden=1
 let NERDTreeQuitOnOpen=1
-
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
-"
 " Quick Scope
 let g:qs_first_occurrence_highlight_color = 244       " terminal vim
 let g:qs_second_occurrence_highlight_color = 245         " terminal vim
 
+" Syntastic
+let g:syntastic_always_populate_loc_list = 1
+let g:syntastic_auto_loc_list = 1
+let g:syntastic_check_on_open = 1
+let g:syntastic_check_on_wq = 0
+let g:syntastic_javascript_checkers = ['eslint']
+
+
 "
-" Keyboard Mappings
+" ## Keyboard Mappings ##
 "
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 set pastetoggle=<F2>
