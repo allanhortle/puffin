@@ -11,6 +11,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'bling/vim-airline'
 Plug 'cakebaker/scss-syntax.vim'
+Plug 'docunext/closetag.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'gabrielelana/vim-markdown'
 Plug 'godlygeek/tabular'
