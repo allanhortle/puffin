@@ -31,6 +31,7 @@ Uses [homebrew] to install dependencies.
 * [tig]
 * [fasd]
 * git
+* ansiweather
 * node (Just to make sure you dont need sudo)
 
 ## Puffin Reload
@@ -42,6 +43,9 @@ Rsyncs dotfiles from puffin to your `$HOME` folder.
 * `.tmux.conf`
 * `.vimrc`
 * `.zshrc`
+
+## Config Environment Variables
+`PUFFIN_WEATHER_LOCATION` Sets ansiweather location. Defaults to 'Melbourne, AU'.
 
 Each file will try to source `.xxx.local` at the very end. This lets you add any computer specific configs to each file.
 For example you may choose to place some environment variables in `.zshrc.local`.
