@@ -66,10 +66,7 @@ alias npm_patch_pub='npm version patch && git push --follow-tags && npm publish'
 #--------------------------------------------------------------------------
 
 #run jetty
-alias jrun='mvn jetty:run -o -Djava.awt.headless=true'
-
-#run forked jetty
-alias jfrun='mvn jetty:run-forked -o -Djava.awt.headless=true'
+alias jrun='mvn jetty:run -Djava.awt.headless=true'
 
 #kill the latest jetty instance
 alias jkill='kill -9 `ps -e | grep jetty\:run | awk '"'"'{print $1}'"'"' | tail -1`'
