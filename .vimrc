@@ -18,12 +18,15 @@ Plug 'gabrielelana/vim-markdown'
 Plug 'godlygeek/tabular'
 Plug 'honza/vim-snippets'
 Plug 'isRuslan/vim-es6'
+Plug 'jceb/vim-orgmode'
+Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'mattn/emmet-vim'
 Plug 'mxw/vim-jsx'
+Plug 'morhetz/gruvbox'
 Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
@@ -72,7 +75,7 @@ set mouse=a
 " Airline
 let g:airline_left_sep=''
 let g:airline_right_sep=''
-let g:airline_theme='bubblegum'
+let g:airline_theme='term'
 set laststatus=2
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#fnamemod = ':t'
