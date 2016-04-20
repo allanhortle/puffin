@@ -4,8 +4,6 @@ alias softlimit='ulimit -n 2048'
 # Git
 #--------------------------------------------------------------------------
 
-alias g='git'
-
 # Add all and commit with message
 alias gc='git add -A :/ && git commit -am'
 
@@ -16,15 +14,11 @@ alias ga='git add -A :/'
 alias gf='git fetch -p'
 
 # Hacky way to update Git
-alias gg='g | clear'
+alias gg='git | clear'
 
 # Amend files to last commit
 alias gwhoops='git commit --amend -C HEAD'
 
-alias grm='git update-index --assume-unchanged'
-
-
-alias grm='git update-index --assume-unchanged'
 #--------------------------------------------------------------------------
 # FZF
 #--------------------------------------------------------------------------
@@ -58,7 +52,8 @@ v() {
 #--------------------------------------------------------------------------
 
 alias npml='npm list --depth=0'
-alias npm_patch_pub='npm version patch && git push --follow-tags && npm publish'
+alias npm_patch_publish='npm version patch && git push --follow-tags && npm publish'
+alias npm_minor_publish='npm version minor && git push --follow-tags && npm publish'
 
 
 #--------------------------------------------------------------------------
@@ -70,14 +65,6 @@ alias jrun='mvn jetty:run -Djava.awt.headless=true'
 
 #kill the latest jetty instance
 alias jkill='kill -9 `ps -e | grep jetty\:run | awk '"'"'{print $1}'"'"' | tail -1`'
-
-
-#--------------------------------------------------------------------------
-# Atlassian Stash
-#--------------------------------------------------------------------------
-
-# Create a pull request
-alias pr='stash pull-request'
 
 
 #--------------------------------------------------------------------------
@@ -105,13 +92,10 @@ alias tat='tmux new -s `basename $PWD`'
 #--------------------------------------------------------------------------
 
 # Edit Config
-alias zc="$EDITOR ~/.zshrc"
+alias zc="$EDITOR ~/.zshrc.local"
 
 # Reload Config
 alias zr=". ~/.zshrc"
-
-# Open ohmyzsh folder
-alias ohmyzsh="$EDITOR ~/.oh-my-zsh"
 
 
 #--------------------------------------------------------------------------
