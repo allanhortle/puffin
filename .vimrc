@@ -11,6 +11,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
+Plug 'airblade/vim-gitgutter'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'docunext/closetag.vim'
 Plug 'editorconfig/editorconfig-vim'
@@ -67,6 +68,10 @@ set incsearch                   " show search matches as you type
 set t_Co=256
 set mouse=a
 
+set nobackup                    " No backups.
+set nowritebackup               " No backups.
+set noswapfile                  " No swap files; more hassle than they're worth."
+
 
 "
 " ## PLUGINS ##
@@ -110,6 +115,7 @@ map <F3> :set wrap!<CR>
 
 " Normal mode
 nnoremap <C-p> :Files<CR>
+nnoremap <C-f> :Ag<CR>
 nnoremap <CR> :noh<CR><CR>
 nnoremap <Leader>l :ls<CR>
 nnoremap <Leader>b :bp<CR>
@@ -140,6 +146,14 @@ nnoremap <C-J> :call <SID>Saving_scroll("1<C-V><C-D>")<CR>
 vnoremap <C-J> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-D>")<CR>
 nnoremap <C-K> :call <SID>Saving_scroll("1<C-V><C-U>")<CR>
 vnoremap <C-K> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-U>")<CR>
+
+"
+" Commands
+"
+:command WQ wq
+:command Wq wq
+:command W w
+:command Q q
 
 "
 " Syntax Highlighting
