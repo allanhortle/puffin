@@ -36,7 +36,7 @@ RPROMPT="${g}%M${res}"
 
 
 ## Loading Configs ##
-
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(fasd --init auto)"
 
 if [ -f ~/.zshrc.local ]; then
