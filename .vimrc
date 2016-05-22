@@ -66,6 +66,7 @@ set smarttab                    " insert tabs on the start of a line according t
 set hlsearch                    " highlight search terms
 set incsearch                   " show search matches as you type
 set t_Co=256
+set updatetime=250
 set mouse=a
 
 set nobackup                    " No backups.
@@ -131,6 +132,8 @@ nnoremap <Leader>7 :7b<CR>
 nnoremap <Leader>8 :8b<CR>
 nnoremap <Leader>9 :9b<CR>
 nnoremap <Leader>0 :10b<CR>
+nnoremap <Tab> <C-W>w
+nnoremap <S-Tab> <C-W>W
 
 "
 "Insert Mode
