@@ -136,6 +136,15 @@ nnoremap <Tab> <C-W>w
 nnoremap <S-Tab> <C-W>W
 
 "
+" window/buffer splitting
+"
+
+nmap <leader>s<left>   :leftabove  vnew<CR>
+nmap <leader>s<right>  :rightbelow vnew<CR>
+nmap <leader>s<up>     :leftabove  new<CR>
+nmap <leader>s<down>   :rightbelow new<CR>
+
+"
 "Insert Mode
 imap <c-x><c-l> <plug>(fzf-complete-line)
 inoremap <leader>; <C-o>A;
