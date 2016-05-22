@@ -37,7 +37,7 @@ RPROMPT="${g}%M${res}"
 FZF_DEFAULT_COMMAND="ag --hidden --ignore .git -g ''"
 
 ## Loading Configs ##
-
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(fasd --init auto)"
 
 if [ -f ~/.zshrc.local ]; then
