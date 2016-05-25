@@ -33,19 +33,20 @@ ZSH_THEME_GIT_PROMPT_STAGED="${g}●${res}"
 
 PROMPT=$'${b}%c$(git_prompt_info) ${b}=> ${res}'
 RPROMPT="${g}%M${res}"
-
 FZF_DEFAULT_COMMAND="ag --hidden --ignore .git -g ''"
-
-## Loading Configs ##
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 eval "$(fasd --init auto)"
 
+# Loading Configs ##
+if [ -f ~/.fzf.zsh ] ; then
+    source ~/.fzf.zsh
+fi
+
 if [ -f ~/.zshrc.local ]; then
-	source ~/.zshrc.local
+    source ~/.zshrc.local
 fi
 
 # Load the shell dotfiles
 for file in ~/.{aliases,functions}; do
-	[ -r "$file" ] && [ -f "$file" ] && source "$file";
+    [ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
 unset file;
