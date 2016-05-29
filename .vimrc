@@ -29,6 +29,7 @@ Plug 'mattn/emmet-vim'
 Plug 'mxw/vim-jsx'
 Plug 'morhetz/gruvbox'
 Plug 'pangloss/vim-javascript'
+Plug 'ddrscott/vim-side-search'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'sheerun/vim-polyglot'
@@ -39,6 +40,7 @@ Plug 'tpope/vim-speeddating'
 Plug 'vim-scripts/camelcasemotion'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
+
 
 call plug#end() 
 
@@ -118,6 +120,7 @@ map <F3> :set wrap!<CR>
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Ag<CR>
 nnoremap <CR> :noh<CR><CR>
+nnoremap <Leader>p :let @" = expand("%")<CR>
 nnoremap <Leader>l :ls<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>f :bn<CR>
@@ -132,6 +135,14 @@ nnoremap <Leader>7 :7b<CR>
 nnoremap <Leader>8 :8b<CR>
 nnoremap <Leader>9 :9b<CR>
 nnoremap <Leader>0 :10b<CR>
+
+" tig
+nnoremap <Leader>tt :!tig<CR><CR>
+nnoremap <Leader>ts :!tig status<CR><CR>
+nnoremap <Leader>th :!tig %<CR><CR>
+nnoremap <Leader>tb :!tig blame %<CR><CR>
+
+" windows
 nnoremap <Tab> <C-W>w
 nnoremap <S-Tab> <C-W>W
 
