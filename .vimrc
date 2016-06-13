@@ -9,17 +9,13 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 
-Plug 'vim-airline/vim-airline'
-Plug 'vim-airline/vim-airline-themes'
 Plug 'airblade/vim-gitgutter'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'docunext/closetag.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'gabrielelana/vim-markdown'
-Plug 'godlygeek/tabular'
 Plug 'honza/vim-snippets'
 Plug 'isRuslan/vim-es6'
-Plug 'jceb/vim-orgmode'
 Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
@@ -33,11 +29,9 @@ Plug 'ddrscott/vim-side-search'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'sheerun/vim-polyglot'
-Plug 'sirver/ultisnips'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-speeddating'
-Plug 'vim-scripts/camelcasemotion'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
 
@@ -65,7 +59,6 @@ set showmatch                   " set show matching
 set ignorecase                  " ignore case when searching
 set smartcase                   " ignore case if search pattern is all lower-case case-sensitive otherwise
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
-set hlsearch                    " highlight search terms
 set incsearch                   " show search matches as you type
 set t_Co=256
 set updatetime=250
@@ -75,19 +68,9 @@ set nobackup                    " No backups.
 set nowritebackup               " No backups.
 set noswapfile                  " No swap files; more hassle than they're worth."
 
-
 "
 " ## PLUGINS ##
 "
-
-" Airline
-let g:airline_left_sep=''
-let g:airline_right_sep=''
-let g:airline_theme='term'
-set laststatus=2
-let g:airline#extensions#tabline#enabled = 1
-let g:airline#extensions#tabline#fnamemod = ':t'
-
 
 " Nerd Tree
 map <C-o> :NERDTreeToggle<CR>
@@ -173,10 +156,10 @@ vnoremap <C-K> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-U>")<CR>
 "
 " Commands
 "
-:command WQ wq
-:command Wq wq
-:command W w
-:command Q q
+command! WQ wq
+command! Wq wq
+command! W w
+command! Q q
 
 "
 " Syntax Highlighting
@@ -192,14 +175,65 @@ autocmd BufNewFile,BufRead *.json set syntax=javascript
 "
 
 " status line
-set statusline=%t[%{strlen(&fenc)?&fenc:'none'},%{&ff}]%h%m%r%y%=%c,%l/%L\ %P
+let g:currentmode={
+    \ 'n': 'Normal ',
+    \ 'no': 'N·Operator Pending ',
+    \ 'v': 'Visual ',
+    \ 'V': 'V·Line ',
+    \ '^V': 'V·Block ',
+    \ 's': 'Select ',
+    \ 'S': 'S·Line ',
+    \ '^S': 'S·Block ',
+    \ 'i': 'Insert ',
+    \ 'R': 'Replace ',
+    \ 'Rv': 'V·Replace ',
+    \ 'c': 'Command ',
+    \ 'cv': 'Vim Ex ',
+    \ 'ce': 'Ex ',
+    \ 'r': 'Prompt ',
+    \ 'rm': 'More ',
+    \ 'r?': 'Confirm ',
+    \ '!': 'Shell ',
+    \ 't': 'Terminal '
+\}
 
+" Automatically change the statusline color depending on mode
+function! ChangeStatuslineColor()
+    if (mode() =~# '\v(n|no)')
+        exe 'hi! StatusLine ctermfg=002 cterm=reverse'
+        exe 'hi! StatusLineNC ctermfg=8'
+    elseif (mode() =~# '\v(v|V)' || g:currentmode[mode()] ==# 'V·Block' || get(g:currentmode, mode(), '') ==# 't')
+        exe 'hi! StatusLine ctermfg=005'
+    elseif (mode() ==# 'i')
+        exe 'hi! StatusLine ctermfg=004'
+    else
+        exe 'hi! StatusLine ctermfg=008'
+    endif
+    return ''
+endfunction
 
+   
+"set noruler
+set noshowmode
+set laststatus=2
+set statusline=
+set statusline+=%{ChangeStatuslineColor()} " Changing the statusline color
+set statusline+=\ %{toupper(g:currentmode[mode()])} " Current mode
+set statusline+=%-.50F " Full file path, max 50 chars
+set statusline+=%m 
+set statusline+=%=                                  " Right Right side
+set statusline+=\ %Y                                " FileType
+set statusline+=\ %l:%c                " Rownumber/total (%)
+set statusline+=\ 
 
 syntax reset
 syntax on
 colorscheme galea
 
+hi User1 ctermbg=000 ctermfg=007
+
 if filereadable("~/.vimrc.local")
     so '~/.vimrc.local'
 endif
+
+
