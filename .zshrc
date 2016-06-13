@@ -9,6 +9,9 @@ plugins=(git brew tmux npm)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
+unsetopt correct_all  
+setopt correct
+
 
 ## Prompt ##
 
