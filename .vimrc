@@ -200,12 +200,12 @@ let g:currentmode={
 " Automatically change the statusline color depending on mode
 function! ChangeStatuslineColor()
     if (mode() =~# '\v(n|no)')
-        exe 'hi! StatusLine ctermfg=002 cterm=reverse'
+        exe 'hi! StatusLine ctermfg=002 cterm=reverse,bold'
         exe 'hi! StatusLineNC ctermfg=8'
     elseif (mode() =~# '\v(v|V)' || g:currentmode[mode()] ==# 'V·Block' || get(g:currentmode, mode(), '') ==# 't')
-        exe 'hi! StatusLine ctermfg=005'
-    elseif (mode() ==# 'i')
         exe 'hi! StatusLine ctermfg=004'
+    elseif (mode() ==# 'i')
+        exe 'hi! StatusLine ctermfg=003'
     else
         exe 'hi! StatusLine ctermfg=008'
     endif
@@ -230,7 +230,7 @@ syntax reset
 syntax on
 colorscheme galea
 
-hi User1 ctermbg=000 ctermfg=007
+"hi User1 ctermbg=000 ctermfg=007
 
 if filereadable("~/.vimrc.local")
     so '~/.vimrc.local'
