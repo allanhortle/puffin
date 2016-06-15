@@ -162,6 +162,14 @@ command! W w
 command! Q q
 
 "
+" Custom Hardmode
+"
+noremap <Up> <NOP>
+noremap <Down> <NOP>
+noremap <Left> <NOP>
+noremap <Right> <NOP>
+noremap <BS> <NOP>
+"
 " Syntax Highlighting
 "
 
