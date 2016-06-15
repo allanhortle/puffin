@@ -227,7 +227,7 @@ set laststatus=2
 set statusline=
 set statusline+=%{ChangeStatuslineColor()} " Changing the statusline color
 set statusline+=\ %{toupper(g:currentmode[mode()])} " Current mode
-set statusline+=%-.50F " Full file path, max 50 chars
+set statusline+=%F " Full file path, max 50 chars
 set statusline+=%m 
 set statusline+=%=                                  " Right Right side
 set statusline+=\ %Y                                " FileType
