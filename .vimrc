@@ -222,7 +222,7 @@ endfunction
 
    
 "set noruler
-set noshowmode
+"set noshowmode
 set laststatus=2
 set statusline=
 set statusline+=%{ChangeStatuslineColor()} " Changing the statusline color
