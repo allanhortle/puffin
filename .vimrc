@@ -10,6 +10,7 @@ endif
 call plug#begin('~/.vim/plugged')
 
 Plug 'airblade/vim-gitgutter'
+Plug 'ajh17/VimCompletesMe'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'docunext/closetag.vim'
 Plug 'editorconfig/editorconfig-vim'
@@ -21,6 +22,7 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim'
+Plug 'ludovicchabant/vim-gutentags'
 Plug 'mattn/emmet-vim'
 Plug 'mxw/vim-jsx'
 Plug 'morhetz/gruvbox'
@@ -83,13 +85,8 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 let g:qs_first_occurrence_highlight_color = 244       " terminal vim
 let g:qs_second_occurrence_highlight_color = 245         " terminal vim
 
-" Syntastic
-let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
-let g:syntastic_check_on_open = 1
-let g:syntastic_check_on_wq = 0
-let g:syntastic_javascript_checkers = ['eslint']
-
+" Gutentags
+let g:gutentags_exclude = ['node_modules']
 
 "
 " ## Keyboard Mappings ##
@@ -126,8 +123,7 @@ nnoremap <Leader>th :!tig %<CR><CR>
 nnoremap <Leader>tb :!tig blame %<CR><CR>
 
 " windows
-nnoremap <Tab> <C-W>w
-nnoremap <S-Tab> <C-W>W
+nnoremap <Leader><Tab> <C-W>w
 
 "
 " window/buffer splitting
