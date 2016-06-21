@@ -27,7 +27,6 @@ Plug 'mattn/emmet-vim'
 Plug 'mxw/vim-jsx'
 Plug 'morhetz/gruvbox'
 Plug 'pangloss/vim-javascript'
-Plug 'ddrscott/vim-side-search'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'sheerun/vim-polyglot'
