@@ -88,6 +88,45 @@ let g:qs_second_occurrence_highlight_color = 245         " terminal vim
 let g:gutentags_exclude = ['node_modules']
 
 "
+" Sessions
+"
+
+" Creates a session
+function! MakeSession()
+  let b:sessiondir = $HOME . "/.vim/sessions/"
+  if (filewritable(b:sessiondir) != 2)
+    exe 'silent !mkdir -p ' b:sessiondir
+    redraw!
+  endif
+  let b:filename = b:sessiondir . expand('%:p:h:t') . ".vim"
+  exe "mksession! " . b:filename
+endfunction
+
+" Updates a session, BUT ONLY IF IT ALREADY EXISTS
+function! UpdateSession()
+  let b:sessiondir = $HOME . "/.vim/sessions/"
+  let b:filename = b:sessiondir . expand('%:p:h:t') . ".vim"
+  if (filereadable(b:filename))
+    exe "mksession! " . b:filename
+  endif
+endfunction
+
+" Loads a session if it exists
+function! LoadSession()
+  let b:sessiondir = $HOME . "/.vim/sessions/"
+  let b:filename = b:sessiondir . expand('%:p:h:t') . ".vim"
+  if (filereadable(b:filename))
+    exe 'source ' b:filename
+  else
+    echo "No session loaded."
+  endif
+endfunction
+
+au VimLeave * :call UpdateSession()
+map <leader>m :call MakeSession()<CR>
+map <leader>q :call UpdateSession()<CR>:qa<CR>
+
+"
 " ## Keyboard Mappings ##
 "
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>

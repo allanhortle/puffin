@@ -101,6 +101,11 @@ fs() {
   tmux switch-client -t "$session"
 }
 
+vims() {
+    local session
+    session=$(ls ~/.vim/sessions | fzf --query="$1") && vim -S ~/.vim/sessions/$session
+}
+
 fco() {
   local tags branches target
   tags=$(
