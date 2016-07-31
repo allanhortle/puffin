@@ -24,6 +24,15 @@ function any() {
     fi
 }
 
+function findByPort() {
+    if [[ -z "$1" ]] ; then
+        echo "findByPort - search for running processes on a port" >&2
+        echo "Usage: findByPort [portNumber] " >&2 ; return 1
+    else
+        lsof -ti:$1 | xargs lsof -p | grep cwd
+    fi
+}
+
 #
 # FZF
 #
