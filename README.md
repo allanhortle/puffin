@@ -31,6 +31,8 @@ Uses [homebrew] to install dependencies.
 * [tig]
 * [fasd]
 * git
+* the_silver_searcher
+* fzf
 * ansiweather
 * node (Just to make sure you dont need sudo)
 
