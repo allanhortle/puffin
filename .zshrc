@@ -34,8 +34,9 @@ ZSH_THEME_GIT_PROMPT_UNTRACKED="${r}●${res}"
 ZSH_THEME_GIT_PROMPT_MODIFIED="${y}●${res}"
 ZSH_THEME_GIT_PROMPT_STAGED="${g}●${res}"
 
-PROMPT=$'${b}%c$(git_prompt_info) ${b}=> ${res}'
-RPROMPT="${g}%M [%T]${res}"
+PROMPT=$'${b}%2~$(git_prompt_info) ${b}=> ${res}'
+RPROMPT="${y}%n@%M %T${res}"
+ZLE_RPROMPT_INDENT=0
 export FZF_DEFAULT_COMMAND='ag --hidden --path-to-agignore ~/.agignore --ignore .git -g ""'
 eval "$(fasd --init auto)"
 
