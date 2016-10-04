@@ -4,9 +4,6 @@ alias softlimit='ulimit -n 2048'
 # Git
 #--------------------------------------------------------------------------
 
-# Add all and commit with message
-alias gc='git add -A :/ && git commit -am'
-
 # Add all files from repo root.
 alias ga='git add -A :/'
 
@@ -15,6 +12,8 @@ alias gf='git fetch -p'
 
 # Hacky way to update Git
 alias gg='git | clear'
+
+alias gst='git status --short --branch'
 
 # Amend files to last commit
 alias gwhoops='git commit --amend -C HEAD'
