@@ -131,10 +131,11 @@ map <leader>q :call UpdateSession()<CR>:qa<CR>
 "
 " ## Keyboard Mappings ##
 "
-map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 set pastetoggle=<F2>
-map <F5> :setlocal spell! spelllang=en_au<CR>
+map <Leader><Leader> :!!<CR>
+map <F6> :setlocal spell! spelllang=en_au<CR>
 map <F3> :set wrap!<CR>
+map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " Normal mode
 nnoremap <C-p> :Files<CR>
