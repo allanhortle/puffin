@@ -8,6 +8,7 @@ var prompt = require('prompt');
 var log = require('../lib/logger.js');
 var pkg = require('../package.json');
 var install = require('../lib/install.js');
+var installApps = require('../lib/installApps.js');
 var reload = require('../lib/reload.js');
 
 prompt.message = '';
@@ -22,8 +23,12 @@ program
 program
 	.command('install')
 	.description('Run brew install commands')
-	.action(install)
-;
+	.action(install);
+
+program
+	.command('install-apps')
+	.description('Run brew install apps commands')
+    .action(installApps);
 
 program
 	.command('reload')
