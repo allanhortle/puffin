@@ -37,7 +37,7 @@ ZSH_THEME_GIT_PROMPT_STAGED="${g}●${res}"
 PROMPT=$'${b}%2~$(git_prompt_info) ${b}=> ${res}'
 RPROMPT="${y}%n@%M %T${res}"
 ZLE_RPROMPT_INDENT=0
-export FZF_DEFAULT_COMMAND='ag --hidden --path-to-agignore ~/.agignore --ignore .git -g ""'
+export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 eval "$(fasd --init auto)"
 
 # Loading Configs ##
