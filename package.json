@@ -1,6 +1,6 @@
 {
   "name": "puffin",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "description": "Dot Files",
   "main": "index.js",
   "bin": {
