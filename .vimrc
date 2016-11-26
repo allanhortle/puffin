@@ -35,6 +35,7 @@ Plug 'sheerun/vim-polyglot'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-speeddating'
+Plug 'tpope/vim-repeat'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
 
