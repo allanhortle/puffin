@@ -18,6 +18,7 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'gabrielelana/vim-markdown'
 Plug 'honza/vim-snippets'
 Plug 'isRuslan/vim-es6'
+Plug 'jceb/vim-orgmode'
 Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 

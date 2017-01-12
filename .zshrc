@@ -5,7 +5,7 @@
 export ZSH=$HOME/.oh-my-zsh
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git brew tmux npm)
+plugins=(git brew tmux npm react-native)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 

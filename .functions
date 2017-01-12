@@ -42,6 +42,10 @@ mkcd () {
 # FZF
 #
 
+function ss() {
+    tmux ls -F '#{session_name} #{?session_attached,*,}' | fzf | xargs tmux switch-client -t
+}
+
 #
 # Weather
 #
