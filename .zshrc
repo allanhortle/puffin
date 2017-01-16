@@ -1,5 +1,4 @@
 
-
 ## Oh My ZSH ##
 
 export ZSH=$HOME/.oh-my-zsh
@@ -25,8 +24,8 @@ w="%{$fg[white]%}"
 m="%{$fg[magenta]%}"
 res="%{$reset_color%}"
 
-ZSH_THEME_GIT_PROMPT_PREFIX="${b}[${g}"
-ZSH_THEME_GIT_PROMPT_SUFFIX="${b}]${res}"
+ZSH_THEME_GIT_PROMPT_PREFIX=" ${g}["
+ZSH_THEME_GIT_PROMPT_SUFFIX="${g}]${res}"
 ZSH_THEME_GIT_PROMPT_AHEAD="${r}⬆ NUM${res}"
 ZSH_THEME_GIT_PROMPT_BEHIND="${g}⬇ NUM${res}"
 ZSH_THEME_GIT_PROMPT_MERGING="${m}✕${res}"
@@ -34,8 +33,12 @@ ZSH_THEME_GIT_PROMPT_UNTRACKED="${r}●${res}"
 ZSH_THEME_GIT_PROMPT_MODIFIED="${y}●${res}"
 ZSH_THEME_GIT_PROMPT_STAGED="${g}●${res}"
 
-PROMPT=$'${b}%2~$(git_prompt_info) ${b}=> ${res}'
-RPROMPT="${y}%n@%M %D{%R}${res}"
+puffin_prompt() {
+    RPROMPT="${y}%n@%M %D{%R}${res}"
+    PROMPT=$'${b}%~$(git_prompt_info)${y} $(puffin_prompt_extra)  
+${b}=> ${res}'
+} 
+puffin_prompt
 ZLE_RPROMPT_INDENT=0
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 eval "$(fasd --init auto)"
