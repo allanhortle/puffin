@@ -88,18 +88,18 @@ w="%{$fg[white]%}"
 m="%{$fg[magenta]%}"
 res="%{$reset_color%}"
 
-ZSH_THEME_GIT_PROMPT_PREFIX="${g}"
+ZSH_THEME_GIT_PROMPT_PREFIX=" ${g}"
 ZSH_THEME_GIT_PROMPT_SUFFIX=""
 ZSH_THEME_GIT_PROMPT_AHEAD="⬆ NUM "
-ZSH_THEME_GIT_PROMPT_BEHIND="⬇ NUM "
+ZSH_THEME_GIT_PROMPT_BEHIND="${r}⬇ NUM${g} "
 ZSH_THEME_GIT_PROMPT_CONFLICTS="${r}✕NUM${g} "
 ZSH_THEME_GIT_PROMPT_STAGED="SNUM "
 ZSH_THEME_GIT_PROMPT_MODIFIED="MNUM "
-ZSH_THEME_GIT_PROMPT_UNTRACKED="?NUM "
+ZSH_THEME_GIT_PROMPT_UNTRACKED="${m}?NUM "
 
 puffin_prompt() {
     RPROMPT="${y}%n@%M %D{%R}${res}"
-    PROMPT=$'${b}%~  $(git_prompt_info) ${y}$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)  
+    PROMPT=$'${b}%~ $(git_prompt_info) ${y}$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)  
 ${b}=> ${res}'
 } 
 puffin_prompt
