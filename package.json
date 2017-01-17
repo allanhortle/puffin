@@ -1,7 +1,7 @@
 {
   "name": "puffin",
-  "version": "0.13.0",
-  "description": "Dot Files",
+  "version": "0.14.0",
+  "description": "Dot Files in the cloud",
   "main": "index.js",
   "bin": {
     "puffin": "bin/puffin.js"
