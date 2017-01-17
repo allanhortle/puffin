@@ -34,9 +34,9 @@ parse_git_state() {
     GIT_STATE=$GIT_STATE${ZSH_THEME_GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
   fi
 
-  local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
-  if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
-    GIT_STATE=$GIT_STATE$ZSH_THEME_GIT_PROMPT_MERGING
+  local NUM_CONFLICTS="$(git diff --name-only --diff-filter=U &> /dev/null | wc -l | xargs echo)"
+  if [[ "$NUM_CONFLICTS" -gt 0 ]]; then
+    GIT_STATE=$GIT_STATE${ZSH_THEME_GIT_PROMPT_CONFLICTS//NUM/$NUM_CONFLICTS}
   fi
 
   local NUM_STAGED="$(git status --short 2> /dev/null | grep '^[AM]' | wc -l | xargs echo)"
@@ -92,7 +92,7 @@ ZSH_THEME_GIT_PROMPT_PREFIX="${g}"
 ZSH_THEME_GIT_PROMPT_SUFFIX=""
 ZSH_THEME_GIT_PROMPT_AHEAD="⬆ NUM "
 ZSH_THEME_GIT_PROMPT_BEHIND="⬇ NUM "
-ZSH_THEME_GIT_PROMPT_MERGING="${m}✕"
+ZSH_THEME_GIT_PROMPT_CONFLICTS="${r}✕NUM${g} "
 ZSH_THEME_GIT_PROMPT_STAGED="SNUM "
 ZSH_THEME_GIT_PROMPT_MODIFIED="MNUM "
 ZSH_THEME_GIT_PROMPT_UNTRACKED="?NUM "
