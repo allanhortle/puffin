@@ -91,7 +91,8 @@ parse_git_state() {
   fi
 
   if [[ -n $GIT_STATE ]]; then
-    echo "$ZSH_THEME_GIT_PROMPT_PREFIX$GIT_STATE$ZSH_THEME_GIT_PROMPT_SUFFIX"
+    echo ":$GIT_STATE"
+    #echo "$ZSH_THEME_GIT_PROMPT_PREFIX$GIT_STATE$ZSH_THEME_GIT_PROMPT_SUFFIX"
   fi
 
 }
@@ -99,7 +100,7 @@ parse_git_state() {
 # If inside a Git repository, print its branch and state
 git_prompt_info() {
 	local git_where="$(parse_git_branch)"
-	[ -n "$git_where" ] && echo "$ZSH_THEME_GIT_PROMPT_PREFIX${git_where#(refs/heads/|tags/)}$ZSH_THEME_GIT_PROMPT_SUFFIX$(parse_git_state)"
+	[ -n "$git_where" ] && echo "$ZSH_THEME_GIT_PROMPT_PREFIX${git_where#(refs/heads/|tags/)}$(parse_git_state)$ZSH_THEME_GIT_PROMPT_SUFFIX"
 }
 
 # Show Git branch/tag, or name-rev if on detached head
