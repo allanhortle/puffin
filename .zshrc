@@ -38,43 +38,44 @@ parse_git_state() {
     # Ahead/Behind/Conficts
     local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
     if [ "$NUM_AHEAD" -gt 0 ]; then
-        GIT_STATE+="⬆ $NUM_AHEAD"
+        GIT_STATE+="⬆ $NUM_AHEAD "
     fi
 
     local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
     if [ "$NUM_BEHIND" -gt 0 ]; then
-        GIT_STATE+=" ⬇ $NUM_BEHIND"
+        GIT_STATE+="⬇ $NUM_BEHIND "
     fi
 
     local NUM_CONFLICTS="$(git diff --name-only --diff-filter=U &> /dev/null | wc -l | xargs echo)"
     if [[ "$NUM_CONFLICTS" -gt 0 ]]; then
-        GIT_STATE+=" ${r}✕$NUM_CONFLICTS${g}"
+        GIT_STATE+="${r}✕$NUM_CONFLICTS${g} "
     fi
 
 
     # Staged
-    STAGED+="$(git_changes '^[AC]' '+')"
-    STAGED+="$(git_changes '^M' '~')"
-    STAGED+="$(git_changes '^D' '-')"
-    STAGED+="$(git_changes '^R' '>')"
+    STAGED+="$(git_changes '^[AC]' "${g}+")"
+    STAGED+="$(git_changes '^M' "${g}~")"
+    STAGED+="$(git_changes '^D' "${g}-")"
+    STAGED+="$(git_changes '^R' "${g}>")"
 
     if [[ -n $STAGED ]]; then
-        GIT_STATE+=" S$STAGED"
+        GIT_STATE+="${g}S$STAGED "
     fi
 
     # Unstaged
-    UNSTAGED+="$(git_changes '^ M' '~')"
-    UNSTAGED+="$(git_changes '^ D' '-')"
+    UNSTAGED+="$(git_changes '^ M' "${g}~")"
+    UNSTAGED+="$(git_changes '^ D' "${g}-")"
+    UNSTAGED+="$(git_changes '^??' "${g}?")"
 
     if [[ -n $UNSTAGED ]]; then
-        GIT_STATE+=" U$UNSTAGED"
+        GIT_STATE+="${g}U$UNSTAGED "
     fi
 
-    # Untracked
-    local NUM_UNTRACKED="$(git status --short 2> /dev/null | grep '^[??]' | wc -l | xargs echo)"
-    if [[ "$NUM_UNTRACKED" -gt 0 ]]; then
-        GIT_STATE+=" ?$NUM_UNTRACKED"
-    fi
+    # # Untracked
+    # local NUM_UNTRACKED="$(git status --short 2> /dev/null | grep '^[??]' | wc -l | xargs echo)"
+    # if [[ "$NUM_UNTRACKED" -gt 0 ]]; then
+    #     UNSTAGED+="${m}?$NUM_UNTRACKED "
+    # fi
 
     if [[ -n $GIT_STATE ]]; then
         echo "$GIT_STATE"
@@ -98,7 +99,7 @@ git_prompt_info() {
 
 puffin_prompt() {
     RPROMPT="${y}%n@%M %D{%R}${res}"
-    PROMPT=$'${b}%~ $(git_prompt_info) ${y}$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)  
+    PROMPT=$'${b}%~  $(git_prompt_info) ${y}$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)  
 ${b}=> ${res}'
 } 
 puffin_prompt
