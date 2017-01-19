@@ -1,6 +1,5 @@
 
 ## Oh My ZSH ##
-
 export ZSH=$HOME/.oh-my-zsh
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
@@ -10,6 +9,7 @@ source $ZSH/oh-my-zsh.sh
 
 unsetopt correct_all  
 setopt correct
+``
 
 ## Prompt ##
 
@@ -59,7 +59,7 @@ parse_git_state() {
     STAGED+="$(git_changes '^R' "${g}>")"
 
     if [[ -n $STAGED ]]; then
-        GIT_STATE+="${g}S$STAGED "
+        GIT_STATE+="${g}[$STAGED]"
     fi
 
     # Unstaged
@@ -68,19 +68,14 @@ parse_git_state() {
     UNSTAGED+="$(git_changes '^??' "${g}?")"
 
     if [[ -n $UNSTAGED ]]; then
-        GIT_STATE+="${g}U$UNSTAGED "
+        GIT_STATE+="${g}$UNSTAGED"
     fi
-
-    # # Untracked
-    # local NUM_UNTRACKED="$(git status --short 2> /dev/null | grep '^[??]' | wc -l | xargs echo)"
-    # if [[ "$NUM_UNTRACKED" -gt 0 ]]; then
-    #     UNSTAGED+="${m}?$NUM_UNTRACKED "
-    # fi
 
     if [[ -n $GIT_STATE ]]; then
-        echo "$GIT_STATE"
+        echo "$GIT_STATE  "
     fi
 }
+
 
 
 # Show Git branch/tag, or name-rev if on detached head
@@ -96,13 +91,34 @@ git_prompt_info() {
     fi
 }
 
-
 puffin_prompt() {
-    RPROMPT="${y}%n@%M %D{%R}${res}"
-    PROMPT=$'${b}%~  $(git_prompt_info) ${y}$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)  
-${b}=> ${res}'
+    local pathPrompt="%~  "
+    local gitPrompt=$(git_prompt_info)
+    local extraPrompt=$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)
+    local rightPrompt="%n@%M %D{%R}"
+
+    # Magic regex to remove unseen characaters
+    local zero='%([BSUbfksu]|([FK]|){*})'
+    # Magic zsh to apply the regex and count the size
+    local pathSize=${#${(S%%)pathPrompt//$~zero/}} 
+    local gitSize=${#${(S%%)gitPrompt//$~zero/}}
+    local extraSize=${#${(S%%)extraPrompt//$~zero/}}
+    local rightSize=${#${(S%%)rightPrompt//$~zero/}}
+
+    # echo $gitSize
+
+    local leftOver=$(expr $COLUMNS - $pathSize - $gitSize - $extraSize - $rightSize)
+
+
+    PROMPT="${b}${pathPrompt}${g}${gitPrompt}${y}${extraPrompt}$(printf %-${leftOver}s)${y}${rightPrompt}${b}
+=>${res} "
 } 
-puffin_prompt
+
+precmd() {
+    puffin_prompt;
+}
+
+
 
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
 eval "$(fasd --init auto)"
@@ -121,3 +137,6 @@ for file in ~/.{aliases,functions}; do
     [ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
 unset file;
+
+# puffin_prompt
+add-zsh-hook precmd puffin_prompt
