@@ -24,7 +24,7 @@ m="%{$fg[magenta]%}"
 res="%{$reset_color%}"
 
 git_changes() {
-    local NUM="$(git status --short 2> /dev/null | grep $1 | wc -l | xargs echo)"
+    local NUM="$(git status --short -u 2> /dev/null | grep $1 | wc -l | xargs echo)"
     if [[ "$NUM" -gt 0 ]]; then
         echo "$2$NUM"
     fi
