@@ -11,6 +11,7 @@ call plug#begin('~/.vim/plugged')
 
 Plug 'airblade/vim-gitgutter'
 Plug 'ajh17/VimCompletesMe'
+Plug 'amiorin/vim-project'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
@@ -76,6 +77,13 @@ set noswapfile                  " No swap files; more hassle than they're worth.
 "
 " ## PLUGINS ##
 "
+
+" vim-project
+set rtp+=~/.vim/bundle/vim-project/
+let g:project_enable_welcome = 0
+let g:project_use_nerdtree = 1
+call project#rc()
+
 
 " Nerd Tree
 map <C-o> :NERDTreeToggle<CR>
@@ -143,7 +151,8 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Ag<CR>
 nnoremap <CR> :noh<CR><CR>
-nnoremap <Leader>p :let @" = expand("%")<CR>
+nnoremap <Leader>p :Welcome<CR>
+nnoremap <Leader>cp :let @* = expand("%")<CR><CR>
 nnoremap <Leader>l :ls<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>f :bn<CR>
@@ -279,8 +288,8 @@ colorscheme galea
 
 "hi User1 ctermbg=000 ctermfg=007
 
-if filereadable("~/.vimrc.local")
-    so '~/.vimrc.local'
+if filereadable(expand("~/.vimrc.local"))
+    so ~/.vimrc.local
 endif
 
 
