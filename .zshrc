@@ -9,7 +9,6 @@ source $ZSH/oh-my-zsh.sh
 
 unsetopt correct_all  
 setopt correct
-``
 
 ## Prompt ##
 
@@ -38,17 +37,17 @@ parse_git_state() {
     # Ahead/Behind/Conficts
     local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
     if [ "$NUM_AHEAD" -gt 0 ]; then
-        GIT_STATE+="⬆ $NUM_AHEAD "
+        GIT_STATE+=" ⬆ $NUM_AHEAD"
     fi
 
     local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
     if [ "$NUM_BEHIND" -gt 0 ]; then
-        GIT_STATE+="⬇ $NUM_BEHIND "
+        GIT_STATE+=" ⬇ $NUM_BEHIND"
     fi
 
     local NUM_CONFLICTS="$(git diff --name-only --diff-filter=U &> /dev/null | wc -l | xargs echo)"
     if [[ "$NUM_CONFLICTS" -gt 0 ]]; then
-        GIT_STATE+="${r}✕$NUM_CONFLICTS${g} "
+        GIT_STATE+=" ${r}✕$NUM_CONFLICTS${g}"
     fi
 
 
@@ -59,7 +58,7 @@ parse_git_state() {
     STAGED+="$(git_changes '^R' "${g}>")"
 
     if [[ -n $STAGED ]]; then
-        GIT_STATE+="${g}[$STAGED]"
+        GIT_STATE+=" ${g}[$STAGED]"
     fi
 
     # Unstaged
@@ -68,12 +67,10 @@ parse_git_state() {
     UNSTAGED+="$(git_changes '^??' "${g}?")"
 
     if [[ -n $UNSTAGED ]]; then
-        GIT_STATE+="${g}$UNSTAGED"
+        GIT_STATE+=" ${g}$UNSTAGED"
     fi
 
-    if [[ -n $GIT_STATE ]]; then
-        echo "$GIT_STATE  "
-    fi
+    echo "$GIT_STATE"
 }
 
 
@@ -87,7 +84,7 @@ git_prompt_info() {
     local git_where="$(parse_git_branch)"
 
     if [[ -n "$git_where" ]]; then
-        echo "${g}${git_where#(refs/heads/|tags/)} $(parse_git_state)"
+        echo "${g}${git_where#(refs/heads/|tags/)}$(parse_git_state)  "
     fi
 }
 
@@ -97,20 +94,21 @@ puffin_prompt() {
     local extraPrompt=$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)
     local rightPrompt="%D{%R}"
 
-    # Magic regex to remove unseen characaters
-    local zero='%([BSUbfksu]|([FK]|){*})'
-    # Magic zsh to apply the regex and count the size
-    local pathSize=${#${(S%%)pathPrompt//$~zero/}} 
-    local gitSize=${#${(S%%)gitPrompt//$~zero/}}
-    local extraSize=${#${(S%%)extraPrompt//$~zero/}}
-    local rightSize=${#${(S%%)rightPrompt//$~zero/}}
+     #Magic regex to remove unseen characaters
+    #local zero='%([BSUbfksu]|([FK]|){*})'
+     #Magic zsh to apply the regex and count the size
+    #local pathSize=${${(S%%)pathPrompt//$~zero/}} 
+    #local gitSize=${${(S%%)gitPrompt//$~zero/}}
+    #local extraSize=${${(S%%)extraPrompt//$~zero/}}
+    #local rightSize=${${(S%%)rightPrompt//$~zero/}}
 
-    # echo $gitSize
+     #echo $gitSize
 
-    local leftOver=$(expr $COLUMNS - $pathSize - $gitSize - $extraSize - $rightSize)
+    #local leftOver=$(expr $COLUMNS - $pathSize - $gitSize - $extraSize - $rightSize)
 
 
-    PROMPT="${b}${pathPrompt}${g}${gitPrompt}${y}${extraPrompt}$(printf %-${leftOver}s)${y}${rightPrompt}${b}
+    #PROMPT="${b}${pathPrompt}${g}${gitPrompt}${y}${extraPrompt}$(printf %-${leftOver}s)${y}${rightPrompt}${b}
+    PROMPT="${b}${pathPrompt}${g}${gitPrompt}${y}${extraPrompt}${y}${rightPrompt}${b}
 =>${res} "
 } 
 
