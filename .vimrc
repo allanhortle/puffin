@@ -9,6 +9,9 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 
+
+
+
 Plug 'airblade/vim-gitgutter'
 Plug 'ajh17/VimCompletesMe'
 Plug 'amiorin/vim-project'
@@ -35,6 +38,7 @@ Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
 Plug 'sheerun/vim-polyglot'
+Plug 'sjl/gundo.vim'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-speeddating'
@@ -99,6 +103,9 @@ let g:qs_second_occurrence_highlight_color = 245         " terminal vim
 
 " Gutentags
 let g:gutentags_exclude = ['node_modules']
+
+" Gundo
+nnoremap <leader>u :GundoToggle<CR>
 
 "
 " Sessions
@@ -191,6 +198,7 @@ nmap <leader>s<down>   :rightbelow new<CR>
 "Insert Mode
 imap <c-x><c-l> <plug>(fzf-complete-line)
 inoremap <leader>; <C-o>A;
+inoremap jk <esc>
 
 function! s:Saving_scroll(cmd)
   let save_scroll = &scroll
@@ -201,6 +209,7 @@ nnoremap <C-J> :call <SID>Saving_scroll("1<C-V><C-D>")<CR>
 vnoremap <C-J> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-D>")<CR>
 nnoremap <C-K> :call <SID>Saving_scroll("1<C-V><C-U>")<CR>
 vnoremap <C-K> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-U>")<CR>
+nnoremap gV `[v`]
 
 "
 " Commands
