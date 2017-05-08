@@ -7,6 +7,7 @@ plugins=(git brew tmux npm react-native)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
+
 unsetopt correct_all  
 setopt correct
 
@@ -135,6 +136,7 @@ for file in ~/.{aliases,functions}; do
     [ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
 unset file;
+
 
 # puffin_prompt
 add-zsh-hook precmd puffin_prompt
