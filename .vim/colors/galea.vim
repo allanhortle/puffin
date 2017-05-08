@@ -101,14 +101,16 @@ call <SID>GALEA_HI('javaScriptFuncKeyword', RED, '', '')
 
 
 " Markdown
-call <SID>GALEA_HI('markdownHeadingDelimiter' , YELLOW , '' , '')
-call <SID>GALEA_HI('Title'                    , YELLOW , '' , '')
-call <SID>GALEA_HI('markdownBlockquote'       , BLUE , '' , '')
-call <SID>GALEA_HI('markdownBlockquoteDelimiter'       , BLUE , '' , '')
-call <SID>GALEA_HI('markdownItemDelimiter'       , GREEN , '' , '')
-call <SID>GALEA_HI('markdownItalic'       , ORANGE , '' , '')
-call <SID>GALEA_HI('markdownBold'       , ORANGE , '' , '')
-call <SID>GALEA_HI('markdownInlineDelimiter'       , ORANGE , '' , '')
+call <SID>GALEA_HI('htmlh1', YELLOW , '', '')
+call <SID>GALEA_HI('htmlh2', YELLOW , '', '')
+call <SID>GALEA_HI('htmlh3', YELLOW , '', '')
+call <SID>GALEA_HI('Title', YELLOW , '' , '')
+call <SID>GALEA_HI('markdownBlockquote', BLUE , '' , '')
+call <SID>GALEA_HI('markdownBlockquoteDelimiter', BLUE , '' , '')
+call <SID>GALEA_HI('markdownItemDelimiter', GREEN , '' , '')
+call <SID>GALEA_HI('markdownItalic', ORANGE , '' , '')
+call <SID>GALEA_HI('markdownBold', ORANGE , '' , '')
+call <SID>GALEA_HI('markdownInlineDelimiter', ORANGE , '' , '')
 
 
 " CSS
