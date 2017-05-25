@@ -24,6 +24,14 @@ function any() {
     fi
 }
 
+function any_stats() {
+    local memory cpu
+    memory=$(ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"| awk '{ print $4  }' | awk '{s+=$1} END {print s}')
+    cpu=$(ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"| awk '{ print $3  }' | awk '{s+=$1} END {print s}')
+
+    echo "Memory: ${memory}%, CPU: ${cpu}%";
+}
+
 function findByPort() {
     if [[ -z "$1" ]] ; then
         echo "findByPort - search for running processes on a port" >&2
