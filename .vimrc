@@ -102,7 +102,7 @@ let g:qs_first_occurrence_highlight_color = 244       " terminal vim
 let g:qs_second_occurrence_highlight_color = 245         " terminal vim
 
 " Gutentags
-let g:gutentags_exclude = ['node_modules']
+let g:gutentags_ctags_exclude = ['node_modules']
 
 " Gundo
 nnoremap <leader>u :GundoToggle<CR>
