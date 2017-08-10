@@ -11,6 +11,13 @@ source $ZSH/oh-my-zsh.sh
 unsetopt correct_all  
 setopt correct
 
+fzf-tmux-windows() {
+    tmux list-windows -aF '#{session_name}:#{window_name}' | fzf | xargs tmux switch -t
+}
+zle -N fzf-tmux-windows
+bindkey -r '^p'
+bindkey '^p' fzf-tmux-windows
+
 ## Prompt ##
 
 b="%{$fg[blue]%}"

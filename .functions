@@ -75,10 +75,7 @@ z() {
 }
 
 fs() {
-  local session
-  session=$(tmux list-sessions -F "#{session_name}" | \
-    fzf --query="$1" --select-1 --exit-0) &&
-  tmux switch-client -t "$session"
+  tmux list-windows -aF '#{session_name}:#{window_name}' | fzf | xargs tmux switch -t
 }
 
 vims() {
@@ -96,6 +93,13 @@ fco() {
     sort -u          | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
   target=$(
     (echo "$tags"; echo "$branches") |
-    fzf --ansi +m -d "\t" -n 2) || return
+    fzf--ansi +m -d "\t" -n 2) || return
   git checkout $(echo "$target" | awk '{print $2}')
+}
+
+org() {
+    vim $(find ~/Dropbox -name '*.md' | 
+        fzf --preview-window up:90% --preview '[[ $(file --mime {}) =~ binary ]] &&
+        echo {} is a binary file || 
+        (highlight -O ansi -l {} || cat {}) 2> /dev/null | head -500')
 }
