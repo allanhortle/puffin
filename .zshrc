@@ -18,6 +18,13 @@ zle -N fzf-tmux-windows
 bindkey -r '^p'
 bindkey '^p' fzf-tmux-windows
 
+bindkey '^[[1;3D' backward-word # opt + left
+bindkey '^[[1;3?' backward-delete-word # opt + backspace
+bindkey '^[[1;3~' backward-forward-word # opt + delete
+bindkey '^[[1;3C' forward-word # opt + right
+
+
+
 ## Prompt ##
 
 b="%{$fg[blue]%}"
@@ -127,6 +134,7 @@ precmd() {
 
 
 export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+export FZF_DEFAULT_OPTS='--color=16,bg+:-1,pointer:2,prompt:2,hl+:2,hl:2,fg+:2'
 eval "$(fasd --init auto)"
 
 # Loading Configs ##
