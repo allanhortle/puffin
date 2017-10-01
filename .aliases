@@ -97,7 +97,10 @@ alias tp='tmuxp'
 # todo.txt
 #--------------------------------------------------------------------------
 alias to="todo.sh"
-alias vto='vim ${TODO_FILE}'
+alias vto='vim ${TODO_DIR}/todo.txt'
+alias vpo='vim ${TODO_DIR}/project.todo.txt'
+
+alias po="TODO_FILE=$TODO_DIR/project.todo.txt DONE_FILE=$TODO_DIR/project.done.txt to"
 
 #--------------------------------------------------------------------------
 # oh-my-zsh

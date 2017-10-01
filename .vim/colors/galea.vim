@@ -1,12 +1,16 @@
+set background=dark
 hi clear
-syntax reset
+if exists("syntax_on")
+  syntax reset
+endif
 let g:colors_name = "Galea"
 
 let RED = 1
 let GREEN = 2 
 let YELLOW = 3
 let BLUE = 4
-let ORANGE = 6
+let MAGENTA = 5
+let TEAL = 6
 let BLACK = 0
 let WHITE = "white"
 let NONE = "NONE"
@@ -61,7 +65,7 @@ call <SID>GALEA_HI('Visual'       , NONE   , LIGHT_GREY , '')
 call <SID>GALEA_HI('WarningMsg'   , WHITE  , ''         , '')
 
 " Basic
-call <SID>GALEA_HI('Identifier'  , 6      , '' , '')
+call <SID>GALEA_HI('Identifier'  , TEAL      , '' , 'NONE')
 call <SID>GALEA_HI('Function'    , WHITE, '' , '')
 call <SID>GALEA_HI('Statement'   , WHITE  , '' , '')
 call <SID>GALEA_HI('PreProc'     , WHITE    , '' , '')
@@ -108,9 +112,9 @@ call <SID>GALEA_HI('Title', YELLOW , '' , '')
 call <SID>GALEA_HI('markdownBlockquote', BLUE , '' , '')
 call <SID>GALEA_HI('markdownBlockquoteDelimiter', BLUE , '' , '')
 call <SID>GALEA_HI('markdownItemDelimiter', GREEN , '' , '')
-call <SID>GALEA_HI('markdownItalic', ORANGE , '' , '')
-call <SID>GALEA_HI('markdownBold', ORANGE , '' , '')
-call <SID>GALEA_HI('markdownInlineDelimiter', ORANGE , '' , '')
+call <SID>GALEA_HI('markdownItalic', TEAL , '' , '')
+call <SID>GALEA_HI('markdownBold', TEAL , '' , '')
+call <SID>GALEA_HI('markdownInlineDelimiter', TEAL , '' , '')
 
 
 " CSS
@@ -177,3 +181,11 @@ call <SID>GALEA_HI('scssSelectorChar'            , YELLOW , '' , '')
 call <SID>GALEA_HI('scssSelectorName'            , YELLOW , '' , '')
 call <SID>GALEA_HI('scssWarn'                    , RED    , '' , '')
 call <SID>GALEA_HI('scssWhile'                   , RED    , '' , '')
+
+
+" todo.txt
+
+call <SID>GALEA_HI('TodoPriorityA', YELLOW, '', '')
+call <SID>GALEA_HI('TodoPriorityB', GREEN, '', '')
+call <SID>GALEA_HI('TodoPriorityC', BLUE, '', '')
+call <SID>GALEA_HI('TodoProject', TEAL, '', '')
