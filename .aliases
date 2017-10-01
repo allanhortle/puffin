@@ -21,6 +21,8 @@ alias gwhoops='git commit --amend -C HEAD'
 # Create a new branch, go to it and set its upstream. usage: gcob feature/xyz
 gcob () { gco -b "$@" && gp -u origin "$@" }
 
+alias fixYarnLock='git checkout $(git rev-parse --abbrev-ref --symbolic-full-name @{u}) -- yarn.lock && yarn install'
+
 #--------------------------------------------------------------------------
 # FZF
 #--------------------------------------------------------------------------
@@ -83,12 +85,19 @@ alias bower='noglob bower'
 alias t='tig'
 alias tst='tig status'
 
-#--------------------------------------------------------------------------
+#---------------------------------------------------------------------------
 # Tmux
 #--------------------------------------------------------------------------
 
 alias tat='tmux new -s `basename $PWD`'
 alias tp='tmuxp'
+
+
+#--------------------------------------------------------------------------
+# todo.txt
+#--------------------------------------------------------------------------
+alias to="todo.sh"
+alias vto='vim ${TODO_FILE}'
 
 #--------------------------------------------------------------------------
 # oh-my-zsh

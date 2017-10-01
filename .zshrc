@@ -7,6 +7,17 @@ plugins=(git brew tmux npm react-native)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
+# todo.txt config
+export TODO_DIR="$HOME/Dropbox/data/todo"
+export TODO_FILE="$TODO_DIR/todo.txt"
+export DONE_FILE="$TODO_DIR/done.txt"
+export REPORT_FILE="$TODO_DIR/report.txt"
+export TMP_FILE="/tmp/todo.tmp"
+export TODOTXT_DEFAULT_ACTION=ls
+export TODOTXT_AUTO_ARCHIVE=false
+export TODOTXT_SORT_COMMAND='env LC_COLLATE=C sort -k 2,2 -k 1,1n'
+export TODOTXT_GRAPH_THRESHOLD=3
+
 
 unsetopt correct_all  
 setopt correct
