@@ -58,7 +58,11 @@ function ss() {
 # Weather
 #
 function weather() {
-    ansiweather -a false -u metric -l ${PUFFIN_WEATHER_LOCATION:-"Melbourne, AU"}  | cut -f1 -d "-" | sed 's/^.*=> //g' | sed 's/ //' | sed 's/ . //'
+    ansiweather -a false -u metric -l ${PUFFIN_WEATHER_LOCATION:-"Melbourne,AU"}  | cut -f1 -d "-" | sed 's/^.*=> //g' | sed 's/ //' | sed 's/ . //'
+}
+
+function radar() {
+    image-to-ascii -i http://www.bom.gov.au/radar/IDR024.gif
 }
 
 
