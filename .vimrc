@@ -71,6 +71,7 @@ set ignorecase                  " ignore case when searching
 set smartcase                   " ignore case if search pattern is all lower-case case-sensitive otherwise
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
 set incsearch                   " show search matches as you type
+set hlsearch
 set t_Co=256
 set updatetime=250
 set mouse=a
@@ -233,6 +234,7 @@ noremap <BS> <NOP>
 
 " jsx files
 let g:jsx_ext_required = 0
+let g:javascript_plugin_flow = 1
 autocmd BufNewFile,BufRead *.json set syntax=javascript
 
 

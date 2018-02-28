@@ -107,3 +107,7 @@ org() {
         echo {} is a binary file || 
         (highlight -O ansi -l {} || cat {}) 2> /dev/null | head -500')
 }
+
+push_pr() {
+    git push -u && hub pull-request -b ${1:-master}
+}
