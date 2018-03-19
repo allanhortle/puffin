@@ -52,29 +52,30 @@ call plug#end()
 "
 " General Vim
 "
-set encoding=utf8
-set rtp+=~/.fzf
-set wrap linebreak nolist
-set background=dark
-set expandtab
-set splitright
-set tabstop=4                   " a tab is four spaces
-set softtabstop=4
-set backspace=indent,eol,start  " allow backspacing over everything in insert mode
 set autoindent                  " always set auto-indenting on
+set background=dark
+set backspace=indent,eol,start  " allow backspacing over everything in insert mode
 set copyindent                  " copy the previous indentation on auto-indenting
-set number                      " always show line numbers
-set shiftwidth=4                " number of spaces to use for auto-indenting
-set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
-set showmatch                   " set show matching 
+set encoding=utf8
+set expandtab
+set hidden
+set hlsearch
 set ignorecase                  " ignore case when searching
+set incsearch                   " show search matches as you type
+set mouse=a
+set number                      " always show line numbers
+set rtp+=~/.fzf
+set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
+set shiftwidth=4                " number of spaces to use for auto-indenting
+set showmatch                   " set show matching 
 set smartcase                   " ignore case if search pattern is all lower-case case-sensitive otherwise
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
-set incsearch                   " show search matches as you type
-set hlsearch
+set softtabstop=4
+set splitright
 set t_Co=256
+set tabstop=4                   " a tab is four spaces
 set updatetime=250
-set mouse=a
+set wrap linebreak nolist
 
 set nobackup                    " No backups.
 set nowritebackup               " No backups.
