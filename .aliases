@@ -4,16 +4,19 @@ alias softlimit='ulimit -n 2048'
 # Git
 #--------------------------------------------------------------------------
 
+
+
 # Add all files from repo root.
 alias ga='git add -A :/'
+alias gg='git-good'
 
 # Better Fetch
 alias gf='git fetch -p'
 
 # Hacky way to update Git
-alias gg='git | clear'
-
 alias gst='git status --short --branch'
+gs (){ git stash push -u -m "$1"}
+alias gsp='git stash pop'
 
 # Amend files to last commit
 alias gwhoops='git commit --amend -C HEAD'

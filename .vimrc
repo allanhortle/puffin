@@ -16,6 +16,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'ajh17/VimCompletesMe'
 Plug 'amiorin/vim-project'
 Plug 'cakebaker/scss-syntax.vim'
+Plug 'neoclide/vim-jsx-improve'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'editorconfig/editorconfig-vim'
@@ -45,6 +46,12 @@ Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-repeat'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
+Plug 'https://github.com/w0rp/ale.git'
+let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
+nmap <silent> <C-k> <Plug>(ale_previous_wrap)
+nmap <silent> <C-j> <Plug>(ale_next_wrap)
+" let g:ale_sign_error = '❌'
+" let g:ale_sign_warning = '⭕'e'
 
 
 call plug#end() 
