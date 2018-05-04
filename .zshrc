@@ -3,7 +3,7 @@
 export ZSH=$HOME/.oh-my-zsh
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git brew tmux npm react-native)
+plugins=(git brew tmux npm react-native vi-mode history-substring-search)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
@@ -29,10 +29,12 @@ zle -N fzf-tmux-windows
 bindkey -r '^p'
 bindkey '^p' fzf-tmux-windows
 
-bindkey '^[[1;3D' backward-word # opt + left
-bindkey '^[[1;3?' backward-delete-word # opt + backspace
-bindkey '^[[1;3~' backward-forward-word # opt + delete
-bindkey '^[[1;3C' forward-word # opt + right
+
+export KEYTIMEOUT=1
+#bindkey '^[[1;3D' backward-word # opt + left
+#bindkey '^[[1;3?' backward-delete-word # opt + backspace
+#bindkey '^[[1;3~' backward-forward-word # opt + delete
+#bindkey '^[[1;3C' forward-word # opt + right
 
 
 

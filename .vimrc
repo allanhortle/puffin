@@ -16,7 +16,6 @@ Plug 'airblade/vim-gitgutter'
 Plug 'ajh17/VimCompletesMe'
 Plug 'amiorin/vim-project'
 Plug 'cakebaker/scss-syntax.vim'
-Plug 'neoclide/vim-jsx-improve'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'editorconfig/editorconfig-vim'
@@ -31,14 +30,10 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim'
 Plug 'justinmk/vim-sneak'
-Plug 'ludovicchabant/vim-gutentags'
 Plug 'mattn/emmet-vim'
-Plug 'mxw/vim-jsx'
-Plug 'morhetz/gruvbox'
-Plug 'pangloss/vim-javascript'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-Plug 'sheerun/vim-polyglot'
+"Plug 'sheerun/vim-polyglot'
 Plug 'sjl/gundo.vim'
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
@@ -47,6 +42,7 @@ Plug 'tpope/vim-repeat'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
 Plug 'https://github.com/w0rp/ale.git'
+Plug '~/localhost/code/vim-boring-javascript'
 let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
@@ -110,8 +106,6 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 let g:qs_first_occurrence_highlight_color = 244       " terminal vim
 let g:qs_second_occurrence_highlight_color = 245         " terminal vim
 
-" Gutentags
-let g:gutentags_ctags_exclude = ['node_modules']
 
 " Gundo
 nnoremap <leader>u :GundoToggle<CR>
@@ -223,6 +217,8 @@ nnoremap gV `[v`]
 "
 " Commands
 "
+command! WQa wqa
+command! Wqa wqa
 command! WQ wq
 command! Wq wq
 command! W w
@@ -241,10 +237,9 @@ noremap <BS> <NOP>
 "
 
 " jsx files
-let g:jsx_ext_required = 0
-let g:javascript_plugin_flow = 1
-autocmd BufNewFile,BufRead *.json set syntax=javascript
-
+au BufRead,BufNewFile *.json setfiletype boring-javascript
+au BufRead,BufNewFile *.jsx setfiletype boring-javascript
+au BufRead,BufNewFile *.js setfiletype boring-javascript
 
 "
 " User Interface
