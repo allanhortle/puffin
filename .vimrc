@@ -12,6 +12,7 @@ call plug#begin('~/.vim/plugged')
 
 
 
+Plug '~/localhost/code/vim-boring-javascript'
 Plug 'airblade/vim-gitgutter'
 Plug 'ajh17/VimCompletesMe'
 Plug 'amiorin/vim-project'
@@ -42,7 +43,6 @@ Plug 'tpope/vim-repeat'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
 Plug 'https://github.com/w0rp/ale.git'
-Plug '~/localhost/code/vim-boring-javascript'
 let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
@@ -80,6 +80,8 @@ set tabstop=4                   " a tab is four spaces
 set updatetime=250
 set wrap linebreak nolist
 
+set timeoutlen=1000 ttimeoutlen=0
+
 set nobackup                    " No backups.
 set nowritebackup               " No backups.
 set noswapfile                  " No swap files; more hassle than they're worth."
@@ -102,13 +104,12 @@ let NERDTreeQuitOnOpen=1
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
-" Quick Scope
-let g:qs_first_occurrence_highlight_color = 244       " terminal vim
-let g:qs_second_occurrence_highlight_color = 245         " terminal vim
-
 
 " Gundo
 nnoremap <leader>u :GundoToggle<CR>
+
+" RG
+command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
 
 "
 " Sessions
@@ -160,7 +161,7 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 
 " Normal mode
 nnoremap <C-p> :Files<CR>
-nnoremap <C-f> :Ag<CR>
+nnoremap <C-f> :Find<CR>
 nnoremap <CR> :noh<CR><CR>
 nnoremap <Leader>p :Welcome<CR>
 nnoremap <Leader>cp :let @* = expand("%")<CR><CR>
@@ -237,9 +238,9 @@ noremap <BS> <NOP>
 "
 
 " jsx files
-au BufRead,BufNewFile *.json setfiletype boring-javascript
-au BufRead,BufNewFile *.jsx setfiletype boring-javascript
-au BufRead,BufNewFile *.js setfiletype boring-javascript
+augroup filetypedetect
+    au BufRead,BufNewFile *.jsx set filetype=javascript
+augroup END
 
 "
 " User Interface
@@ -271,8 +272,9 @@ let g:currentmode={
 " Automatically change the statusline color depending on mode
 function! ChangeStatuslineColor()
     if (mode() =~# '\v(n|no)')
-        exe 'hi! StatusLine ctermfg=002 cterm=reverse,bold'
-        exe 'hi! StatusLineNC ctermfg=8'
+        " exe 'hi! StatusLine ctermfg=002 cterm=reverse,bold'
+        " exe 'hi! StatusLineNC ctermfg=8'
+        exe 'hi! StatusLine ctermfg=002'
     elseif (mode() =~# '\v(v|V)' || g:currentmode[mode()] ==# 'V·Block' || get(g:currentmode, mode(), '') ==# 't')
         exe 'hi! StatusLine ctermfg=004'
     elseif (mode() ==# 'i')
@@ -283,6 +285,9 @@ function! ChangeStatuslineColor()
     return ''
 endfunction
 
+au InsertEnter * call ChangeStatuslineColor()
+au InsertChange * call ChangeStatuslineColor()
+au InsertLeave * call ChangeStatuslineColor()
    
 "set noruler
 "set noshowmode
@@ -301,7 +306,9 @@ syntax reset
 syntax on
 colorscheme galea
 
-"hi User1 ctermbg=000 ctermfg=007
+" Quick Scope
+highlight QuickScopePrimary ctermfg=242
+highlight QuickScopeSecondary ctermfg=242
 
 if filereadable(expand("~/.vimrc.local"))
     so ~/.vimrc.local

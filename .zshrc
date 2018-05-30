@@ -146,7 +146,7 @@ precmd() {
 
 
 
-export FZF_DEFAULT_COMMAND='ag --hidden --ignore .git -g ""'
+export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git"'
 export FZF_DEFAULT_OPTS='--color=16,bg+:-1,pointer:2,prompt:2,hl+:2,hl:2,fg+:2'
 eval "$(fasd --init auto)"
 
