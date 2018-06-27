@@ -19,18 +19,19 @@ Plug 'amiorin/vim-project'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
+Plug 'dyng/ctrlsf.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'gabrielelana/vim-markdown'
 Plug 'freitass/todo.txt-vim'
 Plug 'honza/vim-snippets'
 Plug 'isRuslan/vim-es6'
+Plug 'itchyny/lightline.vim'
 Plug 'jceb/vim-orgmode'
 Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'junegunn/goyo.vim'
-Plug 'justinmk/vim-sneak'
 Plug 'mattn/emmet-vim'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
@@ -90,11 +91,20 @@ set noswapfile                  " No swap files; more hassle than they're worth.
 " ## PLUGINS ##
 "
 
+" Lightline
+set noshowmode
+set laststatus=2
+let g:lightline = { 'colorscheme': 'jellybeans', }
+
 " vim-project
 set rtp+=~/.vim/bundle/vim-project/
 let g:project_enable_welcome = 0
 let g:project_use_nerdtree = 1
 call project#rc()
+
+" emmet
+"let g:user_emmet_expandabbr_key='<Tab>'
+"imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
 
 
 " Nerd Tree
@@ -111,50 +121,11 @@ nnoremap <leader>u :GundoToggle<CR>
 " RG
 command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
 
-"
-" Sessions
-"
-
-" Creates a session
-function! MakeSession()
-  let b:sessiondir = $HOME . "/.vim/sessions/"
-  if (filewritable(b:sessiondir) != 2)
-    exe 'silent !mkdir -p ' b:sessiondir
-    redraw!
-  endif
-  let b:filename = b:sessiondir . expand('%:p:h:t') . ".vim"
-  exe "mksession! " . b:filename
-endfunction
-
-" Updates a session, BUT ONLY IF IT ALREADY EXISTS
-function! UpdateSession()
-  let b:sessiondir = $HOME . "/.vim/sessions/"
-  let b:filename = b:sessiondir . expand('%:p:h:t') . ".vim"
-  if (filereadable(b:filename))
-    exe "mksession! " . b:filename
-  endif
-endfunction
-
-" Loads a session if it exists
-function! LoadSession()
-  let b:sessiondir = $HOME . "/.vim/sessions/"
-  let b:filename = b:sessiondir . expand('%:p:h:t') . ".vim"
-  if (filereadable(b:filename))
-    exe 'source ' b:filename
-  else
-    echo "No session loaded."
-  endif
-endfunction
-
-au VimLeave * :call UpdateSession()
-map <leader>m :call MakeSession()<CR>
-map <leader>q :call UpdateSession()<CR>:qa<CR>
 
 "
 " ## Keyboard Mappings ##
 "
 set pastetoggle=<F2>
-map <Leader><Leader> :!!<CR>
 map <F6> :setlocal spell! spelllang=en_au<CR>
 map <F3> :set wrap!<CR>
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
@@ -162,23 +133,14 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 " Normal mode
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Find<CR>
+nnoremap <C-i> :NERDTreeFind<CR>
 nnoremap <CR> :noh<CR><CR>
 nnoremap <Leader>p :Welcome<CR>
-nnoremap <Leader>cp :let @* = expand("%")<CR><CR>
+nnoremap <Leader>cp :let @* = expand("%")<CR>
 nnoremap <Leader>l :ls<CR>
 nnoremap <Leader>b :bp<CR>
+nnoremap <Leader>e :ALENext<CR>
 nnoremap <Leader>f :bn<CR>
-nnoremap <Leader>g :e#<CR>
-nnoremap <Leader>1 :1b<CR>
-nnoremap <Leader>2 :2b<CR>
-nnoremap <Leader>3 :3b<CR>
-nnoremap <Leader>4 :4b<CR>
-nnoremap <Leader>5 :5b<CR>
-nnoremap <Leader>6 :6b<CR>
-nnoremap <Leader>7 :7b<CR>
-nnoremap <Leader>8 :8b<CR>
-nnoremap <Leader>9 :9b<CR>
-nnoremap <Leader>0 :10b<CR>
 
 " tig
 nnoremap <Leader>tt :!tig<CR><CR>
@@ -189,31 +151,17 @@ nnoremap <Leader>tb :!tig blame %<CR><CR>
 " windows
 nnoremap <Leader><Tab> <C-W>w
 
-"
 " window/buffer splitting
-"
-
 nmap <leader>s<left>   :leftabove  vnew<CR>
 nmap <leader>s<right>  :rightbelow vnew<CR>
 nmap <leader>s<up>     :leftabove  new<CR>
 nmap <leader>s<down>   :rightbelow new<CR>
 
-"
 "Insert Mode
 imap <c-x><c-l> <plug>(fzf-complete-line)
 inoremap <leader>; <C-o>A;
 inoremap jk <esc>
 
-function! s:Saving_scroll(cmd)
-  let save_scroll = &scroll
-  execute 'normal! ' . a:cmd
-  let &scroll = save_scroll
-endfunction
-nnoremap <C-J> :call <SID>Saving_scroll("1<C-V><C-D>")<CR>
-vnoremap <C-J> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-D>")<CR>
-nnoremap <C-K> :call <SID>Saving_scroll("1<C-V><C-U>")<CR>
-vnoremap <C-K> <Esc>:call <SID>Saving_scroll("gv1<C-V><C-U>")<CR>
-nnoremap gV `[v`]
 
 "
 " Commands
@@ -246,69 +194,16 @@ augroup END
 " User Interface
 "
 
-" status line
-let g:currentmode={
-    \ 'n': 'Normal ',
-    \ 'no': 'N·Operator Pending ',
-    \ 'v': 'Visual ',
-    \ 'V': 'V·Line ',
-    \ '^V': 'V·Block ',
-    \ 's': 'Select ',
-    \ 'S': 'S·Line ',
-    \ '^S': 'S·Block ',
-    \ 'i': 'Insert ',
-    \ 'R': 'Replace ',
-    \ 'Rv': 'V·Replace ',
-    \ 'c': 'Command ',
-    \ 'cv': 'Vim Ex ',
-    \ 'ce': 'Ex ',
-    \ 'r': 'Prompt ',
-    \ 'rm': 'More ',
-    \ 'r?': 'Confirm ',
-    \ '!': 'Shell ',
-    \ 't': 'Terminal '
-\}
-
-" Automatically change the statusline color depending on mode
-function! ChangeStatuslineColor()
-    if (mode() =~# '\v(n|no)')
-        " exe 'hi! StatusLine ctermfg=002 cterm=reverse,bold'
-        " exe 'hi! StatusLineNC ctermfg=8'
-        exe 'hi! StatusLine ctermfg=002'
-    elseif (mode() =~# '\v(v|V)' || g:currentmode[mode()] ==# 'V·Block' || get(g:currentmode, mode(), '') ==# 't')
-        exe 'hi! StatusLine ctermfg=004'
-    elseif (mode() ==# 'i')
-        exe 'hi! StatusLine ctermfg=003'
-    else
-        exe 'hi! StatusLine ctermfg=008'
-    endif
-    return ''
-endfunction
-
-au InsertEnter * call ChangeStatuslineColor()
-au InsertChange * call ChangeStatuslineColor()
-au InsertLeave * call ChangeStatuslineColor()
-   
-"set noruler
-"set noshowmode
-set laststatus=2
-set statusline=
-set statusline+=%{ChangeStatuslineColor()} " Changing the statusline color
-set statusline+=\ %{toupper(g:currentmode[mode()])} " Current mode
-set statusline+=%F " Full file path, max 50 chars
-set statusline+=%m 
-set statusline+=%=                                  " Right Right side
-set statusline+=\ %Y                                " FileType
-set statusline+=\ %l:%c                " Rownumber/total (%)
-set statusline+=\ 
-
 syntax reset
 syntax on
 colorscheme galea
 
 " Quick Scope
-highlight QuickScopePrimary ctermfg=242
-highlight QuickScopeSecondary ctermfg=242
+highlight QuickScopePrimary cterm=underline cterm=underline
+highlight QuickScopeSecondary cterm=underline cterm=underline
+
+" ALE
+highlight ALEError cterm=underline cterm=italic ctermfg=1
 
 if filereadable(expand("~/.vimrc.local"))
     so ~/.vimrc.local

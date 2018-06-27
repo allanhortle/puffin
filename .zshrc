@@ -22,12 +22,6 @@ export TODOTXT_GRAPH_THRESHOLD=3
 unsetopt correct_all  
 setopt correct
 
-fzf-tmux-windows() {
-    tmux list-windows -aF '#{session_name}:#{window_name}' | fzf | xargs tmux switch -t
-}
-zle -N fzf-tmux-windows
-bindkey -r '^p'
-bindkey '^p' fzf-tmux-windows
 
 
 export KEYTIMEOUT=1
