@@ -31,16 +31,17 @@ Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
-Plug 'junegunn/goyo.vim'
+Plug 'ludovicchabant/vim-gutentags'
 Plug 'mattn/emmet-vim'
+Plug 'mhinz/vim-startify'1
+Plug 'retorillo/istanbul.vim'
 Plug 'scrooloose/nerdcommenter'
-Plug 'scrooloose/nerdtree', { 'on': 'NERDTreeToggle' }
-"Plug 'sheerun/vim-polyglot'
-Plug 'sjl/gundo.vim'
+Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
 Plug 'tpope/vim-surround'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-abolish'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
 Plug 'https://github.com/w0rp/ale.git'
@@ -94,7 +95,12 @@ set noswapfile                  " No swap files; more hassle than they're worth.
 " Lightline
 set noshowmode
 set laststatus=2
-let g:lightline = { 'colorscheme': 'jellybeans', }
+let g:lightline = { 
+    \ 'colorscheme': 'jellybeans',
+    \ 'active': {
+    \   'right': [ ['lineinfo'], ['filetype'] ]
+    \ }
+\ }
 
 " vim-project
 set rtp+=~/.vim/bundle/vim-project/
@@ -115,12 +121,20 @@ let NERDTreeQuitOnOpen=1
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 
-" Gundo
-nnoremap <leader>u :GundoToggle<CR>
-
 " RG
-command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
 
+command! -bang -nargs=? -complete=dir Files
+  \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+"command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
+
+" Startify
+let g:startify_change_to_dir = 0
 
 "
 " ## Keyboard Mappings ##
@@ -132,7 +146,7 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 
 " Normal mode
 nnoremap <C-p> :Files<CR>
-nnoremap <C-f> :Find<CR>
+nnoremap <C-f> :Rg<CR>
 nnoremap <C-i> :NERDTreeFind<CR>
 nnoremap <CR> :noh<CR><CR>
 nnoremap <Leader>p :Welcome<CR>
@@ -197,6 +211,8 @@ augroup END
 syntax reset
 syntax on
 colorscheme galea
+set colorcolumn=100
+hi ColorColumn ctermbg=237
 
 " Quick Scope
 highlight QuickScopePrimary cterm=underline cterm=underline
