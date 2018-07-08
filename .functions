@@ -41,18 +41,6 @@ function findByPort() {
     fi
 }
 
-mkcd () {
-    mkdir -p -- "$1" &&
-        cd -P -- "$1"
-}
-
-#
-# FZF
-#
-
-function ss() {
-    tmux ls -F '#{session_name} #{?session_attached,*,}' | fzf | xargs tmux switch-client -t
-}
 
 #
 # Weather
@@ -76,36 +64,6 @@ z() {
   [ $# -gt 0  ] && fasd_cd -d "$*" && return
     cd "$(fasd_cd -d 2>&1 | fzf --height 40% --reverse --inline-info +s --tac --query "$*" | sed 's/^[0-9,.]* *//')"
 
-}
-
-fs() {
-  tmux list-windows -aF '#{session_name}:#{window_name}' | fzf | xargs tmux switch -t
-}
-
-vims() {
-    local session
-    session=$(ls ~/.vim/sessions | fzf --query="$1") && vim -S ~/.vim/sessions/$session
-}
-
-fco() {
-  local tags branches target
-  tags=$(
-    git tag | awk '{print "\x1b[31;1mtag\x1b[m\t" $1}') || return
-  branches=$(
-    git branch --all | grep -v HEAD             |
-    sed "s/.* //"    | sed "s#remotes/[^/]*/##" |
-    sort -u          | awk '{print "\x1b[34;1mbranch\x1b[m\t" $1}') || return
-  target=$(
-    (echo "$tags"; echo "$branches") |
-    fzf--ansi +m -d "\t" -n 2) || return
-  git checkout $(echo "$target" | awk '{print $2}')
-}
-
-org() {
-    vim $(find ~/Dropbox -name '*.md' | 
-        fzf --preview-window up:90% --preview '[[ $(file --mime {}) =~ binary ]] &&
-        echo {} is a binary file || 
-        (highlight -O ansi -l {} || cat {}) 2> /dev/null | head -500')
 }
 
 push_pr() {
