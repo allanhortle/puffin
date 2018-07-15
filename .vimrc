@@ -15,13 +15,11 @@ call plug#begin('~/.vim/plugged')
 Plug '~/localhost/code/vim-boring-javascript'
 Plug 'airblade/vim-gitgutter'
 Plug 'ajh17/VimCompletesMe'
-Plug 'amiorin/vim-project'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'editorconfig/editorconfig-vim'
-Plug 'gabrielelana/vim-markdown'
 Plug 'freitass/todo.txt-vim'
 Plug 'honza/vim-snippets'
 Plug 'isRuslan/vim-es6'
@@ -34,6 +32,7 @@ Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'ludovicchabant/vim-gutentags'
 Plug 'mattn/emmet-vim'
 Plug 'mhinz/vim-startify'
+Plug 'nelstrom/vim-markdown-folding'
 Plug 'retorillo/istanbul.vim'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
@@ -42,6 +41,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-markdown'
 Plug 'unblevable/quick-scope'
 Plug 'bentayloruk/vim-react-es6-snippets'
 Plug 'https://github.com/w0rp/ale.git'
@@ -81,6 +81,7 @@ set t_Co=256
 set tabstop=4                   " a tab is four spaces
 set updatetime=250
 set wrap linebreak nolist
+set wildmenu
 
 set timeoutlen=1000 ttimeoutlen=0
 
@@ -102,11 +103,8 @@ let g:lightline = {
     \ }
 \ }
 
-" vim-project
-set rtp+=~/.vim/bundle/vim-project/
-let g:project_enable_welcome = 0
-let g:project_use_nerdtree = 1
-call project#rc()
+" markdown
+let g:markdown_fold_style = 'nested'
 
 " emmet
 "let g:user_emmet_expandabbr_key='<Tab>'
@@ -117,6 +115,8 @@ call project#rc()
 map <C-o> :NERDTreeToggle<CR>
 let NERDTreeShowHidden=1
 let NERDTreeQuitOnOpen=1
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
@@ -131,7 +131,6 @@ command! -bang -nargs=* Rg
 
 command! -bang -nargs=? -complete=dir Files
   \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
-"command! -bang -nargs=* Find call fzf#vim#grep('rg --column --line-number --no-heading --fixed-strings --ignore-case --hidden --follow --glob "!.git/*" --color "always" '.shellescape(<q-args>), 1, <bang>0)
 
 " Startify
 let g:startify_change_to_dir = 0
@@ -153,7 +152,8 @@ nnoremap <Leader>p :Welcome<CR>
 nnoremap <Leader>cp :let @* = expand("%")<CR>
 nnoremap <Leader>l :ls<CR>
 nnoremap <Leader>b :bp<CR>
-nnoremap <Leader>e :ALENext<CR>
+nnoremap <Leader>e :ALENextWrap<CR>
+nnoremap <Leader>E :ALEPreviousWrap<CR>
 nnoremap <Leader>f :bn<CR>
 
 " tig
@@ -213,6 +213,7 @@ syntax on
 colorscheme galea
 set colorcolumn=100
 hi ColorColumn ctermbg=237
+hi SpellBad ctermbg=1 ctermfg=0
 
 " Quick Scope
 highlight QuickScopePrimary cterm=underline cterm=underline
