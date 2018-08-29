@@ -9,12 +9,12 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 
-
-
-
 Plug '~/localhost/code/vim-boring-javascript'
+Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
+"Plug 'SirVer/ultisnips'
 Plug 'airblade/vim-gitgutter'
 Plug 'ajh17/VimCompletesMe'
+Plug 'bentayloruk/vim-react-es6-snippets'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
@@ -22,29 +22,27 @@ Plug 'dyng/ctrlsf.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'freitass/todo.txt-vim'
 Plug 'honza/vim-snippets'
+Plug 'https://github.com/w0rp/ale.git'
 Plug 'isRuslan/vim-es6'
 Plug 'itchyny/lightline.vim'
 Plug 'jceb/vim-orgmode'
+Plug 'jparise/vim-graphql'
 Plug 'jeffkreeftmeijer/vim-numbertoggle'
-Plug 'jiangmiao/auto-pairs'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
-Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
-Plug 'ludovicchabant/vim-gutentags'
 Plug 'mattn/emmet-vim'
+Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
 Plug 'nelstrom/vim-markdown-folding'
 Plug 'retorillo/istanbul.vim'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
-Plug 'tpope/vim-surround'
-Plug 'tpope/vim-fugitive'
-Plug 'tpope/vim-speeddating'
-Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-markdown'
+Plug 'tpope/vim-repeat'
+Plug 'tpope/vim-speeddating'
+Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
-Plug 'bentayloruk/vim-react-es6-snippets'
-Plug 'https://github.com/w0rp/ale.git'
 let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
@@ -80,14 +78,14 @@ set splitright
 set t_Co=256
 set tabstop=4                   " a tab is four spaces
 set updatetime=250
-set wrap linebreak nolist
 set wildmenu
-
+set nowrap
 set timeoutlen=1000 ttimeoutlen=0
 
 set nobackup                    " No backups.
 set nowritebackup               " No backups.
 set noswapfile                  " No swap files; more hassle than they're worth."
+set complete=.,w,b,u,i          " turn off tab completion for tags
 
 "
 " ## PLUGINS ##
@@ -97,6 +95,9 @@ set noswapfile                  " No swap files; more hassle than they're worth.
 set noshowmode
 set laststatus=2
 let g:lightline = { 
+    \ 'enable': {
+    \   'tabline': 0
+    \ },
     \ 'colorscheme': 'jellybeans',
     \ 'active': {
     \   'right': [ ['lineinfo'], ['filetype'] ]
@@ -135,9 +136,13 @@ command! -bang -nargs=? -complete=dir Files
 " Startify
 let g:startify_change_to_dir = 0
 
+" UtilSnips
+
 "
 " ## Keyboard Mappings ##
 "
+nmap <F1> :echo expand('%:p')<CR>
+imap <F1> :echo expand('%:p')<CR>
 set pastetoggle=<F2>
 map <F6> :setlocal spell! spelllang=en_au<CR>
 map <F3> :set wrap!<CR>
@@ -148,7 +153,7 @@ nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
 nnoremap <C-i> :NERDTreeFind<CR>
 nnoremap <CR> :noh<CR><CR>
-nnoremap <Leader>p :Welcome<CR>
+nnoremap <Leader>p :Welcome<CR
 nnoremap <Leader>cp :let @* = expand("%")<CR>
 nnoremap <Leader>l :ls<CR>
 nnoremap <Leader>b :bp<CR>
@@ -195,6 +200,7 @@ noremap <Down> <NOP>
 noremap <Left> <NOP>
 noremap <Right> <NOP>
 noremap <BS> <NOP>
+noremap <TAB> <NOP>
 "
 " Syntax Highlighting
 "
@@ -215,12 +221,17 @@ set colorcolumn=100
 hi ColorColumn ctermbg=237
 hi SpellBad ctermbg=1 ctermfg=0
 
+"Tab Bar
+hi TabLine ctermfg=none ctermbg=237 cterm=none
+hi TabLineFill ctermfg=none ctermbg=237 cterm=none
+hi TabLineSel ctermfg=none ctermbg=242 cterm=none
+
 " Quick Scope
-highlight QuickScopePrimary cterm=underline cterm=underline
-highlight QuickScopeSecondary cterm=underline cterm=underline
+hi QuickScopePrimary cterm=underline cterm=underline
+hi QuickScopeSecondary cterm=underline cterm=underline
 
 " ALE
-highlight ALEError cterm=underline cterm=italic ctermfg=1
+hi ALEError cterm=underline cterm=italic ctermfg=1
 
 if filereadable(expand("~/.vimrc.local"))
     so ~/.vimrc.local
