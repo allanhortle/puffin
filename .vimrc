@@ -230,6 +230,10 @@ hi TabLineSel ctermfg=none ctermbg=242 cterm=none
 hi QuickScopePrimary cterm=underline cterm=underline
 hi QuickScopeSecondary cterm=underline cterm=underline
 
+" Folds
+highlight Folded ctermbg=none ctermfg=242
+highlight FoldColumn ctermbg=none ctermfg=1
+
 " ALE
 hi ALEError cterm=underline cterm=italic ctermfg=1
 
