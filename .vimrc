@@ -121,6 +121,10 @@ let NERDTreeDirArrows = 1
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
+" netrw
+let g:netrw_liststyle = 3
+let g:netrw_banner = 0
+
 
 " RG
 command! -bang -nargs=* Rg
