@@ -67,7 +67,7 @@ set ignorecase                  " ignore case when searching
 set incsearch                   " show search matches as you type
 set mouse=a
 set number                      " always show line numbers
-set rtp+=~/.fzf
+set rtp+=/usr/local/opt/fzf
 set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
 set shiftwidth=4                " number of spaces to use for auto-indenting
 set showmatch                   " set show matching 
