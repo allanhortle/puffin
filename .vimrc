@@ -81,6 +81,7 @@ set updatetime=250
 set wildmenu
 set nowrap
 set timeoutlen=1000 ttimeoutlen=0
+set foldlevel=20
 
 set nobackup                    " No backups.
 set nowritebackup               " No backups.
