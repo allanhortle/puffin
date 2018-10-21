@@ -91,6 +91,9 @@ set complete=.,w,b,u,i          " turn off tab completion for tags
 " ## PLUGINS ##
 "
 
+" ALE
+let g:ale_linters = {'javascript': ['eslint', 'flow']}
+
 " Lightline
 set noshowmode
 set laststatus=2
