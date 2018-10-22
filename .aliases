@@ -18,6 +18,8 @@ alias gst='git status --short --branch'
 gs (){ git stash push -u -m "$1"}
 alias gsp='git stash pop'
 
+alias gbmd='gb --merged | rg -v "(\*|master)" | xargs git branch -d'
+
 # Amend files to last commit
 alias gwhoops='git commit --amend -C HEAD'
 
