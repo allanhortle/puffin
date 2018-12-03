@@ -43,6 +43,7 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
+Plug 'zxqfl/tabnine-vim'
 let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
@@ -157,6 +158,7 @@ map <F3> :set wrap!<CR>
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " Normal mode
+nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
 nnoremap <C-i> :NERDTreeFind<CR>
