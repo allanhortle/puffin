@@ -32,6 +32,7 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
+Plug 'michal-h21/vim-zettel'
 Plug 'nelstrom/vim-markdown-folding'
 Plug 'retorillo/istanbul.vim'
 Plug 'scrooloose/nerdcommenter'
@@ -43,6 +44,7 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
+Plug 'vimwiki/vimwiki'
 Plug 'zxqfl/tabnine-vim'
 let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
@@ -88,6 +90,8 @@ set nobackup                    " No backups.
 set nowritebackup               " No backups.
 set noswapfile                  " No swap files; more hassle than they're worth."
 set complete=.,w,b,u,i          " turn off tab completion for tags
+
+filetype plugin on
 
 "
 " ## PLUGINS ##
@@ -146,6 +150,10 @@ command! -bang -nargs=? -complete=dir Files
 let g:startify_change_to_dir = 0
 
 " UtilSnips
+
+" wiki and zettle
+let g:vimwiki_list = [{'path':'~/Dropbox/notes','ext':'.md','syntax':'markdown', 'zettel_template': "~/Dropbox/data/zettle-template.tpl"}]
+let g:vimwiki_folding = 'custom'
 
 "
 " ## Keyboard Mappings ##
