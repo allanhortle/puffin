@@ -136,15 +136,15 @@ let g:netrw_banner = 0
 
 
 " RG
-command! -bang -nargs=* Rg
-  \ call fzf#vim#grep(
-  \   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
-  \   <bang>0 ? fzf#vim#with_preview('up:60%')
-  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
-  \   <bang>0)
+"command! -bang -nargs=* Rg
+  "\ call fzf#vim#grep(
+  "\   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
+  "\   <bang>0 ? fzf#vim#with_preview('up:60%')
+  "\           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  "\   <bang>0)
 
-command! -bang -nargs=? -complete=dir Files
-  \ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
+"command! -bang -nargs=? -complete=dir Files
+  "\ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
 " Startify
 let g:startify_change_to_dir = 0
@@ -154,6 +154,14 @@ let g:startify_change_to_dir = 0
 " wiki and zettle
 let g:vimwiki_list = [{'path':'~/Dropbox/notes','ext':'.md','syntax':'markdown', 'zettel_template': "~/Dropbox/data/zettle-template.tpl"}]
 let g:vimwiki_folding = 'custom'
+command! -bang -nargs=* Notes
+  \ call fzf#vim#grep(
+  \   'rg -p --no-heading --smart-case '.shellescape(<q-args>).' ~/Dropbox/notes', 1,
+  \   <bang>0 ? fzf#vim#with_preview('up:60%')
+  \           : fzf#vim#with_preview('right:50%:hidden', '?'),
+  \   <bang>0)
+
+
 
 "
 " ## Keyboard Mappings ##
@@ -169,11 +177,10 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
-nnoremap <C-i> :NERDTreeFind<CR>
+nnoremap <C-i> :NERDTreeFind
 nnoremap <CR> :noh<CR><CR>
-nnoremap <Leader>p :Welcome<CR
-nnoremap <Leader>cp :let @* = expand("%")<CR>
-nnoremap <Leader>l :ls<CR>
+nnoremap <Leader>n :Notes<CR>
+nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>e :ALENextWrap<CR>
 nnoremap <Leader>E :ALEPreviousWrap<CR>
