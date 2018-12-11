@@ -179,7 +179,7 @@ nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
 nnoremap <C-i> :NERDTreeFind
 nnoremap <CR> :noh<CR><CR>
-nnoremap <Leader>n :Notes<CR>
+nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>e :ALENextWrap<CR>
