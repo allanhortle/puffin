@@ -111,7 +111,7 @@ git_prompt_info() {
 }
 
 puffin_prompt() {
-    local pathPrompt="%3~  "
+    local pathPrompt="%~  "
     local gitPrompt="$(git_prompt_info)"
     local extraPrompt="$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)"
     local rightPrompt="%D{%R}"

@@ -9,7 +9,7 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 
-Plug '~/localhost/code/vim-boring-javascript'
+Plug '~/code/vim-boring-javascript'
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 "Plug 'SirVer/ultisnips'
 Plug 'airblade/vim-gitgutter'
@@ -21,6 +21,7 @@ Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'freitass/todo.txt-vim'
+Plug 'garbas/vim-snipmate'
 Plug 'honza/vim-snippets'
 Plug 'https://github.com/w0rp/ale.git'
 Plug 'isRuslan/vim-es6'
