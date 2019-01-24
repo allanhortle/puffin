@@ -45,8 +45,8 @@ Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
-Plug 'vimwiki/vimwiki'
 Plug 'zxqfl/tabnine-vim'
+Plug 'MarcWeber/vim-addon-mw-utils'
 let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 nmap <silent> <C-k> <Plug>(ale_previous_wrap)
 nmap <silent> <C-j> <Plug>(ale_next_wrap)
@@ -123,7 +123,6 @@ let g:markdown_fold_style = 'nested'
 
 
 " Nerd Tree
-map <C-o> :NERDTreeToggle<CR>
 let NERDTreeShowHidden=1
 let NERDTreeQuitOnOpen=1
 let NERDTreeMinimalUI = 1
@@ -162,6 +161,8 @@ command! -bang -nargs=* Notes
 " rg --column --line-number --no-heading --color=always --smart-case ".shellescape(<q-args>), 1, <bang>0
 
 
+" ctrlsf
+let g:ctrlsf_auto_focus = { "at": "start" }
 
 "
 " ## Keyboard Mappings ##
@@ -177,7 +178,9 @@ map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans
 nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
-nnoremap <C-i> :NERDTreeFind
+nmap <C-g> <Plug>CtrlSFPrompt
+map <C-o> :NERDTreeToggle<CR>
+nmap <Leader>o  :NERDTreeFind<CR>
 nnoremap <CR> :noh<CR><CR>
 nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
