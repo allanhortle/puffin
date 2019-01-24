@@ -123,8 +123,10 @@ let g:markdown_fold_style = 'nested'
 
 
 " Nerd Tree
-let NERDTreeShowHidden=1
-let NERDTreeQuitOnOpen=1
+map <C-o> :NERDTreeToggle<CR>
+map <C-i> :NERDTreeFind<CR>
+let NERDTreeShowHidden = 1
+let NERDTreeQuitOnOpen = 1
 let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
 " close if nerd tree is the only buffer
@@ -152,8 +154,8 @@ let g:startify_change_to_dir = 0
 " UtilSnips
 
 " wiki and zettle
-let g:vimwiki_list = [{'path':'~/Dropbox/notes','ext':'.md','syntax':'markdown', 'zettel_template': "~/Dropbox/data/zettle-template.tpl"}]
-let g:vimwiki_folding = 'custom'
+let g:vimwiki_list = [{'path':'~/Dropbox/notes','zettel_template': "~/Dropbox/data/zettle-template.tpl"}]
+"let g:vimwiki_folding = 'custom'
 command! -bang -nargs=* Notes
   \ call fzf#vim#grep(
   \ 'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>).' ~/Dropbox/notes', 1, <bang>0
@@ -179,8 +181,6 @@ nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
 nmap <C-g> <Plug>CtrlSFPrompt
-map <C-o> :NERDTreeToggle<CR>
-nmap <Leader>o  :NERDTreeFind<CR>
 nnoremap <CR> :noh<CR><CR>
 nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
