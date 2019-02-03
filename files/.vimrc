@@ -108,7 +108,7 @@ let g:lightline = {
     \ 'enable': {
     \   'tabline': 0
     \ },
-    \ 'colorscheme': 'jellybeans',
+    \ 'colorscheme': '16color',
     \ 'active': {
     \   'right': [ ['lineinfo'], ['filetype'] ]
     \ }
