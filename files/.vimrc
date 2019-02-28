@@ -177,6 +177,13 @@ map <F3> :set wrap!<CR>
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " Normal mode
+
+" Wrapped navigation
+nnoremap j gj
+nnoremap k gk
+nnoremap gj j
+nnoremap gk k
+
 nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
@@ -213,12 +220,13 @@ inoremap jk <esc>
 "
 " Commands
 "
-command! WQa wqa
-command! Wqa wqa
-command! WQ wq
-command! Wq wq
-command! W w
-command! Q q
+command! -bang W w<bang>
+command! -bang Q q<bang>
+command! -bang Wq wq<bang>
+command! -bang WQ wq<bang>
+command! -bang Wqa wqa<bang>
+command! -bang WQa wqa<bang>
+command! -bang WQA wqa<bang>
 
 "
 " Custom Hardmode
