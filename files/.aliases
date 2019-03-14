@@ -28,6 +28,8 @@ gcob () { gco -b "$@" && gp -u origin "$@" }
 
 alias fixYarnLock='git checkout $(git rev-parse --abbrev-ref --symbolic-full-name @{u}) -- yarn.lock && yarn install'
 
+alias monodiff='git diff --name-only master... | grep "packages" | sed "s/packages\/\([^\/]*\).*/\1/g" | uniq'
+
 #--------------------------------------------------------------------------
 # FZF
 #--------------------------------------------------------------------------
