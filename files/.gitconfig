@@ -1,0 +1,14 @@
+[user]
+	name = Allan Hortle
+	email = allanhortle@gmail.com
+[push]
+    default = current
+[merge]
+    tool = vimdiff
+    conflictstyle = merge
+[difftool]
+    prompt = false
+[diff]
+    tool = vimdiff
+[pager]
+    branch = false
