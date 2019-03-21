@@ -66,6 +66,12 @@ alias npml='npm list --depth=0'
 alias npm_patch_publish='npm version patch && git push --follow-tags && npm publish'
 alias npm_minor_publish='npm version minor && git push --follow-tags && npm publish'
 
+root() {
+    cd ...
+    "$@"
+    cd - 
+}
+
 
 #--------------------------------------------------------------------------
 # Maven/Jetty shortcuts
