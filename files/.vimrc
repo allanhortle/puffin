@@ -48,29 +48,31 @@ Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
 Plug 'zxqfl/tabnine-vim'
 Plug 'MarcWeber/vim-addon-mw-utils'
-let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
-nmap <silent> <C-k> <Plug>(ale_previous_wrap)
-nmap <silent> <C-j> <Plug>(ale_next_wrap)
-" let g:ale_sign_error = '❌'
-" let g:ale_sign_warning = '⭕'e'
-
+"let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 
 call plug#end() 
 
 "
 " General Vim
 "
-set autoindent                  " always set auto-indenting on
+"set autoindent                  " always set auto-indenting on
 set background=dark
 set backspace=indent,eol,start  " allow backspacing over everything in insert mode
+set complete=.,w,b,u,i          " turn off tab completion for tags
 set copyindent                  " copy the previous indentation on auto-indenting
 set encoding=utf8
 set expandtab
+set foldlevel=20
 set hidden
 set hlsearch
 set ignorecase                  " ignore case when searching
 set incsearch                   " show search matches as you type
+set lazyredraw                  " dont redraw in the middle of a macro
 set mouse=a
+set nobackup                    " No backups.
+set noswapfile                  " No swap files; more hassle than they're worth."
+set nowrap
+set nowritebackup               " No backups.
 set number                      " always show line numbers
 set rtp+=/usr/local/opt/fzf
 set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
@@ -80,18 +82,13 @@ set smartcase                   " ignore case if search pattern is all lower-cas
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
 set softtabstop=4
 set splitright
+set suffixesadd=.jsx,.md,.js
 set t_Co=256
 set tabstop=4                   " a tab is four spaces
-set updatetime=250
-set wildmenu
-set nowrap
 set timeoutlen=1000 ttimeoutlen=0
-set foldlevel=20
-
-set nobackup                    " No backups.
-set nowritebackup               " No backups.
-set noswapfile                  " No swap files; more hassle than they're worth."
-set complete=.,w,b,u,i          " turn off tab completion for tags
+set updatetime=250
+set undofile
+set wildmenu
 
 filetype plugin on
 
@@ -125,7 +122,7 @@ let g:markdown_fold_style = 'nested'
 
 " Nerd Tree
 map <C-o> :NERDTreeToggle<CR>
-map <C-i> :NERDTreeFind<CR>
+map <C-l> :NERDTreeFind<CR>
 let NERDTreeShowHidden = 1
 let NERDTreeQuitOnOpen = 1
 let NERDTreeMinimalUI = 1
@@ -137,17 +134,6 @@ autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isT
 let g:netrw_liststyle = 3
 let g:netrw_banner = 0
 
-
-" RG
-"command! -bang -nargs=* Rg
-  "\ call fzf#vim#grep(
-  "\   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
-  "\   <bang>0 ? fzf#vim#with_preview('up:60%')
-  "\           : fzf#vim#with_preview('right:50%:hidden', '?'),
-  "\   <bang>0)
-
-"command! -bang -nargs=? -complete=dir Files
-  "\ call fzf#vim#files(<q-args>, fzf#vim#with_preview(), <bang>0)
 
 " Startify
 let g:startify_change_to_dir = 0
@@ -170,11 +156,11 @@ let g:ctrlsf_auto_focus = { "at": "start" }
 "
 " ## Keyboard Mappings ##
 "
-nmap <F1> :echo expand('%:p')<CR>
-imap <F1> :echo expand('%:p')<CR>
+nmap <F1> :echo expand('%:p')<cr>
+imap <F1> <c-r>=expand("%:p")<cr>
 set pastetoggle=<F2>
-map <F6> :setlocal spell! spelllang=en_au<CR>
 map <F3> :set wrap!<CR>
+map <F6> :setlocal spell! spelllang=en_au<CR>
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 
 " Normal mode
@@ -188,14 +174,16 @@ nnoremap gk k
 nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
 nnoremap <C-f> :Rg<CR>
-nmap <C-g> <Plug>CtrlSFPrompt
+nnoremap <C-g> <Plug>CtrlSFPrompt
 nnoremap <CR> :noh<CR><CR>
 nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
-nnoremap <Leader>e :ALENextWrap<CR>
-nnoremap <Leader>E :ALEPreviousWrap<CR>
+nnoremap <silent> <C-k> <Plug>(ale_previous_wrap)
+nnoremap <silent> <C-j> <Plug>(ale_next_wrap)
 nnoremap <Leader>f :bn<CR>
+nnoremap <Leader>r :source $MYVIMRC<CR>
+nnoremap Q @@
 
 " tig
 nnoremap <Leader>tt :!tig<CR><CR>
@@ -207,15 +195,10 @@ nnoremap <Leader>tb :!tig blame %<CR><CR>
 nnoremap <Leader><Tab> <C-W>w
 
 " window/buffer splitting
-nmap <leader>s<left>   :leftabove  vnew<CR>
-nmap <leader>s<right>  :rightbelow vnew<CR>
-nmap <leader>s<up>     :leftabove  new<CR>
-nmap <leader>s<down>   :rightbelow new<CR>
-
-"Insert Mode
-imap <c-x><c-l> <plug>(fzf-complete-line)
-inoremap <leader>; <C-o>A;
-inoremap jk <esc>
+nnoremap <leader>s<left>   :leftabove  vnew<CR>
+nnoremap <leader>s<right>  :rightbelow vnew<CR>
+nnoremap <leader>s<up>     :leftabove  new<CR>
+nnoremap <leader>s<down>   :rightbelow new<CR>
 
 
 "
@@ -247,18 +230,20 @@ augroup filetypedetect
     au BufRead,BufNewFile *.jsx set filetype=javascript
 augroup END
 
+
 "
 " User Interface
 "
-
 syntax reset
 syntax on
 colorscheme galea
+
+" 100 Column Ruler
 set colorcolumn=100
 hi ColorColumn ctermbg=237
 hi SpellBad ctermbg=1 ctermfg=0
 
-"Tab Bar
+" Tab Bar
 hi TabLine ctermfg=none ctermbg=237 cterm=none
 hi TabLineFill ctermfg=none ctermbg=237 cterm=none
 hi TabLineSel ctermfg=none ctermbg=242 cterm=none
