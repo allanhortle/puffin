@@ -21,6 +21,7 @@ Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'freitass/todo.txt-vim'
+Plug 'francoiscabrol/ranger.vim'
 Plug 'garbas/vim-snipmate'
 Plug 'honza/vim-snippets'
 Plug 'https://github.com/w0rp/ale.git'
@@ -37,7 +38,6 @@ Plug 'michal-h21/vim-zettel'
 Plug 'nelstrom/vim-markdown-folding'
 Plug 'retorillo/istanbul.vim'
 Plug 'scrooloose/nerdcommenter'
-Plug 'scrooloose/nerdtree', { 'on': ['NERDTreeToggle', 'NERDTreeFind'] }
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-abolish'
 Plug 'tpope/vim-fugitive'
@@ -121,14 +121,19 @@ let g:markdown_fold_style = 'nested'
 
 
 " Nerd Tree
-map <C-o> :NERDTreeToggle<CR>
-map <C-l> :NERDTreeFind<CR>
-let NERDTreeShowHidden = 1
-let NERDTreeQuitOnOpen = 1
-let NERDTreeMinimalUI = 1
-let NERDTreeDirArrows = 1
-" close if nerd tree is the only buffer
-autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+"map <C-o> :NERDTreeToggle<CR>
+"map <C-l> :NERDTreeFind<CR>
+"let NERDTreeShowHidden = 1
+"let NERDTreeQuitOnOpen = 1
+"let NERDTreeMinimalUI = 1
+"let NERDTreeDirArrows = 1
+"" close if nerd tree is the only buffer
+"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
+
+" ranger
+let g:ranger_map_keys = 0
+nnoremap <C-o> :Ranger<CR>
+
 
 " netrw
 let g:netrw_liststyle = 3
@@ -137,6 +142,12 @@ let g:netrw_banner = 0
 
 " Startify
 let g:startify_change_to_dir = 0
+let g:startify_lists = [
+    \ { 'type': 'dir',       'header': ['   MRU '. getcwd()] },
+    \ { 'type': 'files',     'header': ['   MRU']            },
+    \ { 'type': 'bookmarks', 'header': ['   Bookmarks']      },
+    \ { 'type': 'commands',  'header': ['   Commands']       },
+    \ ]
 
 " UtilSnips
 
@@ -173,8 +184,8 @@ nnoremap gk k
 
 nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
-nnoremap <C-f> :Rg<CR>
-nnoremap <C-g> <Plug>CtrlSFPrompt
+nnoremap <C-g> :Rg<CR>
+nnoremap <C-f> <Plug>CtrlSFPrompt
 nnoremap <CR> :noh<CR><CR>
 nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
