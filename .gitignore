@@ -6,4 +6,5 @@ tmp
 *.log
 *.plist
 *.orig
+*.un~
 tags

@@ -163,6 +163,7 @@ command! -bang -nargs=* Notes
 
 " ctrlsf
 let g:ctrlsf_auto_focus = { "at": "start" }
+let g:ctrlsf_confirm_save = 0
 
 "
 " ## Keyboard Mappings ##
@@ -185,7 +186,8 @@ nnoremap gk k
 nnoremap <Space> .
 nnoremap <C-p> :Files<CR>
 nnoremap <C-g> :Rg<CR>
-nnoremap <C-f> <Plug>CtrlSFPrompt
+nmap <C-f> <Plug>CtrlSFPrompt
+vmap <C-f> <Plug>CtrlSFVwordExec
 nnoremap <CR> :noh<CR><CR>
 nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
