@@ -1,6 +1,15 @@
 "
-" Plugins
+"   ██████╗ ██╗   ██╗███████╗███████╗██╗███╗   ██╗
+"   ██╔══██╗██║   ██║██╔════╝██╔════╝██║████╗  ██║
+"   ██████╔╝██║   ██║█████╗  █████╗  ██║██╔██╗ ██║
+"   ██╔═══╝ ██║   ██║██╔══╝  ██╔══╝  ██║██║╚██╗██║
+"   ██║     ╚██████╔╝██║     ██║     ██║██║ ╚████║
+"   ╚═╝      ╚═════╝ ╚═╝     ╚═╝     ╚═╝╚═╝  ╚═══╝
 "
+"   File:   .vimrc
+"
+
+" {{{ Plugins
 set nocompatible
 if empty(glob('~/.vim/autoload/plug.vim'))
     silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
@@ -48,14 +57,14 @@ Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
 Plug 'zxqfl/tabnine-vim'
 Plug 'MarcWeber/vim-addon-mw-utils'
-"let g:ale_statusline_format = ['☀️️ %d', '🕯️ %d', '']
 
 call plug#end() 
 
-"
-" General Vim
-"
-"set autoindent                  " always set auto-indenting on
+" }}}
+
+" {{{ General Vim
+
+set autoindent                  " always set auto-indenting on
 set background=dark
 set backspace=indent,eol,start  " allow backspacing over everything in insert mode
 set complete=.,w,b,u,i          " turn off tab completion for tags
@@ -92,9 +101,9 @@ set wildmenu
 
 filetype plugin on
 
-"
-" ## PLUGINS ##
-"
+" }}}
+
+" {{{ Plugins
 
 " ALE
 let g:ale_linters = {'javascript': ['eslint', 'flow']}
@@ -144,25 +153,21 @@ let g:startify_lists = [
     \ { 'type': 'commands',  'header': ['   Commands']       },
     \ ]
 
-" UtilSnips
 
-" wiki and zettle
 let g:vimwiki_list = [{'path':'~/Dropbox/notes','zettel_template': "~/Dropbox/data/zettle-template.tpl"}]
-"let g:vimwiki_folding = 'custom'
 command! -bang -nargs=* Notes
   \ call fzf#vim#grep(
   \ 'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>).' ~/Dropbox/notes', 1, <bang>0
   \ )
-" rg --column --line-number --no-heading --color=always --smart-case ".shellescape(<q-args>), 1, <bang>0
 
 
 " ctrlsf
 let g:ctrlsf_auto_focus = { "at": "start" }
-let g:ctrlsf_confirm_save = 0
 
-"
-" ## Keyboard Mappings ##
-"
+" }}}
+
+" {{{ Keyboard Mapping
+
 nmap <F1> :echo expand('%:p')<cr>
 imap <F1> <c-r>=expand("%:p")<cr>
 set pastetoggle=<F2>
@@ -229,18 +234,20 @@ noremap <Left> <NOP>
 noremap <Right> <NOP>
 noremap <BS> <NOP>
 noremap <TAB> <NOP>
-"
-" Syntax Highlighting
-"
+
+
+" }}}
+
+" {{{ Syntax Highlighting
 
 " jsx files
 augroup filetypedetect
     au BufRead,BufNewFile *.jsx set filetype=javascript
 augroup END
 
+" }}}
 
-"
-" User Interface
+" User Interface {{{
 "
 syntax reset
 syntax on
@@ -270,5 +277,9 @@ hi ALEError cterm=underline cterm=italic ctermfg=1
 if filereadable(expand("~/.vimrc.local"))
     so ~/.vimrc.local
 endif
+
+" vim:foldmethod=marker:foldlevel=0
+
+" }}}
 
 
