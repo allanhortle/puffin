@@ -21,7 +21,6 @@ Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'freitass/todo.txt-vim'
-Plug 'francoiscabrol/ranger.vim'
 Plug 'garbas/vim-snipmate'
 Plug 'honza/vim-snippets'
 Plug 'https://github.com/w0rp/ale.git'
@@ -38,6 +37,7 @@ Plug 'michal-h21/vim-zettel'
 Plug 'nelstrom/vim-markdown-folding'
 Plug 'retorillo/istanbul.vim'
 Plug 'scrooloose/nerdcommenter'
+Plug 'scrooloose/nerdtree'
 Plug 'terryma/vim-multiple-cursors'
 Plug 'tpope/vim-abolish'
 Plug 'tpope/vim-fugitive'
@@ -121,19 +121,14 @@ let g:markdown_fold_style = 'nested'
 
 
 " Nerd Tree
-"map <C-o> :NERDTreeToggle<CR>
-"map <C-l> :NERDTreeFind<CR>
-"let NERDTreeShowHidden = 1
-"let NERDTreeQuitOnOpen = 1
-"let NERDTreeMinimalUI = 1
-"let NERDTreeDirArrows = 1
-"" close if nerd tree is the only buffer
-"autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
-
-" ranger
-let g:ranger_map_keys = 0
-nnoremap <C-o> :Ranger<CR>
-
+map <C-o> :NERDTreeToggle<CR>
+map <C-l> :NERDTreeFind<CR>
+let NERDTreeShowHidden = 1
+let NERDTreeQuitOnOpen = 1
+let NERDTreeMinimalUI = 1
+let NERDTreeDirArrows = 1
+" close if nerd tree is the only buffer
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
 " netrw
 let g:netrw_liststyle = 3
