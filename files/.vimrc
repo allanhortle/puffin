@@ -18,35 +18,38 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 
-Plug '~/code/vim-boring-javascript'
+" Vim
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'airblade/vim-gitgutter'
-Plug 'cakebaker/scss-syntax.vim'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
-Plug 'editorconfig/editorconfig-vim'
 Plug 'freitass/todo.txt-vim'
-Plug 'https://github.com/w0rp/ale.git'
-Plug 'isRuslan/vim-es6'
+"Plug 'https://github.com/w0rp/ale.git'
 Plug 'itchyny/lightline.vim'
-Plug 'jparise/vim-graphql'
-Plug 'jeffkreeftmeijer/vim-numbertoggle'
+"Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
-Plug 'nelstrom/vim-markdown-folding'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-abolish'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
-Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
-Plug 'zxqfl/tabnine-vim'
+"Plug 'zxqfl/tabnine-vim'
+
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+" Syntax
+Plug '~/code/vim-boring-javascript'
+Plug 'cakebaker/scss-syntax.vim'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'isRuslan/vim-es6'
+Plug 'jparise/vim-graphql'
 
 call plug#end() 
 
@@ -153,6 +156,26 @@ command! -bang -nargs=* Notes
 
 " ctrlsf
 let g:ctrlsf_auto_focus = { "at": "start" }
+
+
+"
+" coc
+
+call coc#add_extension(
+    \ 'coc-tabnine',
+    \ 'coc-eslint'
+\)
+
+" use <tab> for trigger completion and navigate to the next complete item
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~ '\s'
+endfunction
+
+inoremap <silent><expr> <Tab>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<Tab>" :
+      \ coc#refresh()
 
 " }}}
 
