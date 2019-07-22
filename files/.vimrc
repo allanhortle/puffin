@@ -71,10 +71,7 @@ set ignorecase                  " ignore case when searching
 set incsearch                   " show search matches as you type
 set lazyredraw                  " dont redraw in the middle of a macro
 set mouse=a
-set nobackup                    " No backups.
-set noswapfile                  " No swap files; more hassle than they're worth."
 set nowrap
-set nowritebackup               " No backups.
 set number                      " always show line numbers
 set rtp+=/usr/local/opt/fzf
 set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
@@ -89,8 +86,22 @@ set t_Co=256
 set tabstop=4                   " a tab is four spaces
 set timeoutlen=1000 ttimeoutlen=0
 set updatetime=250
-set undofile
 set wildmenu
+
+set writebackup                 " protect against crash-during-write
+set nobackup                    " but do not persist backup after successful write
+set backupcopy=auto             " use rename-and-write-new method whenever safe
+set undofile                    " persist the undo tree for each file
+set swapfile
+set backupdir^=~/.vim/backup//  " keep all the backup files in .vim
+set undodir^=~/.vim/undo//
+set directory^=~/.vim/swap//
+
+" Markdown Files
+augroup Markdown
+    autocmd!
+    autocmd FileType markdown set wrap
+augroup END
 
 filetype plugin on
 
