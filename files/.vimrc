@@ -103,6 +103,9 @@ augroup Markdown
     autocmd FileType markdown set wrap
 augroup END
 
+" Disable auto commenting
+autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
+
 filetype plugin on
 
 " }}}
