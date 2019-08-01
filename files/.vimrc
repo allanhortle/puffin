@@ -269,7 +269,7 @@ noremap <TAB> <NOP>
 
 " jsx files
 augroup filetypedetect
-    au BufRead,BufNewFile *.jsx set filetype=javascript
+    au BufRead,BufNewFile *.jsx,*.mdx set filetype=javascript
 augroup END
 
 " }}}
