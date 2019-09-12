@@ -21,13 +21,12 @@ call plug#begin('~/.vim/plugged')
 " Vim
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'airblade/vim-gitgutter'
+Plug 'chrisbra/csv.vim'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'freitass/todo.txt-vim'
-"Plug 'https://github.com/w0rp/ale.git'
 Plug 'itchyny/lightline.vim'
-"Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
@@ -40,7 +39,6 @@ Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
-"Plug 'zxqfl/tabnine-vim'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
@@ -219,10 +217,13 @@ nnoremap <CR> :noh<CR><CR>
 nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
+nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
 nnoremap <silent> <C-k> <Plug>(ale_previous_wrap)
 nnoremap <silent> <C-j> <Plug>(ale_next_wrap)
 nnoremap <Leader>f :bn<CR>
 nnoremap <Leader>r :source $MYVIMRC<CR>
+nnoremap <Leader>u :UndotreeToggle<CR>
+
 nnoremap Q @@
 
 " tig
