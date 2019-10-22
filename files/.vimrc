@@ -90,10 +90,9 @@ set writebackup                 " protect against crash-during-write
 set nobackup                    " but do not persist backup after successful write
 set backupcopy=auto             " use rename-and-write-new method whenever safe
 set undofile                    " persist the undo tree for each file
-set swapfile
 set backupdir^=~/.vim/backup//  " keep all the backup files in .vim
 set undodir^=~/.vim/undo//
-set directory^=~/.vim/swap//
+set noswapfile                  " dont have swap files, they are lame.
 
 " Markdown Files
 augroup Markdown
