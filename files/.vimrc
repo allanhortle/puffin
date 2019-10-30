@@ -192,12 +192,21 @@ inoremap <silent><expr> <Tab>
 
 " {{{ Keyboard Mapping
 
+" print file path
 nmap <F1> :echo expand('%:p')<cr>
+" insert file path
 imap <F1> <c-r>=expand("%:p")<cr>
+" toggle pastemode
 set pastetoggle=<F2>
-map <F3> :set wrap!<CR>
+" toggle wrap
+map <F3> :set wrap!<CR>:set linebreak!<CR>
+" toggle spell check
 map <F6> :setlocal spell! spelllang=en_au<CR>
+" print syntax names
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+" save and run last terminal command
+map <F12> <Esc>:w<CR>:!!<CR>
+
 
 " Normal mode
 
