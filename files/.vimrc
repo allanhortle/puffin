@@ -18,35 +18,36 @@ if empty(glob('~/.vim/autoload/plug.vim'))
 endif
 call plug#begin('~/.vim/plugged')
 
-Plug '~/code/vim-boring-javascript'
+" Vim
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'airblade/vim-gitgutter'
-Plug 'cakebaker/scss-syntax.vim'
+Plug 'chrisbra/csv.vim'
 Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
-Plug 'editorconfig/editorconfig-vim'
 Plug 'freitass/todo.txt-vim'
-Plug 'https://github.com/w0rp/ale.git'
-Plug 'isRuslan/vim-es6'
 Plug 'itchyny/lightline.vim'
-Plug 'jparise/vim-graphql'
-Plug 'jeffkreeftmeijer/vim-numbertoggle'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
-Plug 'nelstrom/vim-markdown-folding'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-abolish'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
-Plug 'tpope/vim-speeddating'
 Plug 'tpope/vim-surround'
 Plug 'unblevable/quick-scope'
-Plug 'zxqfl/tabnine-vim'
+
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
+
+" Syntax
+Plug '~/code/vim-boring-javascript'
+Plug 'cakebaker/scss-syntax.vim'
+Plug 'editorconfig/editorconfig-vim'
+Plug 'isRuslan/vim-es6'
+Plug 'jparise/vim-graphql'
 
 call plug#end() 
 
@@ -68,10 +69,7 @@ set ignorecase                  " ignore case when searching
 set incsearch                   " show search matches as you type
 set lazyredraw                  " dont redraw in the middle of a macro
 set mouse=a
-set nobackup                    " No backups.
-set noswapfile                  " No swap files; more hassle than they're worth."
 set nowrap
-set nowritebackup               " No backups.
 set number                      " always show line numbers
 set rtp+=/usr/local/opt/fzf
 set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
@@ -86,8 +84,24 @@ set t_Co=256
 set tabstop=4                   " a tab is four spaces
 set timeoutlen=1000 ttimeoutlen=0
 set updatetime=250
-set undofile
 set wildmenu
+
+set writebackup                 " protect against crash-during-write
+set nobackup                    " but do not persist backup after successful write
+set backupcopy=auto             " use rename-and-write-new method whenever safe
+set undofile                    " persist the undo tree for each file
+set backupdir^=~/.vim/backup//  " keep all the backup files in .vim
+set undodir^=~/.vim/undo//
+set noswapfile                  " dont have swap files, they are lame.
+
+" Markdown Files
+augroup Markdown
+    autocmd!
+    autocmd FileType markdown set wrap
+augroup END
+
+" Disable auto commenting
+autocmd FileType * setlocal formatoptions-=c formatoptions-=r formatoptions-=o
 
 filetype plugin on
 
@@ -154,16 +168,45 @@ command! -bang -nargs=* Notes
 " ctrlsf
 let g:ctrlsf_auto_focus = { "at": "start" }
 
+
+"
+" coc
+
+call coc#add_extension(
+    \ 'coc-tabnine',
+    \ 'coc-eslint'
+\)
+
+" use <tab> for trigger completion and navigate to the next complete item
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~ '\s'
+endfunction
+
+inoremap <silent><expr> <Tab>
+      \ pumvisible() ? "\<C-n>" :
+      \ <SID>check_back_space() ? "\<Tab>" :
+      \ coc#refresh()
+
 " }}}
 
 " {{{ Keyboard Mapping
 
+" print file path
 nmap <F1> :echo expand('%:p')<cr>
+" insert file path
 imap <F1> <c-r>=expand("%:p")<cr>
+" toggle pastemode
 set pastetoggle=<F2>
-map <F3> :set wrap!<CR>
+" toggle wrap
+map <F3> :set wrap!<CR>:set linebreak!<CR>
+" toggle spell check
 map <F6> :setlocal spell! spelllang=en_au<CR>
+" print syntax names
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+" save and run last terminal command
+map <F12> <Esc>:w<CR>:!!<CR>
+
 
 " Normal mode
 
@@ -182,10 +225,13 @@ nnoremap <CR> :noh<CR><CR>
 nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
+nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
 nnoremap <silent> <C-k> <Plug>(ale_previous_wrap)
 nnoremap <silent> <C-j> <Plug>(ale_next_wrap)
 nnoremap <Leader>f :bn<CR>
 nnoremap <Leader>r :source $MYVIMRC<CR>
+nnoremap <Leader>u :UndotreeToggle<CR>
+
 nnoremap Q @@
 
 " tig
@@ -232,7 +278,7 @@ noremap <TAB> <NOP>
 
 " jsx files
 augroup filetypedetect
-    au BufRead,BufNewFile *.jsx set filetype=javascript
+    au BufRead,BufNewFile *.jsx,*.mdx set filetype=javascript
 augroup END
 
 " }}}

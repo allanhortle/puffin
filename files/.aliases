@@ -107,13 +107,10 @@ alias tp='tmuxp'
 
 
 #--------------------------------------------------------------------------
-# todo.txt
+# taskell
 #--------------------------------------------------------------------------
-alias to="todo.sh"
-alias vto='vim ${TODO_DIR}/todo.txt'
-alias vpo='vim ${TODO_DIR}/project.todo.txt'
-
-alias po="TODO_FILE=$TODO_DIR/project.todo.txt DONE_FILE=$TODO_DIR/project.done.txt to"
+alias to="taskell ${TODO_DIR}taskell.md"
+alias vto="vim ${TODO_DIR}taskell.md"
 
 #--------------------------------------------------------------------------
 # oh-my-zsh
