@@ -134,6 +134,10 @@ export FZF_DEFAULT_OPTS='--color=16,bg+:-1,pointer:2,prompt:2,hl+:2,hl:2,fg+:2'
 eval "$(fasd --init auto)"
 
 # Loading Configs ##
+if [ -f ~/.todo.cfg ] ; then
+    source ~/.todo.cfg
+fi
+
 if [ -f ~/.fzf.zsh ] ; then
     source ~/.fzf.zsh
 fi
