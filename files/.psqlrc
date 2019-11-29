@@ -1,0 +1,3 @@
+\pset pager always
+\pset format csv
+\setenv PAGER 'vd -f csv '
