@@ -104,21 +104,6 @@ puffin_prompt() {
     local gitPrompt="$(git_prompt_info)"
     local extraPrompt="$(puffin_prompt_extra &>/dev/null && puffin_prompt_extra)"
     local rightPrompt="%D{%R}"
-
-    #Magic regex to remove unseen characaters
-    #local zero='%([BSUbfksu]|([FK]|){*})'
-    #Magic zsh to apply the regex and count the size
-    #local pathSize=${${(S%%)pathPrompt//$~zero/}} 
-    #local gitSize=${${(S%%)gitPrompt//$~zero/}}
-    #local extraSize=${${(S%%)extraPrompt//$~zero/}}
-    #local rightSize=${${(S%%)rightPrompt//$~zero/}}
-
-     #echo $gitSize
-
-    #local leftOver=$(expr $COLUMNS - $pathSize - $gitSize - $extraSize - $rightSize)
-
-
-    #PROMPT="${b}${pathPrompt}${g}${gitPrompt}${y}${extraPrompt}$(printf %-${leftOver}s)${y}${rightPrompt}${b}
     PROMPT="${b}${pathPrompt}${g}${gitPrompt}${y}${extraPrompt}${y}${rightPrompt}${b}
 =>${res} "
 } 
@@ -131,6 +116,7 @@ precmd() {
 
 export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git"'
 export FZF_DEFAULT_OPTS='--color=16,bg+:-1,pointer:2,prompt:2,hl+:2,hl:2,fg+:2'
+export EDITOR="/usr/local/bin/vim"
 eval "$(fasd --init auto)"
 
 # Loading Configs ##
