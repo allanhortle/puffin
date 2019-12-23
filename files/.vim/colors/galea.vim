@@ -14,6 +14,7 @@ let TEAL = 6
 let BLACK = 0
 let WHITE = "white"
 let NONE = "NONE"
+let BG = "bg"
 
 let GREY = 242
 let LIGHT_GREY= 244
@@ -60,9 +61,10 @@ call <SID>GALEA_HI('StatusLine'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('StatusLineNC' , WHITE  , ''         , '')
 call <SID>GALEA_HI('SpellBad'     , RED    , NONE       , '')
 call <SID>GALEA_HI('TabLine'      , WHITE  , ''         , '')
-call <SID>GALEA_HI('VertSplit'    , GREY   , GREY       , '')
 call <SID>GALEA_HI('Visual'       , NONE   , LIGHT_GREY , '')
 call <SID>GALEA_HI('WarningMsg'   , WHITE  , ''         , '')
+
+hi VertSplit ctermfg=0 ctermbg=white
 
 " Basic
 call <SID>GALEA_HI('Identifier'  , TEAL      , '' , 'NONE')
