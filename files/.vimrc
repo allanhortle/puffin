@@ -9,6 +9,7 @@
 "   File:   .vimrc
 "
 
+
 " {{{ Plugins
 set nocompatible
 if empty(glob('~/.vim/autoload/plug.vim'))
@@ -26,7 +27,6 @@ Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'freitass/todo.txt-vim'
-Plug 'itchyny/lightline.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
@@ -38,7 +38,6 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
-Plug 'unblevable/quick-scope'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
@@ -111,19 +110,6 @@ filetype plugin on
 
 " ALE
 let g:ale_linters = {'javascript': ['eslint', 'flow']}
-
-" Lightline
-set noshowmode
-set laststatus=2
-let g:lightline = { 
-    \ 'enable': {
-    \   'tabline': 0
-    \ },
-    \ 'colorscheme': '16color',
-    \ 'active': {
-    \   'right': [ ['lineinfo'], ['filetype'] ]
-    \ }
-\ }
 
 " markdown
 let g:markdown_fold_style = 'nested'
@@ -283,7 +269,7 @@ augroup END
 
 " }}}
 
-" User Interface {{{
+
 "
 syntax reset
 syntax on
@@ -299,16 +285,96 @@ hi TabLine ctermfg=none ctermbg=237 cterm=none
 hi TabLineFill ctermfg=none ctermbg=237 cterm=none
 hi TabLineSel ctermfg=none ctermbg=242 cterm=none
 
-" Quick Scope
-hi QuickScopePrimary cterm=underline cterm=underline
-hi QuickScopeSecondary cterm=underline cterm=underline
-
 " Folds
 highlight Folded ctermbg=none ctermfg=242
 highlight FoldColumn ctermbg=none ctermfg=1
 
-" ALE
-hi ALEError cterm=underline cterm=italic ctermfg=1
+
+"" statusline
+let g:currentmode={
+    \ 'n'      : 'normal',
+    \ 'no'     : 'normal op',
+    \ 'v'      : 'visual',
+    \ 'V'      : 'vline',
+    \ 's'      : 'select',
+    \ 'S'      : 'sline',
+    \ '\<C-S>' : 'sblock',
+    \ 'i'      : 'insert',
+    \ 'R'      : 'replace',
+    \ 'Rv'     : 'vreplace',
+    \ 'c'      : 'command',
+    \ 'cv'     : 'vim ex',
+    \ 'ce'     : 'ex',
+    \ 'r'      : 'prompt',
+    \ 'rm'     : 'more',
+    \ 'r?'     : 'confirm',
+    \ '!'      : 'shell',
+    \ 't'      : 'terminal'
+    \}
+
+function! CurrentMode() abort
+    let l:modecurrent = mode()
+    let l:modelist = get(g:currentmode, l:modecurrent, 'vblock')
+    let l:current_status_mode = l:modelist
+    return l:current_status_mode
+endfunction
+
+function! ChangeStatuslineColor()
+  let m = CurrentMode()
+  if (m ==# "normal")
+    exe 'hi! User1 ctermbg=blue'
+    exe 'hi! User2 ctermfg=blue'
+  elseif (m ==# 'insert')
+    exe 'hi! User1 ctermbg=green'
+    exe 'hi! User2 ctermfg=green'
+  elseif (m ==# 'vblock' || m ==# 'visual' || m ==# 'vline')
+    exe 'hi! User1 ctermbg=magenta'
+    exe 'hi! User2 ctermfg=magenta'
+  else
+    exe 'hi! User1 ctermbg=yellow'
+    exe 'hi! User2 ctermfg=yellow'
+  endif
+  return ''
+endfunction
+
+function! ActiveStatus()
+  let statusline=""
+  let statusline.="%{ChangeStatuslineColor()}"
+  let statusline.="%1* %{CurrentMode()} "
+  let statusline.="%2* %f %m%r%w"
+  let statusline.="%="
+  let statusline.="%2* %{''!=#&filetype?&filetype:'none'} "
+  let statusline.="%1* #%n %v:%l "
+  return statusline
+endfunction
+
+function! InactiveStatus()
+  let statusline=""
+  let statusline.="%{ChangeStatuslineColor()}"
+  let statusline.="%3* inactive "
+  let statusline.="%4* %f%m%r%w"
+  let statusline.="%="
+  let statusline.="%4* %{''!=#&filetype?&filetype:'none'} "
+  let statusline.="%3* #%n %v:%l\ "
+  return statusline
+endfunction
+
+set noshowmode
+set laststatus=2
+set statusline=%!ActiveStatus()
+"hi StatusLine ctermfg=black
+hi User1 ctermbg=blue ctermfg=black
+hi User2 ctermfg=blue
+hi User3 ctermbg=grey ctermfg=black
+hi User4 ctermbg=black ctermfg=grey
+call ChangeStatuslineColor()
+
+
+augroup status
+  autocmd!
+  autocmd WinEnter * setlocal statusline=%!ActiveStatus()
+  autocmd WinLeave * setlocal statusline=%!InactiveStatus()
+augroup END
 
 if filereadable(expand("~/.vimrc.local"))
     so ~/.vimrc.local
@@ -317,5 +383,6 @@ endif
 " vim:foldmethod=marker:foldlevel=0
 
 " }}}
+
 
 
