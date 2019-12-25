@@ -45,7 +45,7 @@ Plug 'cakebaker/scss-syntax.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'jparise/vim-graphql'
 Plug 'maxmellon/vim-jsx-pretty'
-Plug 'othree/yajs.vim'
+Plug 'pangloss/vim-javascript'
 
 call plug#end() 
 
@@ -260,6 +260,7 @@ noremap <TAB> <NOP>
 augroup filetypedetect
     au BufRead,BufNewFile *.jsx,*.mdx set filetype=javascript
 augroup END
+let g:javascript_plugin_flow = 1
 
 " }}}
 
@@ -330,7 +331,6 @@ endfunction
 function! InactiveStatus()
   let statusline=""
   let statusline.="%{ChangeStatuslineColor()}"
-  let statusline.="%2* %(%f %M%)"
   let statusline.="%2* %(%-0.75f %M%)"
   let statusline.="%="
   let statusline.="%2*%( %r%w%y%)"

@@ -46,6 +46,8 @@ hi TabLineSel ctermfg=black ctermbg=grey
 hi VertSplit ctermfg=0 ctermbg=white
 hi Visual ctermbg=240
 hi WarningMsg ctermfg=yellow ctermbg=black
+hi StartifyHeader ctermfg=yellow 
+hi StartifySection ctermfg=242 
 
 "
 " vim
@@ -65,16 +67,38 @@ hi vimMapModKey ctermfg=yellow
 "
 
 " keyword
-hi javascriptVariable ctermfg=red
-hi javaScriptFuncKeyword ctermfg=red
-hi javascriptImport ctermfg=red
-hi javascriptExport ctermfg=red
-hi javascriptReturn ctermfg=red
+hi jsVariable ctermfg=red
+hi jsFunction ctermfg=red
+hi jsImport ctermfg=red
+hi jsExport ctermfg=red
+hi jsFrom ctermfg=red
+hi jsReturn ctermfg=red
+hi jsStorageClass ctermfg=red
+hi jsExportDefault ctermfg=red
+hi jsClassKeyword ctermfg=red
+hi jsExtendsKeyword ctermfg=red
+hi jsSuper ctermfg=red
+hi jsGlobalObjects ctermfg=red
+hi jsGlobalNodeObjects ctermfg=red
+hi jsOperatorKeyword ctermfg=red
+hi jsBuiltins ctermfg=red
+hi jsThis ctermfg=red
+hi jsAsyncKeyword ctermfg=red
+hi jsException ctermfg=red
 " string
-hi javascriptTemplate ctermfg=green
-hi javascriptTemplateSB ctermfg=green
-hi javascriptString ctermfg=green
+hi jsTemplateString ctermfg=green
+hi jsTemplateBraces ctermfg=green
+hi jsString ctermfg=green
+hi jsxString ctermfg=green
+hi jsObjectStringKey ctermfg=green
+hi jsRegexpOr ctermfg=green
+hi jsRegexpMod ctermfg=green
+hi jsRegexpGroup ctermfg=green
+hi jsRegexpString ctermfg=green
+hi jsRegexpBackRef ctermfg=green
 " constant
+hi jsSpecial ctermfg=blue
+hi jsUndefined ctermfg=blue
 " meta
 hi jsxOpenPunct ctermfg=yellow
 hi jsxComponentName ctermfg=yellow
@@ -83,6 +107,20 @@ hi jsxEqual ctermfg=yellow
 hi jsxBraces ctermfg=yellow
 hi jsxCloseString ctermfg=yellow
 hi jsxClosePunct ctermfg=yellow
+" types
+hi jsFlowTypeStatement ctermfg=magenta
+hi jsFlowNoise ctermfg=magenta
+hi jsFlowObject ctermfg=magenta
+hi jsFlowMaybe ctermfg=magenta
+hi jsFlowType ctermfg=magenta
+hi jsFlowDefinition ctermfg=magenta
+hi jsFlowTypeCustom ctermfg=magenta
+hi jsFlowTypeValue ctermfg=magenta
+hi jsFlowClassGroup ctermfg=magenta
+hi jsFlowGeneric ctermfg=magenta
+hi jsFlowOrOperator ctermfg=magenta
+hi jsFlowFunctionGroup ctermfg=magenta
+hi jsFlowArgumentDef ctermfg=magenta
 
 
 "
