@@ -9,7 +9,6 @@
 "   File:   .vimrc
 "
 
-
 " {{{ Plugins
 set nocompatible
 if empty(glob('~/.vim/autoload/plug.vim'))
@@ -77,7 +76,7 @@ set showmatch                   " set show matching
 set smartcase                   " ignore case if search pattern is all lower-case case-sensitive otherwise
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
 set softtabstop=4
-set splitright
+set splitright                  " set vertical splits to the right
 set suffixesadd=.jsx,.md,.js
 set t_Co=256
 set tabstop=4                   " a tab is four spaces
@@ -144,20 +143,11 @@ let g:startify_lists = [
     \ ]
 
 
-let g:vimwiki_list = [{'path':'~/Dropbox/notes','zettel_template': "~/Dropbox/data/zettle-template.tpl"}]
-command! -bang -nargs=* Notes
-  \ call fzf#vim#grep(
-  \ 'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>).' ~/Dropbox/notes', 1, <bang>0
-  \ )
-
-
 " ctrlsf
 let g:ctrlsf_auto_focus = { "at": "start" }
 
 
-"
 " coc
-
 call coc#add_extension(
     \ 'coc-tabnine',
     \ 'coc-eslint'
@@ -192,6 +182,10 @@ map <F6> :setlocal spell! spelllang=en_au<CR>
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 " save and run last terminal command
 map <F12> <Esc>:w<CR>:!!<CR>
+
+" Make help vertical
+cnoreabbrev <expr> help ((getcmdtype() is# ':'    && getcmdline() is# 'help')?('vert help'):('help'))
+cnoreabbrev <expr> h ((getcmdtype() is# ':'    && getcmdline() is# 'h')?('vert help'):('h'))
 
 
 " Normal mode
@@ -281,13 +275,23 @@ hi ColorColumn ctermbg=237
 hi SpellBad ctermbg=1 ctermfg=0
 
 " Tab Bar
-hi TabLine ctermfg=none ctermbg=237 cterm=none
-hi TabLineFill ctermfg=none ctermbg=237 cterm=none
-hi TabLineSel ctermfg=none ctermbg=242 cterm=none
+hi TabLine ctermfg=none ctermbg=none cterm=underline
+hi TabLineFill ctermfg=none ctermbg=none cterm=underline
+hi TabLineSel ctermfg=black ctermbg=grey
+hi Title ctermfg=black ctermbg=none
+"hi Title ctermfg=green
 
 " Folds
-highlight Folded ctermbg=none ctermfg=242
-highlight FoldColumn ctermbg=none ctermfg=1
+hi Folded ctermbg=none ctermfg=242
+hi FoldColumn ctermbg=none ctermfg=1
+
+" Errors
+hi ErrorMsg ctermfg=red ctermbg=black
+hi WarningMsg ctermfg=yellow ctermbg=black
+
+hi SpellBad ctermfg=red ctermbg=none cterm=underline
+hi SpellCap ctermfg=yellow ctermbg=none cterm=underline
+hi SpellLocal ctermfg=none ctermbg=none cterm=none
 
 
 "" statusline
@@ -323,16 +327,12 @@ function! ChangeStatuslineColor()
   let m = CurrentMode()
   if (m ==# "normal")
     exe 'hi! User1 ctermbg=blue'
-    exe 'hi! User2 ctermfg=blue'
-  elseif (m ==# 'insert')
+elseif (m ==# "insert")
     exe 'hi! User1 ctermbg=green'
-    exe 'hi! User2 ctermfg=green'
   elseif (m ==# 'vblock' || m ==# 'visual' || m ==# 'vline')
     exe 'hi! User1 ctermbg=magenta'
-    exe 'hi! User2 ctermfg=magenta'
   else
     exe 'hi! User1 ctermbg=yellow'
-    exe 'hi! User2 ctermfg=yellow'
   endif
   return ''
 endfunction
@@ -341,44 +341,48 @@ function! ActiveStatus()
   let statusline=""
   let statusline.="%{ChangeStatuslineColor()}"
   let statusline.="%1* %{CurrentMode()} "
-  let statusline.="%2* %f %m%r%w"
+  let statusline.="%1* %(%f %M%)"
   let statusline.="%="
-  let statusline.="%2* %{''!=#&filetype?&filetype:'none'} "
-  let statusline.="%1* #%n %v:%l "
+  let statusline.="%1*%( %r%w%y%)"
+  let statusline.="%1* %v:%l "
   return statusline
 endfunction
 
 function! InactiveStatus()
   let statusline=""
   let statusline.="%{ChangeStatuslineColor()}"
-  let statusline.="%3* inactive "
-  let statusline.="%4* %f%m%r%w"
+  let statusline.="%2* %(%f %M%)"
   let statusline.="%="
-  let statusline.="%4* %{''!=#&filetype?&filetype:'none'} "
-  let statusline.="%3* #%n %v:%l\ "
+  let statusline.="%2*%( %r%w%y%)"
+  let statusline.="%2* %v:%l\ "
   return statusline
 endfunction
 
-set noshowmode
-set laststatus=2
-set statusline=%!ActiveStatus()
-"hi StatusLine ctermfg=black
+set noshowmode " dont show --insert--
+set laststatus=2 " ?
+hi StatusLine ctermbg=black ctermfg=white cterm=none 
+hi StatusLineNC ctermbg=black cterm=NONE
 hi User1 ctermbg=blue ctermfg=black
-hi User2 ctermfg=blue
-hi User3 ctermbg=grey ctermfg=black
-hi User4 ctermbg=black ctermfg=grey
-call ChangeStatuslineColor()
+
+" Inactive Styles
+hi User2 ctermbg=grey ctermfg=black
+set statusline=%!ActiveStatus()
 
 
 augroup status
   autocmd!
   autocmd WinEnter * setlocal statusline=%!ActiveStatus()
   autocmd WinLeave * setlocal statusline=%!InactiveStatus()
+  " more reliable insert color change
+  autocmd InsertEnter * hi User1 ctermbg=green
+  autocmd InsertLeave * hi User1 ctermbg=blue
 augroup END
 
+" Add local vimrc
 if filereadable(expand("~/.vimrc.local"))
     so ~/.vimrc.local
 endif
+
 
 " vim:foldmethod=marker:foldlevel=0
 

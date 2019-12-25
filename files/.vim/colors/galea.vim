@@ -16,8 +16,8 @@ let WHITE = "white"
 let NONE = "NONE"
 let BG = "bg"
 
-let GREY = 242
-let LIGHT_GREY= 244
+let GREY= 242
+let LIGHT_GREY=244
 
 fun! <SID>GALEA_HI(group, fg, bg, attr)
     if a:fg != ""
@@ -31,22 +31,29 @@ fun! <SID>GALEA_HI(group, fg, bg, attr)
     endif
 endfun
 
+" diff
+hi DiffAdd ctermfg=GREEN ctermbg=NONE
+hi DiffRemoved ctermfg=GREEN ctermbg=NONE
 call <SID>GALEA_HI('DiffAdd'      , GREEN  , NONE, '')
 call <SID>GALEA_HI('DiffDelete'   , RED    , NONE, '')
 call <SID>GALEA_HI('DiffChange'   , BLUE   , NONE, '')
 call <SID>GALEA_HI('DiffText'     , WHITE  , NONE, '')
 
-" Vim
-call <SID>GALEA_HI('ColorColumn'  , RED    , ''         , '')
-call <SID>GALEA_HI('ColorColumn'  , WHITE  , ''         , '')
-call <SID>GALEA_HI('Comment'      , GREY   , ''         , '')
+" vim
+hi vimCommand ctermfg=RED cterm=NONE
+
+" vim UI
+hi ColorColumn ctermbg=238
+hi Visual ctermbg=240
+hi Comment ctermfg=242
+hi LineNr ctermfg=242
+hi Folded ctermfg=242 ctermbg=NONE
+hi TabLineFill ctermfg=black ctermbg=black
+hi TabLine ctermfg=white ctermbg=black cterm=NONE
+hi TabLineSel ctermfg=green ctermbg=black
+
 call <SID>GALEA_HI('Constant'     , BLUE   , ''         , '')
-call <SID>GALEA_HI('CursorColumn' , WHITE  , ''         , '')
-call <SID>GALEA_HI('CursorLine'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('Directory'    , WHITE  , ''         , '')
-call <SID>GALEA_HI('FoldColumn'   , WHITE  , ''         , '')
-call <SID>GALEA_HI('Folded'       , WHITE  , ''         , '')
-call <SID>GALEA_HI('LineNr'       , GREY   , ''         , '')
 call <SID>GALEA_HI('MatchParen'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('ModeMsg'      , WHITE  , ''         , '')
 call <SID>GALEA_HI('MoreMsg'      , WHITE  , ''         , '')
@@ -57,26 +64,26 @@ call <SID>GALEA_HI('Question'     , ''     , GREY       , '')
 call <SID>GALEA_HI('Search'       , NONE   , LIGHT_GREY , '')
 call <SID>GALEA_HI('SignColumn'   , WHITE  , ''         , '')
 call <SID>GALEA_HI('SpecialKey'   , WHITE  , ''         , '')
-call <SID>GALEA_HI('StatusLine'   , WHITE  , ''         , '')
-call <SID>GALEA_HI('StatusLineNC' , WHITE  , ''         , '')
 call <SID>GALEA_HI('SpellBad'     , RED    , NONE       , '')
-call <SID>GALEA_HI('TabLine'      , WHITE  , ''         , '')
-call <SID>GALEA_HI('Visual'       , NONE   , LIGHT_GREY , '')
 call <SID>GALEA_HI('WarningMsg'   , WHITE  , ''         , '')
-
 hi VertSplit ctermfg=0 ctermbg=white
 
+
+"
 " Basic
-call <SID>GALEA_HI('Identifier'  , TEAL      , '' , 'NONE')
+"
+hi Identifier ctermfg=WHITE cterm=NONE
+hi Statement ctermfg=WHITE cterm=NONE
+
+" Keywords
 call <SID>GALEA_HI('Function'    , WHITE, '' , '')
-call <SID>GALEA_HI('Statement'   , WHITE  , '' , '')
 call <SID>GALEA_HI('PreProc'     , WHITE    , '' , '')
 call <SID>GALEA_HI('Conditional' , RED    , '' , '')
 call <SID>GALEA_HI('Repeat'      , RED    , '' , '')
 call <SID>GALEA_HI('Keyword'      , RED    , '' , '')
 call <SID>GALEA_HI('Label'       , RED    , '' , '')
 call <SID>GALEA_HI('Exception'   , RED    , '' , '')
-call <SID>GALEA_HI('Special'     , RED    , '' , '')
+call <SID>GALEA_HI('Special'     , WHITE    , '' , '')
 call <SID>GALEA_HI('Constant'    , BLUE   , '' , '')
 call <SID>GALEA_HI('Type'        , MAGENTA , '' , '')
 call <SID>GALEA_HI('Meta'        , YELLOW , '' , '')
@@ -193,3 +200,5 @@ call <SID>GALEA_HI('TodoPriorityA', YELLOW, '', '')
 call <SID>GALEA_HI('TodoPriorityB', GREEN, '', '')
 call <SID>GALEA_HI('TodoPriorityC', BLUE, '', '')
 call <SID>GALEA_HI('TodoProject', TEAL, '', '')
+
+
