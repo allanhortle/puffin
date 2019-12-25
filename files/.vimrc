@@ -41,11 +41,11 @@ Plug 'tpope/vim-surround'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
 " Syntax
-Plug '~/code/vim-boring-javascript'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'editorconfig/editorconfig-vim'
-Plug 'isRuslan/vim-es6'
 Plug 'jparise/vim-graphql'
+Plug 'maxmellon/vim-jsx-pretty'
+Plug 'othree/yajs.vim'
 
 call plug#end() 
 
@@ -267,31 +267,10 @@ augroup END
 "
 syntax reset
 syntax on
-colorscheme galea
+colorscheme puffin
 
 " 100 Column Ruler
 set colorcolumn=100
-hi ColorColumn ctermbg=237
-hi SpellBad ctermbg=1 ctermfg=0
-
-" Tab Bar
-hi TabLine ctermfg=none ctermbg=none cterm=underline
-hi TabLineFill ctermfg=none ctermbg=none cterm=underline
-hi TabLineSel ctermfg=black ctermbg=grey
-hi Title ctermfg=black ctermbg=none
-"hi Title ctermfg=green
-
-" Folds
-hi Folded ctermbg=none ctermfg=242
-hi FoldColumn ctermbg=none ctermfg=1
-
-" Errors
-hi ErrorMsg ctermfg=red ctermbg=black
-hi WarningMsg ctermfg=yellow ctermbg=black
-
-hi SpellBad ctermfg=red ctermbg=none cterm=underline
-hi SpellCap ctermfg=yellow ctermbg=none cterm=underline
-hi SpellLocal ctermfg=none ctermbg=none cterm=none
 
 
 "" statusline
@@ -341,7 +320,7 @@ function! ActiveStatus()
   let statusline=""
   let statusline.="%{ChangeStatuslineColor()}"
   let statusline.="%1* %{CurrentMode()} "
-  let statusline.="%1* %(%f %M%)"
+  let statusline.="%1* %(%-0.75f %M%)"
   let statusline.="%="
   let statusline.="%1*%( %r%w%y%)"
   let statusline.="%1* %v:%l "
@@ -352,6 +331,7 @@ function! InactiveStatus()
   let statusline=""
   let statusline.="%{ChangeStatuslineColor()}"
   let statusline.="%2* %(%f %M%)"
+  let statusline.="%2* %(%-0.75f %M%)"
   let statusline.="%="
   let statusline.="%2*%( %r%w%y%)"
   let statusline.="%2* %v:%l\ "
