@@ -83,7 +83,25 @@ hi jsxEqual ctermfg=yellow
 hi jsxBraces ctermfg=yellow
 hi jsxCloseString ctermfg=yellow
 hi jsxClosePunct ctermfg=yellow
-" types
+
+
+"
+" json
+"
+hi jsonString ctermfg=green
+hi jsonEscape ctermfg=blue
+hi jsonKeyword ctermfg=yellow
+hi jsonQuote ctermfg=green
+
+
+"
+" yaml
+"
+hi yamlBlockMappingKey ctermfg=yellow
+hi yamlPlainScalar ctermfg=green
+hi yamlFlowString ctermfg=green
+hi yamlFlowStringDelimiter ctermfg=green
+
 
 
 "
