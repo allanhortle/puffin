@@ -258,7 +258,7 @@ noremap <TAB> <NOP>
 
 " jsx files
 augroup filetypedetect
-    au BufRead,BufNewFile *.jsx,*.mdx set filetype=javascript
+    au BufRead,BufNewFile *.jsx,*.mdx,*.tsx,*.ts set filetype=javascript
 augroup END
 let g:javascript_plugin_flow = 1
 
