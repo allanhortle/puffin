@@ -67,24 +67,29 @@ hi vimMapModKey ctermfg=yellow
 "
 
 " keyword
-hi jsVariable ctermfg=red
-hi jsFunction ctermfg=red
-hi jsImport ctermfg=red
+hi jsAsyncKeyword ctermfg=red
+hi jsBuiltins ctermfg=red
+hi jsCatch ctermfg=red
+hi jsClassKeyword ctermfg=red
+hi jsConditional ctermfg=red
+hi jsException ctermfg=red
 hi jsExport ctermfg=red
+hi jsExportDefault ctermfg=red
+hi jsExtendsKeyword ctermfg=red
 hi jsFrom ctermfg=red
+hi jsForAwait ctermfg=red
+hi jsFunction ctermfg=red
+hi jsGlobalNodeObjects ctermfg=red
+hi jsGlobalObjects ctermfg=red
+hi jsImport ctermfg=red
+hi jsLabel ctermfg=red
+hi jsOperatorKeyword ctermfg=red
 hi jsReturn ctermfg=red
 hi jsStorageClass ctermfg=red
-hi jsExportDefault ctermfg=red
-hi jsClassKeyword ctermfg=red
-hi jsExtendsKeyword ctermfg=red
 hi jsSuper ctermfg=red
-hi jsGlobalObjects ctermfg=red
-hi jsGlobalNodeObjects ctermfg=red
-hi jsOperatorKeyword ctermfg=red
-hi jsBuiltins ctermfg=red
 hi jsThis ctermfg=red
-hi jsAsyncKeyword ctermfg=red
-hi jsException ctermfg=red
+hi jsTry ctermfg=red
+hi jsVariable ctermfg=red
 " string
 hi jsTemplateString ctermfg=green
 hi jsTemplateBraces ctermfg=green
@@ -108,20 +113,22 @@ hi jsxBraces ctermfg=yellow
 hi jsxCloseString ctermfg=yellow
 hi jsxClosePunct ctermfg=yellow
 " types
-hi jsFlowTypeStatement ctermfg=magenta
+hi jsFlowArgumentDef ctermfg=magenta
+hi jsFlowArrow ctermfg=magenta
+hi jsFlowClassGroup ctermfg=magenta
+hi jsFlowDefinition ctermfg=magenta
+hi jsFlowFunctionGroup ctermfg=magenta
+hi jsFlowGeneric ctermfg=magenta
+hi jsFlowMaybe ctermfg=magenta
 hi jsFlowNoise ctermfg=magenta
 hi jsFlowObject ctermfg=magenta
-hi jsFlowMaybe ctermfg=magenta
-hi jsFlowType ctermfg=magenta
-hi jsFlowDefinition ctermfg=magenta
-hi jsFlowTypeCustom ctermfg=magenta
-hi jsFlowTypeValue ctermfg=magenta
-hi jsFlowClassGroup ctermfg=magenta
-hi jsFlowGeneric ctermfg=magenta
 hi jsFlowOrOperator ctermfg=magenta
-hi jsFlowFunctionGroup ctermfg=magenta
-hi jsFlowArgumentDef ctermfg=magenta
-
+hi jsFlowParens ctermfg=magenta
+hi jsFlowType ctermfg=magenta
+hi jsFlowTypeCustom ctermfg=magenta
+hi jsFlowTypeStatement ctermfg=magenta
+hi jsFlowTypeValue ctermfg=magenta
+hi jsFlowWildcard ctermfg=magenta
 
 "
 " json
