@@ -71,6 +71,7 @@ hi jsAsyncKeyword ctermfg=red
 hi jsBuiltins ctermfg=red
 hi jsCatch ctermfg=red
 hi jsClassKeyword ctermfg=red
+hi jsClassMethodType ctermfg=red
 hi jsConditional ctermfg=red
 hi jsException ctermfg=red
 hi jsExport ctermfg=red
@@ -192,19 +193,22 @@ hi scssAmpersand ctermfg=yellow
 
 "
 " diff
-"
 hi DiffAdd ctermfg=green ctermbg=NONE
 hi DiffDelete ctermfg=red ctermbg=NONE
 hi DiffChange ctermfg=blue ctermbg=NONE
 hi DiffText ctermfg=white ctermbg=NONE
 
+
 "
 " todo.txt
-"
 hi TodoPriorityA ctermfg=yellow
 hi TodoPriorityB ctermfg=green
 hi TodoPriorityB ctermfg=blue
 hi TodoProject ctermfg=cyan
 
 
-
+"
+" Vim Plug
+hi plugName ctermfg=yellow
+hi plugMessage ctermfg=blue
+hi plugError ctermfg=red ctermbg=none
