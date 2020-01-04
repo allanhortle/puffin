@@ -262,13 +262,18 @@ augroup filetypedetect
 augroup END
 let g:javascript_plugin_flow = 1
 
+syntax reset
+syntax on
+if &diff
+    syntax off
+endif
+colorscheme puffin
+
+
 " }}}
 
 
 "
-syntax reset
-syntax on
-colorscheme puffin
 
 " 100 Column Ruler
 set colorcolumn=100

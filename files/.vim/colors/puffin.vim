@@ -193,18 +193,36 @@ hi scssAmpersand ctermfg=yellow
 
 "
 " diff
-hi DiffAdd ctermfg=green ctermbg=NONE
-hi DiffDelete ctermfg=red ctermbg=NONE
-hi DiffChange ctermfg=blue ctermbg=NONE
-hi DiffText ctermfg=white ctermbg=NONE
+
+" git
+hi diffAdded ctermfg=green ctermbg=NONE
+hi diffRemoved ctermfg=red ctermbg=NONE
+hi diffChanged ctermfg=blue ctermbg=NONE
+hi diffText ctermfg=white ctermbg=NONE
+hi diffFile ctermfg=yellow
+hi diffIndexLine ctermfg=yellow
+hi diffNewFile ctermfg=yellow
+hi diffLine ctermfg=magenta
+hi diffSubname ctermfg=magenta
+
+" vimdiff
+hi DiffAdd ctermfg=green ctermbg=none cterm=none
+hi DiffDelete ctermfg=red ctermbg=none cterm=none
+hi DiffChange ctermfg=white ctermbg=none cterm=none
+hi DiffText ctermfg=blue ctermbg=none cterm=none
+
+
+
+
 
 
 "
 " todo.txt
 hi TodoPriorityA ctermfg=yellow
 hi TodoPriorityB ctermfg=green
-hi TodoPriorityB ctermfg=blue
-hi TodoProject ctermfg=cyan
+hi TodoPriorityC ctermfg=blue
+hi TodoContext ctermfg=cyan
+hi TodoProject ctermfg=magenta
 
 
 "
