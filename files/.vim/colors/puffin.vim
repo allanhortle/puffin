@@ -80,6 +80,7 @@ hi jsExtendsKeyword ctermfg=red
 hi jsFrom ctermfg=red
 hi jsForAwait ctermfg=red
 hi jsFunction ctermfg=red
+hi jsFutureKeys ctermfg=red
 hi jsGlobalNodeObjects ctermfg=red
 hi jsGlobalObjects ctermfg=red
 hi jsImport ctermfg=red
@@ -105,6 +106,7 @@ hi jsRegexpBackRef ctermfg=green
 " constant
 hi jsSpecial ctermfg=blue
 hi jsUndefined ctermfg=blue
+hi jsNull ctermfg=blue
 " meta
 hi jsxOpenPunct ctermfg=yellow
 hi jsxComponentName ctermfg=yellow
@@ -213,6 +215,21 @@ hi DiffText ctermfg=blue ctermbg=none cterm=none
 
 
 
+"
+" markdown
+hi markdownH1 ctermfg=yellow
+hi markdownH2 ctermfg=blue
+hi markdownH3 ctermfg=green
+hi markdownH1Delimiter ctermfg=yellow
+hi markdownH2Delimiter ctermfg=blue
+hi markdownH3Delimiter ctermfg=green
+hi markdownHeadingRule ctermfg=yellow
+
+hi markdownCodeDelimiter ctermfg=magenta
+hi markdownCode ctermfg=magenta
+
+hi markdownItalic cterm=italic
+hi markdownBold cterm=bold
 
 
 
@@ -223,6 +240,7 @@ hi TodoPriorityB ctermfg=green
 hi TodoPriorityC ctermfg=blue
 hi TodoContext ctermfg=cyan
 hi TodoProject ctermfg=magenta
+
 
 
 "
