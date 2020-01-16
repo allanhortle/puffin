@@ -8,19 +8,20 @@ let g:colors_name = "puffin"
 "
 " Basic
 "
+hi Comment ctermfg=242
 hi Constant ctermfg=blue cterm=none
+
 hi Identifier ctermfg=white cterm=none
 hi PreProc ctermfg=white cterm=none
-hi Type ctermfg=white cterm=none
-hi Statement ctermfg=white cterm=none
 hi Special ctermfg=white cterm=none
+hi Statement ctermfg=white cterm=none
 hi Title ctermfg=white cterm=none
+hi Type ctermfg=white cterm=none
 
 "
 " vim UI
 "
 hi ColorColumn ctermbg=238
-hi Comment ctermfg=242
 hi Directory ctermfg=white
 hi Error ctermbg=red ctermfg=black
 hi ErrorMsg ctermfg=red ctermbg=black
@@ -65,6 +66,7 @@ hi vimMapModKey ctermfg=yellow
 "
 " js
 "
+hi jsEnvComment ctermfg=242
 
 " keyword
 hi jsAsyncKeyword ctermfg=red
@@ -85,10 +87,12 @@ hi jsGlobalNodeObjects ctermfg=red
 hi jsGlobalObjects ctermfg=red
 hi jsImport ctermfg=red
 hi jsLabel ctermfg=red
+hi jsModuleAs ctermfg=red
 hi jsOperatorKeyword ctermfg=red
 hi jsReturn ctermfg=red
 hi jsStorageClass ctermfg=red
 hi jsSuper ctermfg=red
+hi jsStatement ctermfg=red
 hi jsThis ctermfg=red
 hi jsTry ctermfg=red
 hi jsVariable ctermfg=red
@@ -115,6 +119,7 @@ hi jsxEqual ctermfg=yellow
 hi jsxBraces ctermfg=yellow
 hi jsxCloseString ctermfg=yellow
 hi jsxClosePunct ctermfg=yellow
+hi jsxTagName ctermfg=yellow
 " types
 hi jsFlowArgumentDef ctermfg=magenta
 hi jsFlowArrow ctermfg=magenta
@@ -127,6 +132,7 @@ hi jsFlowNoise ctermfg=magenta
 hi jsFlowObject ctermfg=magenta
 hi jsFlowOrOperator ctermfg=magenta
 hi jsFlowParens ctermfg=magenta
+hi jsFlowParenAnnotation ctermfg=magenta
 hi jsFlowType ctermfg=magenta
 hi jsFlowTypeCustom ctermfg=magenta
 hi jsFlowTypeStatement ctermfg=magenta
@@ -172,24 +178,31 @@ hi graphqlOperator ctermfg=magenta
 " scss
 "
 
+hi cssNoise ctermfg=white
+
 " string
 hi cssStringQ ctermfg=green
 hi scssInterpolationDelimiter ctermfg=green
+
 " constant
-hi scssAttribute ctermfg=blue
 " keyword
-hi scssMixin ctermfg=red
-hi scssContent ctermfg=red
+hi cssBackgroundProp ctermfg=red
+hi cssBorderProp ctermfg=red
 hi cssBoxProp ctermfg=red
 hi cssFlexibleBoxProp ctermfg=red
+hi cssFontProp ctermfg=red
 hi cssMediaProp ctermfg=red
-hi cssBorderProp ctermfg=red
 hi cssPositioningProp ctermfg=red
-hi cssBackgroundProp ctermfg=red
+hi cssTextProp ctermfg=red
+hi cssUIProp ctermfg=red
+hi scssAtRoot ctermfg=red
+hi scssContent ctermfg=red
+hi scssMixin ctermfg=red
 " meta
-hi scssSelectorName ctermfg=yellow
-hi scssSelectorChar ctermfg=yellow
+hi cssPseudoClassId ctermfg=yellow
 hi scssAmpersand ctermfg=yellow
+hi scssSelectorChar ctermfg=yellow
+hi scssSelectorName ctermfg=yellow
 
 
 
@@ -218,11 +231,11 @@ hi DiffText ctermfg=blue ctermbg=none cterm=none
 "
 " markdown
 hi markdownH1 ctermfg=yellow
-hi markdownH2 ctermfg=blue
-hi markdownH3 ctermfg=green
 hi markdownH1Delimiter ctermfg=yellow
-hi markdownH2Delimiter ctermfg=blue
-hi markdownH3Delimiter ctermfg=green
+hi markdownH2 ctermfg=green
+hi markdownH2Delimiter ctermfg=green
+hi markdownH3 ctermfg=blue
+hi markdownH3Delimiter ctermfg=blue
 hi markdownHeadingRule ctermfg=yellow
 
 hi markdownCodeDelimiter ctermfg=magenta
@@ -248,3 +261,24 @@ hi TodoProject ctermfg=magenta
 hi plugName ctermfg=yellow
 hi plugMessage ctermfg=blue
 hi plugError ctermfg=red ctermbg=none
+
+
+"
+" SQL
+hi sqlString ctermfg=green
+hi sqlQuote ctermfg=green
+hi sqlFold ctermfg=green
+hi sqlStatement ctermfg=red
+hi sqlKeyword ctermfg=red
+
+
+
+"
+" python
+hi pythonStatement ctermfg=red
+hi pythonRepeat ctermfg=red
+hi pythonOperator ctermfg=red
+hi pythonConditional ctermfg=red
+hi pythonInclude ctermfg=red
+hi pythonString ctermfg=green
+hi pythonQuotes ctermfg=green
