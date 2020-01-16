@@ -92,10 +92,12 @@ set backupdir^=~/.vim/backup//  " keep all the backup files in .vim
 set undodir^=~/.vim/undo//
 set noswapfile                  " dont have swap files, they are lame.
 
-" Markdown Files
-augroup Markdown
+" plain text type file options
+augroup WritingFiles
     autocmd!
     autocmd FileType markdown set wrap
+    autocmd FileType markdown setlocal spell
+    autocmd FileType gitcommit setlocal spell
 augroup END
 
 " Disable auto commenting
