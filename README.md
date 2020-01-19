@@ -4,6 +4,19 @@ What's up? Puffins, that's what.
 
 A CLI tool for keeping dotfiles and brew dependencies in sync. The goal is to have one consistent dev environment across any computer.
 
+```
+Usage: puffin [command]
+
+Options:
+  -V, --version  output the version number
+  -h, --help     output usage information
+
+Commands:
+  install        Run brew install commands
+  install-apps   Run brew install apps commands
+  reload         rsync the dotfiles
+```
+
 Requires:
 * [homebrew]
 * [node]
@@ -33,7 +46,7 @@ puffin reload
 . ~/.zshrc # I cant find a good way to reload zsh via node
 ```
 
-## Puffin Install
+## `puffin install`
 Uses [homebrew] to install dependencies.
 
 * fasd
@@ -69,7 +82,7 @@ Uses `brew cask` to install apps.
 * transmit
 * visual-studio-code
 
-## Puffin Reload
+## `puffin reload`
 Rsyncs dotfiles from puffin to your `$HOME` folder.
 
 * `.aliases`
