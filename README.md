@@ -1,5 +1,4 @@
-Puffin
-======
+# Puffin
 
 What's up? Puffins, that's what.
 
@@ -13,11 +12,23 @@ Requires:
 
 ## Getting Started
 
-**WARNING: currently Puffin will override your current dotfiles. MAKE A BACKUP BEFORE RUNNING THE COMMANDS BELOW**
+**WARNING: Puffin will override your current dotfiles. Make a backup if you want to preserve existing files**
 
 ```sh
+# Install Homebrew
+/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+
+# Install oh-my-zsh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
+# Install Node
+brew install node
+
+# Install Puffin
 npm install -g puffin
+
 puffin install
+puffin install-apps
 puffin reload
 . ~/.zshrc # I cant find a good way to reload zsh via node
 ```
@@ -25,16 +36,38 @@ puffin reload
 ## Puffin Install
 Uses [homebrew] to install dependencies.
 
-* massren
-* reattach-to-user-namespace
-* tmux
-* [tig]
-* [fasd]
+* fasd
 * git
-* the_silver_searcher
-* fzf
+* htop
+* massren
+* node
+* reattach-to-user-namespace
+* tig
+* tmux
 * ansiweather
-* node (Just to make sure you dont need sudo)
+* fzf
+* ripgrep
+* sops
+* todo-txt
+* vim
+* visidata
+* yarn
+
+## `puffin install-apps`
+Uses `brew cask` to install apps.
+
+* 1password
+* alfred
+* bettertouchtool
+* dropbox
+* firefox
+* google-chrome
+* iterm2
+* slack
+* spotify
+* the-unarchiver
+* transmit
+* visual-studio-code
 
 ## Puffin Reload
 Rsyncs dotfiles from puffin to your `$HOME` folder.
@@ -45,6 +78,7 @@ Rsyncs dotfiles from puffin to your `$HOME` folder.
 * `.tmux.conf`
 * `.vimrc`
 * `.zshrc`
+* `.vim/`
 
 ## Config Environment Variables
 `PUFFIN_WEATHER_LOCATION` Sets ansiweather location. Defaults to 'Melbourne, AU'.
@@ -53,15 +87,7 @@ Each file will try to source `.xxx.local` at the very end. This lets you add any
 For example you may choose to place some environment variables in `.zshrc.local`.
 
 
-## TODO
-
-* Backup before rsyncing
-* check for updated before each command
-* default `puffin` command to check for updates and install/reload
-
-
 [homebrew]: http://brew.sh/
-[fasd]: https://github.com/clvv/fasd
 [tig]: https://github.com/jonas/tig
 [node]: https://nodejs.org/
 [oh-my-zsh]: https://github.com/robbyrussell/oh-my-zsh
