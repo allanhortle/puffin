@@ -76,9 +76,11 @@ hi jsClassKeyword ctermfg=red
 hi jsClassMethodType ctermfg=red
 hi jsConditional ctermfg=red
 hi jsException ctermfg=red
+hi jsExceptions ctermfg=red
 hi jsExport ctermfg=red
 hi jsExportDefault ctermfg=red
 hi jsExtendsKeyword ctermfg=red
+hi jsFlowImportType ctermfg=red
 hi jsFrom ctermfg=red
 hi jsForAwait ctermfg=red
 hi jsFunction ctermfg=red
@@ -90,6 +92,7 @@ hi jsLabel ctermfg=red
 hi jsModuleAs ctermfg=red
 hi jsOperatorKeyword ctermfg=red
 hi jsReturn ctermfg=red
+hi jsRepeat ctermfg=red
 hi jsStorageClass ctermfg=red
 hi jsSuper ctermfg=red
 hi jsStatement ctermfg=red
@@ -125,6 +128,7 @@ hi jsFlowArgumentDef ctermfg=magenta
 hi jsFlowArrow ctermfg=magenta
 hi jsFlowClassGroup ctermfg=magenta
 hi jsFlowDefinition ctermfg=magenta
+hi jsFlowExactObject ctermfg=magenta
 hi jsFlowFunctionGroup ctermfg=magenta
 hi jsFlowGeneric ctermfg=magenta
 hi jsFlowMaybe ctermfg=magenta
@@ -194,10 +198,12 @@ hi cssFontProp ctermfg=red
 hi cssMediaProp ctermfg=red
 hi cssPositioningProp ctermfg=red
 hi cssTextProp ctermfg=red
+hi cssTransformProp ctermfg=red
 hi cssUIProp ctermfg=red
 hi scssAtRoot ctermfg=red
 hi scssContent ctermfg=red
 hi scssMixin ctermfg=red
+hi scssInclude ctermfg=red
 " meta
 hi cssPseudoClassId ctermfg=yellow
 hi scssAmpersand ctermfg=yellow
@@ -282,3 +288,21 @@ hi pythonConditional ctermfg=red
 hi pythonInclude ctermfg=red
 hi pythonString ctermfg=green
 hi pythonQuotes ctermfg=green
+
+
+"
+" xml
+hi xmlTag ctermfg=yellow
+hi xmlTagName ctermfg=yellow
+hi xmlEqual ctermfg=yellow
+hi xmlAttrib ctermfg=yellow
+hi xmlDocTypeKeyword ctermfg=yellow
+hi xmlDocTypeDecl ctermfg=yellow
+hi xmlDocType ctermfg=yellow
+hi xmlProcessingDelim ctermfg=yellow
+
+hi xmlString ctermfg=green
+
+hi shQuote ctermfg=green
+hi shDoubleQuote ctermfg=green
+hi shSingleQuote ctermfg=green
