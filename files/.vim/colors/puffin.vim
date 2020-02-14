@@ -130,6 +130,7 @@ hi jsFlowClassGroup ctermfg=magenta
 hi jsFlowDefinition ctermfg=magenta
 hi jsFlowExactObject ctermfg=magenta
 hi jsFlowFunctionGroup ctermfg=magenta
+hi jsFlowClassFunctionGroup ctermfg=magenta
 hi jsFlowGeneric ctermfg=magenta
 hi jsFlowMaybe ctermfg=magenta
 hi jsFlowNoise ctermfg=magenta

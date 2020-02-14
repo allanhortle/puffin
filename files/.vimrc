@@ -151,7 +151,7 @@ let g:ctrlsf_auto_focus = { "at": "start" }
 
 " coc
 call coc#add_extension(
-    \ 'coc-tabnine',
+    \ 'coc-flow',
     \ 'coc-eslint'
 \)
 
