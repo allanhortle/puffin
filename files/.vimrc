@@ -37,6 +37,7 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
+Plug 'calviken/vim-gdscript3'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 

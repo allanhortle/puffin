@@ -11,12 +11,14 @@ let g:colors_name = "puffin"
 hi Comment ctermfg=242
 hi Constant ctermfg=blue cterm=none
 
+
+hi Statement ctermfg=white cterm=none
 hi Identifier ctermfg=white cterm=none
 hi PreProc ctermfg=white cterm=none
+hi Type ctermfg=white cterm=none
 hi Special ctermfg=white cterm=none
 hi Statement ctermfg=white cterm=none
 hi Title ctermfg=white cterm=none
-hi Type ctermfg=white cterm=none
 
 "
 " vim UI
@@ -301,9 +303,17 @@ hi xmlDocTypeKeyword ctermfg=yellow
 hi xmlDocTypeDecl ctermfg=yellow
 hi xmlDocType ctermfg=yellow
 hi xmlProcessingDelim ctermfg=yellow
-
 hi xmlString ctermfg=green
 
 hi shQuote ctermfg=green
 hi shDoubleQuote ctermfg=green
 hi shSingleQuote ctermfg=green
+
+"
+" Godot
+hi gdString ctermfg=green
+hi gdNumber ctermfg=blue
+hi gdKeyword ctermfg=red
+hi gdStatement ctermfg=red
+hi gdConditional ctermfg=red
+
