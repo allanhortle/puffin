@@ -30,6 +30,7 @@ Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
+Plug 'mzlogin/vim-markdown-toc'
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-abolish'
@@ -38,6 +39,7 @@ Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'calviken/vim-gdscript3'
+Plug 'vifm/vifm.vim'
 
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 
@@ -83,6 +85,7 @@ set t_Co=256
 set tabstop=4                   " a tab is four spaces
 set timeoutlen=1000 ttimeoutlen=0
 set updatetime=250
+:set t_BE=
 set wildmenu
 
 set writebackup                 " protect against crash-during-write
@@ -92,6 +95,9 @@ set undofile                    " persist the undo tree for each file
 set backupdir^=~/.vim/backup//  " keep all the backup files in .vim
 set undodir^=~/.vim/undo//
 set noswapfile                  " dont have swap files, they are lame.
+
+:set t_BE=
+
 
 " plain text type file options
 augroup WritingFiles
@@ -156,16 +162,37 @@ call coc#add_extension(
     \ 'coc-eslint'
 \)
 
-" use <tab> for trigger completion and navigate to the next complete item
 function! s:check_back_space() abort
   let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~ '\s'
+  return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-inoremap <silent><expr> <Tab>
-      \ pumvisible() ? "\<C-n>" :
-      \ <SID>check_back_space() ? "\<Tab>" :
-      \ coc#refresh()
+" shift tab navigate fowards
+inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : <SID>check_back_space() ? "\<TAB>" : coc#refresh()
+" shift tab navigate backwards
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+" cr accept completion
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+" Use `[g` and `]g` to navigate diagnostics
+nmap <silent> [g <Plug>(coc-diagnostic-prev)
+nmap <silent> ]g <Plug>(coc-diagnostic-next)
+
+" Remap keys for gotos
+nmap <silent> gd <Plug>(coc-definition)
+nmap <silent> gy <Plug>(coc-type-definition)
+nmap <silent> gi <Plug>(coc-implementation)
+nmap <silent> gr <Plug>(coc-references)
+
+" Use K to show documentation in preview window
+nnoremap <silent> K :call CocAction('doHover')<CR>
+
+" Highlight symbol under cursor on CursorHold
+autocmd CursorHold * silent call CocActionAsync('highlight')
+"autocmd CursorHold * silent call CocAction('doHover');
+
+" Remap for rename current word
+nmap <leader>rn <Plug>(coc-rename)
+
 
 " }}}
 
@@ -200,6 +227,7 @@ nnoremap gj j
 nnoremap gk k
 
 nnoremap <Space> .
+nnoremap <MiddleMouse> :call CocAction('doHover')<CR>
 nnoremap <C-p> :Files<CR>
 nnoremap <C-g> :Rg<CR>
 nmap <C-f> <Plug>CtrlSFPrompt
@@ -221,7 +249,8 @@ nnoremap Q @@
 nnoremap <Leader>tt :!tig<CR><CR>
 nnoremap <Leader>ts :!tig status<CR><CR>
 nnoremap <Leader>th :!tig %<CR><CR>
-nnoremap <Leader>tb :!tig blame %<CR><CR>
+nnoremap <Leader>tb :execute '!tig blame % +' . line('.')<CR><CR>
+
 
 " windows
 nnoremap <Leader><Tab> <C-W>w
