@@ -101,6 +101,8 @@ hi jsStatement ctermfg=red
 hi jsThis ctermfg=red
 hi jsTry ctermfg=red
 hi jsVariable ctermfg=red
+
+
 " string
 hi jsTemplateString ctermfg=green
 hi jsTemplateBraces ctermfg=green
@@ -145,6 +147,48 @@ hi jsFlowTypeCustom ctermfg=magenta
 hi jsFlowTypeStatement ctermfg=magenta
 hi jsFlowTypeValue ctermfg=magenta
 hi jsFlowWildcard ctermfg=magenta
+
+
+"
+" typescript
+hi typescriptSource ctermfg=red
+hi typescriptIdentifier ctermfg=red
+hi typescriptStorageClass ctermfg=red
+hi typescriptOperator ctermfg=red
+hi typescriptMessage ctermfg=red
+hi typescriptGlobal ctermfg=red
+hi typescriptDeprecated ctermfg=red
+hi typescriptConditional ctermfg=red
+hi typescriptRepeat ctermfg=red
+hi typescriptBranch ctermfg=red
+hi typescriptStatement ctermfg=red
+hi typescriptGlobalObjects ctermfg=red
+hi typescriptExceptions ctermfg=red
+hi typescriptReserved ctermfg=red
+hi typescriptExport ctermfg=red
+hi typescriptImport ctermfg=red
+hi typescriptVariable ctermfg=red
+hi typescriptDefault ctermfg=red
+hi typescriptAsyncFuncKeyword ctermfg=red
+hi typescriptCase ctermfg=red
+hi typescriptStatementKeyword ctermfg=red
+hi typescriptPromiseStaticMethod ctermfg=red
+
+" constants
+hi typescriptNull ctermfg=blue
+hi typescriptBoolean ctermfg=blue
+
+hi typescriptString ctermfg=green
+hi typescriptTemplate ctermfg=green
+hi typescriptStringProperty ctermfg=green
+hi typescriptTemplateSB ctermfg=green
+
+hi typescriptTypeReference ctermfg=magenta
+hi typescriptTypeBrackets ctermfg=magenta
+hi typescriptPredefinedType ctermfg=magenta
+hi typescriptAliasDeclaration ctermfg=magenta
+hi typescriptAliasKeyword ctermfg=magenta
+
 
 "
 " json

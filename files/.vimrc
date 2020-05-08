@@ -27,6 +27,7 @@ Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'freitass/todo.txt-vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
+Plug 'junegunn/vim-peekaboo'
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
@@ -290,7 +291,7 @@ noremap <TAB> <NOP>
 
 " jsx files
 augroup filetypedetect
-    au BufRead,BufNewFile *.jsx,*.mdx,*.tsx,*.ts set filetype=javascript
+    au BufRead,BufNewFile *.jsx,*.mdx set filetype=javascript
 augroup END
 let g:javascript_plugin_flow = 1
 
