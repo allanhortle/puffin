@@ -84,6 +84,7 @@ hi jsExportDefault ctermfg=red
 hi jsExtendsKeyword ctermfg=red
 hi jsFlowImportType ctermfg=red
 hi jsFrom ctermfg=red
+hi jsFinally ctermfg=red
 hi jsForAwait ctermfg=red
 hi jsFunction ctermfg=red
 hi jsFutureKeys ctermfg=red
@@ -151,28 +152,30 @@ hi jsFlowWildcard ctermfg=magenta
 
 "
 " typescript
-hi typescriptSource ctermfg=red
-hi typescriptIdentifier ctermfg=red
-hi typescriptStorageClass ctermfg=red
-hi typescriptOperator ctermfg=red
-hi typescriptMessage ctermfg=red
-hi typescriptGlobal ctermfg=red
-hi typescriptDeprecated ctermfg=red
-hi typescriptConditional ctermfg=red
-hi typescriptRepeat ctermfg=red
-hi typescriptBranch ctermfg=red
-hi typescriptStatement ctermfg=red
-hi typescriptGlobalObjects ctermfg=red
-hi typescriptExceptions ctermfg=red
-hi typescriptReserved ctermfg=red
-hi typescriptExport ctermfg=red
-hi typescriptImport ctermfg=red
-hi typescriptVariable ctermfg=red
-hi typescriptDefault ctermfg=red
 hi typescriptAsyncFuncKeyword ctermfg=red
+hi typescriptBranch ctermfg=red
 hi typescriptCase ctermfg=red
-hi typescriptStatementKeyword ctermfg=red
+hi typescriptConditional ctermfg=red
+hi typescriptDefault ctermfg=red
+hi typescriptDeprecated ctermfg=red
+hi typescriptExceptions ctermfg=red
+hi typescriptExport ctermfg=red
+hi typescriptFinally ctermfg=red
+hi typescriptFuncKeyword ctermfg=red
+hi typescriptGlobal ctermfg=red
+hi typescriptGlobalObjects ctermfg=red
+hi typescriptIdentifier ctermfg=red
+hi typescriptImport ctermfg=red
+hi typescriptMessage ctermfg=red
+hi typescriptOperator ctermfg=red
 hi typescriptPromiseStaticMethod ctermfg=red
+hi typescriptRepeat ctermfg=red
+hi typescriptReserved ctermfg=red
+hi typescriptSource ctermfg=red
+hi typescriptStatement ctermfg=red
+hi typescriptStatementKeyword ctermfg=red
+hi typescriptStorageClass ctermfg=red
+hi typescriptVariable ctermfg=red
 
 " constants
 hi typescriptNull ctermfg=blue
@@ -188,6 +191,13 @@ hi typescriptTypeBrackets ctermfg=magenta
 hi typescriptPredefinedType ctermfg=magenta
 hi typescriptAliasDeclaration ctermfg=magenta
 hi typescriptAliasKeyword ctermfg=magenta
+hi typescriptMember ctermfg=magenta
+hi typescriptTypeAnnotation ctermfg=magenta
+hi typescriptUnion ctermfg=magenta
+hi typescriptUnion ctermfg=magenta
+hi typescriptEndColons ctermfg=magenta
+hi typescriptTypeBracket ctermfg=magenta
+hi typescriptTypeParameter ctermfg=magenta
 
 
 "
