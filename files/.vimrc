@@ -22,16 +22,15 @@ call plug#begin('~/.vim/plugged')
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'airblade/vim-gitgutter'
 Plug 'chrisbra/csv.vim'
-Plug 'christoomey/vim-sort-motion'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
-Plug 'freitass/todo.txt-vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/vim-peekaboo'
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
 Plug 'mzlogin/vim-markdown-toc'
+Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-abolish'
@@ -40,9 +39,7 @@ Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 Plug 'calviken/vim-gdscript3'
-Plug 'vifm/vifm.vim'
-
-Plug 'neoclide/coc.nvim', {'branch': 'release'}
+Plug 'aquach/vim-http-client'
 
 " Syntax
 Plug 'cakebaker/scss-syntax.vim'
@@ -83,10 +80,10 @@ set softtabstop=4
 set splitright                  " set vertical splits to the right
 set suffixesadd=.jsx,.md,.js
 set t_Co=256
+set t_BE=
 set tabstop=4                   " a tab is four spaces
 set timeoutlen=1000 ttimeoutlen=0
 set updatetime=250
-:set t_BE=
 set wildmenu
 
 set writebackup                 " protect against crash-during-write
@@ -97,7 +94,6 @@ set backupdir^=~/.vim/backup//  " keep all the backup files in .vim
 set undodir^=~/.vim/undo//
 set noswapfile                  " dont have swap files, they are lame.
 
-:set t_BE=
 
 
 " plain text type file options
@@ -126,6 +122,11 @@ let g:markdown_fold_style = 'nested'
 " emmet
 "let g:user_emmet_expandabbr_key='<Tab>'
 "imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
+
+
+
+" FZF
+let g:fzf_preview_window = ''
 
 
 " Nerd Tree
@@ -160,6 +161,7 @@ let g:ctrlsf_auto_focus = { "at": "start" }
 " coc
 call coc#add_extension(
     \ 'coc-flow',
+    \ 'coc-tsserver',
     \ 'coc-eslint'
 \)
 
@@ -234,12 +236,9 @@ nnoremap <C-g> :Rg<CR>
 nmap <C-f> <Plug>CtrlSFPrompt
 vmap <C-f> <Plug>CtrlSFVwordExec
 nnoremap <CR> :noh<CR><CR>
-nnoremap <C-n> :Notes<CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
-nnoremap <silent> <C-k> <Plug>(ale_previous_wrap)
-nnoremap <silent> <C-j> <Plug>(ale_next_wrap)
 nnoremap <Leader>f :bn<CR>
 nnoremap <Leader>r :source $MYVIMRC<CR>
 nnoremap <Leader>u :UndotreeToggle<CR>

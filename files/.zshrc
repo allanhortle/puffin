@@ -1,3 +1,10 @@
+# Brew Completions
+if type brew &>/dev/null; then
+  FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
+
+  autoload -Uz compinit
+  compinit
+fi
 
 ## Oh My ZSH ##
 export ZSH=$HOME/.oh-my-zsh
@@ -113,7 +120,6 @@ precmd() {
 }
 
 
-
 export FZF_DEFAULT_COMMAND='rg --files --hidden --follow --glob "!.git"'
 export FZF_DEFAULT_OPTS='--color=16,bg+:-1,pointer:2,prompt:2,hl+:2,hl:2,fg+:2'
 export EDITOR="/usr/local/bin/vim"
@@ -137,6 +143,7 @@ for file in ~/.{aliases,functions}; do
     [ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
 unset file;
+
 
 
 # puffin_prompt
