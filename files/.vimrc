@@ -38,15 +38,17 @@ Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
-Plug 'calviken/vim-gdscript3'
-Plug 'aquach/vim-http-client'
 
 " Syntax
+Plug 'calviken/vim-gdscript3'
 Plug 'cakebaker/scss-syntax.vim'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'jparise/vim-graphql'
 Plug 'maxmellon/vim-jsx-pretty'
 Plug 'pangloss/vim-javascript'
+"Plug 'leafgarland/typescript-vim'
+"Plug 'peitalin/vim-jsx-typescript'
+Plug 'styled-components/vim-styled-components', { 'branch': 'main' }
 
 call plug#end() 
 
@@ -73,6 +75,7 @@ set number                      " always show line numbers
 set rtp+=/usr/local/opt/fzf
 set shiftround                  " use multiple of shiftwidth when indenting with '<' and '>'
 set shiftwidth=4                " number of spaces to use for auto-indenting
+set signcolumn=number
 set showmatch                   " set show matching 
 set smartcase                   " ignore case if search pattern is all lower-case case-sensitive otherwise
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
@@ -159,42 +162,42 @@ let g:ctrlsf_auto_focus = { "at": "start" }
 
 
 " coc
-call coc#add_extension(
+let g:coc_global_extensions = [
     \ 'coc-flow',
     \ 'coc-tsserver',
     \ 'coc-eslint'
-\)
+\ ]
 
-function! s:check_back_space() abort
-  let col = col('.') - 1
-  return !col || getline('.')[col - 1]  =~# '\s'
-endfunction
+"function! s:check_back_space() abort
+  "let col = col('.') - 1
+  "return !col || getline('.')[col - 1]  =~# '\s'
+"endfunction
 
 " shift tab navigate fowards
-inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : <SID>check_back_space() ? "\<TAB>" : coc#refresh()
+"inoremap <silent><expr> <TAB> pumvisible() ? "\<C-n>" : <SID>check_back_space() ? "\<TAB>" : coc#refresh()
 " shift tab navigate backwards
-inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+"inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
 " cr accept completion
-inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+"inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
 " Use `[g` and `]g` to navigate diagnostics
-nmap <silent> [g <Plug>(coc-diagnostic-prev)
-nmap <silent> ]g <Plug>(coc-diagnostic-next)
+"nmap <silent> [g <Plug>(coc-diagnostic-prev)
+"nmap <silent> ]g <Plug>(coc-diagnostic-next)
 
 " Remap keys for gotos
-nmap <silent> gd <Plug>(coc-definition)
-nmap <silent> gy <Plug>(coc-type-definition)
-nmap <silent> gi <Plug>(coc-implementation)
-nmap <silent> gr <Plug>(coc-references)
+"nmap <silent> gd <Plug>(coc-definition)
+"nmap <silent> gy <Plug>(coc-type-definition)
+"nmap <silent> gi <Plug>(coc-implementation)
+"nmap <silent> gr <Plug>(coc-references)
 
 " Use K to show documentation in preview window
 nnoremap <silent> K :call CocAction('doHover')<CR>
 
 " Highlight symbol under cursor on CursorHold
-autocmd CursorHold * silent call CocActionAsync('highlight')
+"autocmd CursorHold * silent call CocActionAsync('highlight')
 "autocmd CursorHold * silent call CocAction('doHover');
 
 " Remap for rename current word
-nmap <leader>rn <Plug>(coc-rename)
+"nmap <leader>rn <Plug>(coc-rename)
 
 
 " }}}
@@ -291,8 +294,11 @@ noremap <TAB> <NOP>
 " jsx files
 augroup filetypedetect
     au BufRead,BufNewFile *.jsx,*.mdx set filetype=javascript
+    au BufNewFile,BufRead *.tsx set filetype=typescript.tsx
 augroup END
-let g:javascript_plugin_flow = 1
+
+
+"let g:javascript_plugin_flow = 1
 
 syntax reset
 syntax on
