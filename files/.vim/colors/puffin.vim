@@ -34,11 +34,11 @@ hi MatchParen ctermfg=white ctermbg=grey
 hi ModeMsg ctermfg=white
 hi MoreMsg ctermfg=white
 hi NonText ctermfg=242
-hi PMenu ctermfg=white ctermbg=darkgrey
+hi PMenu ctermfg=white ctermbg=234
 hi PMenuSel ctermfg=black ctermbg=green
 hi Question ctermfg=white
 hi Search ctermbg=grey
-hi SignColumn ctermfg=white
+hi SignColumn ctermbg=none
 hi SpecialKey ctermfg=white
 hi SpellBad ctermfg=red ctermbg=none cterm=underline
 hi SpellCap ctermfg=yellow ctermbg=none cterm=underline
@@ -152,6 +152,7 @@ hi jsFlowWildcard ctermfg=magenta
 
 "
 " typescript
+hi javaScriptLineComment ctermfg=242
 hi typescriptAsyncFuncKeyword ctermfg=red
 hi typescriptBranch ctermfg=red
 hi typescriptCase ctermfg=red
