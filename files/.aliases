@@ -1,68 +1,22 @@
 alias softlimit='ulimit -n 2048'
 
-#--------------------------------------------------------------------------
 # Git
-#--------------------------------------------------------------------------
-
-
-
-# Add all files from repo root.
 alias ga='git add -A :/'
-alias gg='git-good'
-
-# Better Fetch
 alias gf='git fetch -p'
-
-# Hacky way to update Git
 alias gst='git status --short --branch'
 gs (){ git stash push -u -m "$1"}
 alias gsp='git stash pop'
-
 alias gbmd='gb --merged | rg -v "(\*|master)" | xargs git branch -d'
-
-# Amend files to last commit
 alias gwhoops='git commit --amend -C HEAD'
-
-# Create a new branch, go to it and set its upstream. usage: gcob feature/xyz
 gcob () { gco -b "$@" && gp -u origin "$@" }
-
-alias fixYarnLock='git checkout $(git rev-parse --abbrev-ref --symbolic-full-name @{u}) -- yarn.lock && yarn install'
-
 alias monodiff='git diff --name-only master... | grep "packages" | sed "s/packages\/\([^\/]*\).*/\1/g" | uniq'
 
-#--------------------------------------------------------------------------
-# FZF
-#--------------------------------------------------------------------------
 
-# fe [FUZZY PATTERN] - Open the selected file with the default editor
-#   - Bypass fuzzy finder if there's only one match (--select-1)
-#   - Exit if there's no match (--exit-0)
-fe() {
-  IFS='
-'
-  local declare files=($(fzf-tmux --query="$1" --select-1 --exit-0))
-  [[ -n "$files" ]] && ${EDITOR:-vim} "${files[@]}"
-  unset IFS
-}
+# data
+alias album="cat ~/Dropbox/data/albums.md | fzf"
+alias valbum="vim ~/Dropbox/data/albums.md"
 
-# Fuzz git branch searching
-fbr() {
-  local branches branch
-  branches=$(git branch -vv) &&
-  branch=$(echo "$branches" | fzf +m) &&
-  git checkout $(echo "$branch" | awk '{print $1}' | sed "s/.* //")
-}
-
-v() {
-  local file
-  file="$(fasd -Rfl "$1" | fzf -1 -0 --no-sort +m)" && vim "${file}" || return 1
-}
-
-#--------------------------------------------------------------------------
-# Node
-#--------------------------------------------------------------------------
-
-alias npml='npm list --depth=0'
+# Node / npm / Yarn
 alias npm_patch_publish='npm version patch && git push --follow-tags && npm publish'
 alias npm_minor_publish='npm version minor && git push --follow-tags && npm publish'
 
@@ -72,108 +26,18 @@ root() {
     cd - 
 }
 
-
-#--------------------------------------------------------------------------
-# Maven/Jetty shortcuts
-#--------------------------------------------------------------------------
-
-#run jetty
-alias jrun='mvn jetty:run -Djava.awt.headless=true'
-
-#kill the latest jetty instance
-alias jkill='kill -9 `ps -e | grep jetty\:run | awk '"'"'{print $1}'"'"' | tail -1`'
-
-
-#--------------------------------------------------------------------------
-# Bower
-#--------------------------------------------------------------------------
-
-# No Glob for ZSH usage
-alias bower='noglob bower'
-
-#--------------------------------------------------------------------------
-# Tig
-#--------------------------------------------------------------------------
-
+# tig
 alias t='tig'
 alias tst='tig status'
 
 
-#--------------------------------------------------------------------------
-# oh-my-zsh
-#--------------------------------------------------------------------------
-
+# zsh
 alias zc="$EDITOR ~/.zshrc.local"
 alias zr=". ~/.zshrc"
 
 
-#--------------------------------------------------------------------------
 # Misc
-#--------------------------------------------------------------------------
-
 alias k='kill -9'
-
-
-
-
-# Stopwatch
-alias timer='echo "Timer started. Stop with Ctrl-D." && date && time cat && date'
-
-# Get OS X Software Updates, and update installed Ruby gems, Homebrew, npm, and their installed packages
-alias update='sudo softwareupdate -i -a; brew update; brew upgrade; brew cleanup; npm install npm -g; npm update -g; sudo gem update --system; sudo gem update'
-
-# Flush Directory Service cache
-alias flush="dscacheutil -flushcache && killall -HUP mDNSResponder"
-
-# Clean up LaunchServices to remove duplicates in the “Open With” menu
-alias lscleanup="/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister -kill -r -domain local -domain system -domain user && killall Finder"
-
-
-# Trim new lines and copy to clipboard
-alias c="tr -d '\n' | pbcopy"
-
-# Recursively delete `.DS_Store` files
-alias cleanup="find . -type f -name '*.DS_Store' -ls -delete"
-
-# Empty the Trash on all mounted volumes and the main HDD
-# Also, clear Apple’s System Logs to improve shell startup speed
 alias emptytrash="sudo rm -rfv /Volumes/*/.Trashes; sudo rm -rfv ~/.Trash; sudo rm -rfv /private/var/log/asl/*.asl"
+alias chrometabkill="ps ux | grep '[C]hrome Helper --type=renderer' | grep -v extension-process | tr -s ' ' | cut -d ' ' -f2 | xargs kill"
 
-# Show/hide hidden files in Finder
-alias show="defaults write com.apple.finder AppleShowAllFiles -bool true && killall Finder"
-alias hide="defaults write com.apple.finder AppleShowAllFiles -bool false && killall Finder"
-
-# Hide/show all desktop icons (useful when presenting)
-alias hidedesktop="defaults write com.apple.finder CreateDesktop -bool false && killall Finder"
-alias showdesktop="defaults write com.apple.finder CreateDesktop -bool true && killall Finder"
-
-# URL-encode strings
-alias urlencode='python -c "import sys, urllib as ul; print ul.quote_plus(sys.argv[1]);"'
-
-
-# Intuitive map function
-# For example, to list all directories that contain a certain file:
-# find . -name .gitattributes | map dirname
-alias map="xargs -n1"
-
-# One of @janmoesen’s ProTip™s
-for method in GET HEAD POST PUT DELETE TRACE OPTIONS; do
-	alias "$method"="lwp-request -m '$method'"
-done
-
-# Make Grunt print stack traces by default
-command -v grunt > /dev/null && alias grunt="grunt --stack"
-
-# Stuff I never really use but cannot delete either because of http://xkcd.com/530/
-alias stfu="osascript -e 'set volume output muted true'"
-alias pumpitup="osascript -e 'set volume 7'"
-
-# Kill all the tabs in Chrome to free up memory
-# [C] explained: http://www.commandlinefu.com/commands/view/402/exclude-grep-from-your-grepped-output-of-ps-alias-included-in-description
-alias chromekill="ps ux | grep '[C]hrome Helper --type=renderer' | grep -v extension-process | tr -s ' ' | cut -d ' ' -f2 | xargs kill"
-
-# Lock the screen (when going AFK)
-alias afk="/System/Library/CoreServices/Menu\ Extras/User.menu/Contents/Resources/CGSession -suspend"
-
-# Reload the shell (i.e. invoke as a login shell)
-alias reload="exec $SHELL -l"
