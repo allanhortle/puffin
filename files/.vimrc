@@ -48,7 +48,7 @@ Plug 'maxmellon/vim-jsx-pretty'
 Plug 'pangloss/vim-javascript'
 "Plug 'leafgarland/typescript-vim'
 Plug 'peitalin/vim-jsx-typescript'
-Plug 'styled-components/vim-styled-components', { 'branch': 'main' }
+Plug 'jason0x43/vim-js-indent'
 
 
 call plug#end() 
@@ -165,9 +165,16 @@ let g:ctrlsf_auto_focus = { "at": "start" }
 " coc
 let g:coc_global_extensions = [
     \ 'coc-flow',
-    \ 'coc-tsserver',
-    \ 'coc-eslint'
+    \ 'coc-tsserver'
 \ ]
+
+if isdirectory('./node_modules') && isdirectory('./node_modules/prettier')
+    let g:coc_global_extensions += ['coc-prettier']
+endif
+
+if isdirectory('./node_modules') && isdirectory('./node_modules/eslint')
+    let g:coc_global_extensions += ['coc-eslint']
+endif
 
 " tab/shift-tab navigate through Pmenu
 function! s:check_back_space() abort
@@ -235,6 +242,9 @@ nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
 nnoremap <Leader>f :bn<CR>
 nnoremap <Leader>r :source $MYVIMRC<CR>
 nnoremap <Leader>u :UndotreeToggle<CR>
+nnoremap <Leader>d1 :diffget LOCAL<CR>
+nnoremap <Leader>d2 :diffget BASE<CR>
+nnoremap <Leader>d3 :diffget REMOTE<CR>
 
 nnoremap Q @@
 
@@ -267,14 +277,15 @@ command! -bang WQa wqa<bang>
 command! -bang WQA wqa<bang>
 
 "
-" Custom Hardmode
+" Shortcut disabling
 "
-noremap <Up> <NOP>
-noremap <Down> <NOP>
-noremap <Left> <NOP>
-noremap <Right> <NOP>
-noremap <BS> <NOP>
-noremap <TAB> <NOP>
+noremap <Up> <nop>
+noremap <Down> <nop>
+noremap <Left> <nop>
+noremap <Right> <nop>
+noremap <BS> <nop>
+noremap <TAB> <nop>
+nnoremap q: <nop>
 
 
 " }}}
