@@ -98,6 +98,10 @@ set backupdir^=~/.vim/backup//  " keep all the backup files in .vim
 set undodir^=~/.vim/undo//
 set noswapfile                  " dont have swap files, they are lame.
 
+let &t_EI = "\033[2 q" " NORMAL  █
+let &t_SI = "\033[5 q" " INSERT  |
+let &t_SR = "\033[3 q" " REPLACE _
+
 
 
 " plain text type file options
