@@ -244,6 +244,7 @@ nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
 nnoremap <Leader>f :bn<CR>
+nnoremap <Leader>q :bw<CR>
 nnoremap <Leader>r :source $MYVIMRC<CR>
 nnoremap <Leader>u :UndotreeToggle<CR>
 nnoremap <Leader>d1 :diffget LOCAL<CR>
@@ -372,7 +373,7 @@ function! ActiveStatus()
   let statusline.="%1* %(%-0.75f %M%)"
   let statusline.="%="
   let statusline.="%1*%( %r%w%y%)"
-  let statusline.="%1* %v:%l "
+  let statusline.="%1* %v:%l/%L "
   return statusline
 endfunction
 
@@ -382,7 +383,7 @@ function! InactiveStatus()
   let statusline.="%2* %(%-0.75f %M%)"
   let statusline.="%="
   let statusline.="%2*%( %r%w%y%)"
-  let statusline.="%2* %v:%l\ "
+  let statusline.="%2* %v:%l/%L "
   return statusline
 endfunction
 

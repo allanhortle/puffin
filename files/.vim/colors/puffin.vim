@@ -46,7 +46,7 @@ hi SpellLocal ctermfg=none ctermbg=none cterm=none
 hi TabLine ctermfg=none ctermbg=none cterm=underline
 hi TabLineFill ctermfg=none ctermbg=none cterm=underline
 hi TabLineSel ctermfg=black ctermbg=grey
-hi VertSplit ctermfg=0 ctermbg=white
+hi VertSplit ctermfg=black ctermbg=black
 hi Visual ctermbg=240
 hi WarningMsg ctermfg=yellow ctermbg=black
 hi StartifyHeader ctermfg=yellow 
@@ -153,11 +153,14 @@ hi jsFlowWildcard ctermfg=magenta
 "
 " typescript
 hi javaScriptLineComment ctermfg=242
+
+hi typescriptAmbientDeclaration ctermfg=red
 hi typescriptAsyncFuncKeyword ctermfg=red
 hi typescriptBranch ctermfg=red
 hi typescriptCase ctermfg=red
 hi typescriptClassExtends ctermfg=red
 hi typescriptClassKeyword ctermfg=red
+hi typescriptClassStatic ctermfg=red
 hi typescriptConditional ctermfg=red
 hi typescriptDefault ctermfg=red
 hi typescriptDeprecated ctermfg=red
@@ -169,9 +172,13 @@ hi typescriptGlobal ctermfg=red
 hi typescriptGlobalObjects ctermfg=red
 hi typescriptIdentifier ctermfg=red
 hi typescriptImport ctermfg=red
+hi typescriptInterfaceKeyword ctermfg=red
 hi typescriptMessage ctermfg=red
+hi typescriptMethodAccessor ctermfg=red
+hi typescriptModule ctermfg=red
 hi typescriptOperator ctermfg=red
 hi typescriptPromiseStaticMethod ctermfg=red
+hi typescriptReadonlyModifier ctermfg=red
 hi typescriptRepeat ctermfg=red
 hi typescriptReserved ctermfg=red
 hi typescriptSource ctermfg=red
@@ -225,14 +232,10 @@ hi yamlFlowStringDelimiter ctermfg=green
 "
 " graphql
 "
-"keyword
 hi graphqlStructure ctermfg=red
-"string
+hi graphqlDirective ctermfg=red
 hi graphqlString ctermfg=green
-"constant
-"meta
 hi graphqlVariable ctermfg=yellow
-"type
 hi graphqlConstant ctermfg=magenta
 hi graphqlType ctermfg=magenta
 hi graphqlOperator ctermfg=magenta
