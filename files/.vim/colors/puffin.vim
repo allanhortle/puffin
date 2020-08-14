@@ -5,6 +5,8 @@ if exists("syntax_on")
 endif
 let g:colors_name = "puffin"
 
+" Make vert split stuff work
+hi Normal cterm=none ctermfg=white ctermbg=none
 "
 " Basic
 "
@@ -46,7 +48,7 @@ hi SpellLocal ctermfg=none ctermbg=none cterm=none
 hi TabLine ctermfg=none ctermbg=none cterm=underline
 hi TabLineFill ctermfg=none ctermbg=none cterm=underline
 hi TabLineSel ctermfg=black ctermbg=grey
-hi VertSplit ctermfg=black ctermbg=black
+hi VertSplit ctermfg=white cterm=none ctermbg=none
 hi Visual ctermbg=240
 hi WarningMsg ctermfg=yellow ctermbg=black
 hi StartifyHeader ctermfg=yellow 

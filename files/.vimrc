@@ -82,6 +82,7 @@ set smartcase                   " ignore case if search pattern is all lower-cas
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
 set softtabstop=4
 set splitright                  " set vertical splits to the right
+set fillchars=vert:\            " set empty vert chartacter
 set suffixesadd=.jsx,.md,.js
 set t_Co=256
 set t_BE=
