@@ -237,6 +237,7 @@ nnoremap gk k
 nnoremap <Space> .
 nnoremap <MiddleMouse> :call CocAction('doHover')<CR>
 nnoremap <C-p> :Files<CR>
+nnoremap <expr> <C-p> (expand('%') =~ 'NERD_tree' ? ":NERDTreeToggle\<CR>" : '').":Files\<cr>"
 nnoremap <C-g> :Rg<CR>
 nmap <C-f> <Plug>CtrlSFPrompt
 vmap <C-f> <Plug>CtrlSFVwordExec
