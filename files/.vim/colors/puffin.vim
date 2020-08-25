@@ -25,7 +25,7 @@ hi Title ctermfg=white cterm=none
 "
 " vim UI
 "
-hi ColorColumn ctermbg=238
+hi ColorColumn ctermbg=black
 hi Directory ctermfg=white
 hi Error ctermbg=red ctermfg=black
 hi ErrorMsg ctermfg=red ctermbg=black
@@ -192,6 +192,7 @@ hi typescriptVariable ctermfg=red
 " constants
 hi typescriptNull ctermfg=blue
 hi typescriptBoolean ctermfg=blue
+hi typescriptSpecial ctermfg=blue
 
 hi typescriptString ctermfg=green
 hi typescriptTemplate ctermfg=green

@@ -90,6 +90,7 @@ set tabstop=4                   " a tab is four spaces
 set timeoutlen=1000 ttimeoutlen=0
 set updatetime=250
 set wildmenu
+set numberwidth=1               " make line numbers closer to ~
 
 set writebackup                 " protect against crash-during-write
 set nobackup                    " but do not persist backup after successful write
@@ -145,6 +146,9 @@ let NERDTreeShowHidden = 1
 let NERDTreeQuitOnOpen = 1
 let NERDTreeMinimalUI = 1
 let NERDTreeDirArrows = 1
+let NERDTreeAutoDeleteBuffer = 1
+let g:NERDTreeDirArrowExpandable = '+'
+let g:NERDTreeDirArrowCollapsible = '-'
 " close if nerd tree is the only buffer
 autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
 
@@ -247,6 +251,7 @@ nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
 nnoremap <Leader>f :bn<CR>
 nnoremap <Leader>q :bw<CR>
+nnoremap <Leader>s :Startify<CR>
 nnoremap <Leader>r :source $MYVIMRC<CR>
 nnoremap <Leader>u :UndotreeToggle<CR>
 nnoremap <Leader>d1 :diffget LOCAL<CR>
