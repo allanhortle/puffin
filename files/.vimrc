@@ -24,6 +24,7 @@ Plug 'airblade/vim-gitgutter'
 Plug 'chrisbra/csv.vim'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
+Plug 'iberianpig/tig-explorer.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/vim-peekaboo'
 Plug 'mattn/emmet-vim'
@@ -261,10 +262,10 @@ nnoremap <Leader>d3 :diffget REMOTE<CR>
 nnoremap Q @@
 
 " tig
-nnoremap <Leader>tt :!tig<CR><CR>
-nnoremap <Leader>ts :!tig status<CR><CR>
-nnoremap <Leader>th :!tig %<CR><CR>
-nnoremap <Leader>tb :execute '!tig blame % +' . line('.')<CR><CR>
+nnoremap <Leader>tt :Tig<CR>
+nnoremap <Leader>ts :TigStatus<CR>
+nnoremap <Leader>th :TigOpenCurrentFile<CR>
+nnoremap <Leader>tb :TigBlame<CR>
 
 
 " windows
