@@ -6,8 +6,6 @@
 "   ██║     ╚██████╔╝██║     ██║     ██║██║ ╚████║
 "   ╚═╝      ╚═════╝ ╚═╝     ╚═╝     ╚═╝╚═╝  ╚═══╝
 "
-"   File:   .vimrc
-"
 
 " {{{ Plugins
 set nocompatible
@@ -27,6 +25,7 @@ Plug 'dyng/ctrlsf.vim'
 Plug 'iberianpig/tig-explorer.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
 Plug 'junegunn/vim-peekaboo'
+Plug 'junegunn/goyo.vim'
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
@@ -83,6 +82,7 @@ set smartcase                   " ignore case if search pattern is all lower-cas
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
 set softtabstop=4
 set splitright                  " set vertical splits to the right
+set synmaxcol=500               " stop checking syntax regexes after 500, hopefully prettier makes this fine
 set fillchars=vert:\            " set empty vert chartacter
 set suffixesadd=.jsx,.md,.js
 set t_Co=256
@@ -135,9 +135,23 @@ let g:markdown_fold_style = 'nested'
 "imap <expr> <tab> emmet#expandAbbrIntelligent("\<tab>")
 
 
+" Goyo
+function! s:goyo_enter()
+    set linebreak!
+endfunction
+
+function! s:goyo_leave()
+    set linebreak!
+endfunction
+
+autocmd! User GoyoEnter call <SID>goyo_enter()
+autocmd! User GoyoLeave call <SID>goyo_leave()
+
+
 
 " FZF
 let g:fzf_preview_window = ''
+let g:fzf_layout = { 'up': '50%' }
 
 
 " Nerd Tree
@@ -221,6 +235,8 @@ set pastetoggle=<F2>
 map <F3> :set wrap!<CR>:set linebreak!<CR>
 " toggle spell check
 map <F6> :setlocal spell! spelllang=en_au<CR>
+" Toggle goyo
+map <F7> :Goyo<CR>
 " print syntax names
 map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<' . synIDattr(synID(line("."),col("."),0),"name") . "> lo<" . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
 " save and run last terminal command
@@ -307,8 +323,8 @@ nnoremap q: <nop>
 
 " jsx files
 augroup filetypedetect
-    au BufRead,BufNewFile *.jsx,*.mdx set filetype=javascript
-    au BufNewFile,BufRead *.tsx set filetype=typescript.tsx
+    au BufRead,BufNewFile *.jsx set filetype=javascript
+    au BufRead,BufNewFile *.tsx set filetype=typescript.tsx
 augroup END
 
 

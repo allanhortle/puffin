@@ -1,6 +1,7 @@
 alias softlimit='ulimit -n 2048'
 
 # Git
+alias gb='git branch --sort=committerdate'
 alias ga='git add -A :/'
 alias gf='git fetch -p'
 alias gst='git status --short --branch'
@@ -10,6 +11,22 @@ alias gbmd='gb --merged | rg -v "(\*|master)" | xargs git branch -d'
 alias gwhoops='git commit --amend -C HEAD'
 gcob () { gco -b "$@" && gp -u origin "$@" }
 alias monodiff='git diff --name-only master... | grep "packages" | sed "s/packages\/\([^\/]*\).*/\1/g" | uniq'
+
+function gparent() {
+    git show-branch \
+        | sed "s/].*//" \
+        | grep "\*" \
+        | grep -v "$(git rev-parse --abbrev-ref HEAD)" \
+        | head -n1 \
+        | sed "s/^.*\[//" 
+}
+
+
+# Github
+alias prs="gh pr status"
+alias prc="gh pr create"
+alias prl="gh pr list"
+
 
 
 # data
@@ -29,6 +46,11 @@ root() {
 # tig
 alias t='tig'
 alias tst='tig status'
+
+# tmux
+alias tmrw='tmux rename-window'
+alias tmrs='tmux rename-session'
+alias tmn='tmux new'
 
 
 # zsh

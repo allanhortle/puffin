@@ -188,6 +188,8 @@ hi typescriptStatement ctermfg=red
 hi typescriptStatementKeyword ctermfg=red
 hi typescriptStorageClass ctermfg=red
 hi typescriptVariable ctermfg=red
+hi typescriptKeywordOp ctermfg=red
+hi typescriptTry ctermfg=red
 
 " constants
 hi typescriptNull ctermfg=blue
@@ -380,3 +382,11 @@ hi gdKeyword ctermfg=red
 hi gdStatement ctermfg=red
 hi gdConditional ctermfg=red
 
+
+
+"
+" ZSH
+hi zshCommands ctermfg=red
+hi zshKeyword ctermfg=red
+
+hi zshString ctermfg=green
