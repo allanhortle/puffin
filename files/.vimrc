@@ -78,6 +78,7 @@ set shiftround                  " use multiple of shiftwidth when indenting with
 set shiftwidth=4                " number of spaces to use for auto-indenting
 set signcolumn=number
 set showmatch                   " set show matching 
+set showcmd
 set smartcase                   " ignore case if search pattern is all lower-case case-sensitive otherwise
 set smarttab                    " insert tabs on the start of a line according to shiftwidth, not tabstop
 set softtabstop=4
