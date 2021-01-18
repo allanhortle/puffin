@@ -46,7 +46,7 @@ function findByPort() {
 # Weather
 #
 function weather() {
-    bom ${PUFFIN_WEATHER_LOCATION:-"melbourne"} -p "%t°C"
+    bom ${PUFFIN_WEATHER_LOCATION:-"hobart"} -p "%t°C"
 }
 
 function radar() {

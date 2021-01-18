@@ -3,6 +3,7 @@ alias softlimit='ulimit -n 2048'
 # Git
 alias gb='git branch --sort=committerdate'
 alias ga='git add -A :/'
+alias gac='ga && gc'
 alias gf='git fetch -p'
 alias gst='git status --short --branch'
 gs (){ git stash push -u -m "$1"}
@@ -10,7 +11,7 @@ alias gsp='git stash pop'
 alias gbmd='gb --merged | rg -v "(\*|master)" | xargs git branch -d'
 alias gwhoops='git commit --amend -C HEAD'
 gcob () { gco -b "$@" && gp -u origin "$@" }
-alias monodiff='git diff --name-only master... | grep "packages" | sed "s/packages\/\([^\/]*\).*/\1/g" | uniq'
+alias monodiff='git diff --name-only origin/master... | grep "packages" | sed "s/packages\/\([^\/]*\).*/\1/g" | uniq'
 
 function gparent() {
     git show-branch \

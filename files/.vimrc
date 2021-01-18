@@ -19,6 +19,7 @@ call plug#begin('~/.vim/plugged')
 " Vim
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'airblade/vim-gitgutter'
+Plug 'benmills/vimux'
 Plug 'chrisbra/csv.vim'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
@@ -267,6 +268,7 @@ nnoremap <CR> :noh<CR><CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
+nnoremap <Leader>a :CocAction<CR>
 nnoremap <Leader>f :bn<CR>
 nnoremap <Leader>q :bw<CR>
 nnoremap <Leader>s :Startify<CR>
@@ -277,6 +279,8 @@ nnoremap <Leader>d2 :diffget BASE<CR>
 nnoremap <Leader>d3 :diffget REMOTE<CR>
 
 nnoremap Q @@
+
+vnoremap Y "*y
 
 " tig
 nnoremap <Leader>tt :Tig<CR>
