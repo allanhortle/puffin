@@ -190,6 +190,8 @@ hi typescriptStorageClass ctermfg=red
 hi typescriptVariable ctermfg=red
 hi typescriptKeywordOp ctermfg=red
 hi typescriptTry ctermfg=red
+hi typescriptAccessibilityModifier ctermfg=red
+hi typescriptForOperator ctermfg=red
 
 " constants
 hi typescriptNull ctermfg=blue
@@ -200,6 +202,8 @@ hi typescriptString ctermfg=green
 hi typescriptTemplate ctermfg=green
 hi typescriptStringProperty ctermfg=green
 hi typescriptTemplateSB ctermfg=green
+hi typescriptStringLiteralType ctermfg=green
+hi typescriptStringMember ctermfg=green
 
 hi typescriptTypeReference ctermfg=magenta
 hi typescriptTypeBrackets ctermfg=magenta
@@ -213,6 +217,7 @@ hi typescriptUnion ctermfg=magenta
 hi typescriptEndColons ctermfg=magenta
 hi typescriptTypeBracket ctermfg=magenta
 hi typescriptTypeParameter ctermfg=magenta
+hi typescriptTypeQuery ctermfg=magenta
 
 
 "

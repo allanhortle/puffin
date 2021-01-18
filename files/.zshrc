@@ -10,7 +10,7 @@ fi
 export ZSH=$HOME/.oh-my-zsh
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git brew tmux npm react-native vi-mode history-substring-search)
+plugins=(git brew tmux yarn npm aws vi-mode history-substring-search)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
