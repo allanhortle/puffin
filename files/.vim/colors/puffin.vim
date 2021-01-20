@@ -192,6 +192,7 @@ hi typescriptKeywordOp ctermfg=red
 hi typescriptTry ctermfg=red
 hi typescriptAccessibilityModifier ctermfg=red
 hi typescriptForOperator ctermfg=red
+hi typescriptExportType ctermfg=red
 
 " constants
 hi typescriptNull ctermfg=blue
@@ -218,6 +219,7 @@ hi typescriptEndColons ctermfg=magenta
 hi typescriptTypeBracket ctermfg=magenta
 hi typescriptTypeParameter ctermfg=magenta
 hi typescriptTypeQuery ctermfg=magenta
+hi typescriptCastKeyword ctermfg=magenta
 
 
 "
