@@ -8,9 +8,11 @@ fi
 
 ## Oh My ZSH ##
 export ZSH=$HOME/.oh-my-zsh
+export NVM_LAZY_LOAD=true
+export NVM_COMPLETION=true
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git brew tmux yarn npm aws vi-mode history-substring-search)
+plugins=(git brew tmux yarn npm aws vi-mode history-substring-search zsh-nvm fzf)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 source $ZSH/oh-my-zsh.sh
 
@@ -125,15 +127,23 @@ export FZF_DEFAULT_OPTS='--color=16,bg+:-1,pointer:2,prompt:2,hl+:2,hl:2,fg+:2'
 export EDITOR="/usr/local/bin/vim"
 eval "$(fasd --init auto)"
 
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*' menu select
+# Color completion for some things.
+# http://linuxshellaccount.blogspot.com/2008/12/color-completion-using-zsh-modules-on.html
+zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
+# formatting and messages
+# http://www.masterzen.fr/2009/04/19/in-love-with-zsh-part-one/
+zstyle ':completion:*' verbose yes
+zstyle ':completion:*:descriptions' format "$fg[yellow]%B[%d]%b"
+zstyle ':completion:*:messages' format '%d'
+zstyle ':completion:*:warnings' format "$fg[red]No matches for:$reset_color %d"
+zstyle ':completion:*:corrections' format '%B%d (errors: %e)%b'
+zstyle ':completion:*' group-name ''
+zstyle ':completion:::::' completer _complete _approximate
+zstyle ':completion:*:approximate:*' max-errors 2
+
 # Loading Configs ##
-if [ -f ~/.todo.cfg ] ; then
-    source ~/.todo.cfg
-fi
-
-if [ -f ~/.fzf.zsh ] ; then
-    source ~/.fzf.zsh
-fi
-
 if [ -f ~/.zshrc.local ]; then
     source ~/.zshrc.local
 fi
@@ -143,8 +153,6 @@ for file in ~/.{aliases,functions}; do
     [ -r "$file" ] && [ -f "$file" ] && source "$file";
 done;
 unset file;
-
-
 
 # puffin_prompt
 add-zsh-hook precmd puffin_prompt
