@@ -47,7 +47,6 @@ Plug 'editorconfig/editorconfig-vim'
 Plug 'jparise/vim-graphql'
 Plug 'maxmellon/vim-jsx-pretty'
 Plug 'pangloss/vim-javascript'
-"Plug 'leafgarland/typescript-vim'
 Plug 'peitalin/vim-jsx-typescript'
 Plug 'jason0x43/vim-js-indent'
 
@@ -279,8 +278,8 @@ nnoremap <Leader>d2 :diffget BASE<CR>
 nnoremap <Leader>d3 :diffget REMOTE<CR>
 
 nnoremap Q @@
-
 vnoremap Y "*y
+
 
 " tig
 nnoremap <Leader>tt :Tig<CR>

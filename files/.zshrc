@@ -1,12 +1,11 @@
 # Brew Completions
 if type brew &>/dev/null; then
   FPATH=$(brew --prefix)/share/zsh/site-functions:$FPATH
-
-  autoload -Uz compinit
-  compinit
 fi
 
+autoload -U compinit
 autoload -Uz vcs_info
+compinit -i
 
 ## Oh My ZSH ##
 export ZSH=$HOME/.oh-my-zsh
@@ -14,7 +13,7 @@ export NVM_LAZY_LOAD=true
 export NVM_COMPLETION=true
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git brew tmux yarn npm aws vi-mode history-substring-search zsh-nvm fzf)
+plugins=(git brew tmux yarn npm aws vi-mode history-substring-search zsh-nvm fzf deno)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export KEYTIMEOUT=1
 source $ZSH/oh-my-zsh.sh
@@ -22,21 +21,11 @@ source $ZSH/oh-my-zsh.sh
 unsetopt correct_all  
 setopt correct
 
-
-
-
-
-
 ## Prompt ##
 b="%{$fg[blue]%}"
-bl="%{$fg[black]%}"
 g="%{$fg[green]%}"
-c="%{$fg[cyan]%}"
 r="%{$fg[red]%}"
 y="%{$fg[yellow]%}"
-w="%{$fg[white]%}"
-m="%{$fg[magenta]%}"
-res="%{$reset_color%}"
 
 puffin_prompt() {
     local pathPrompt="%~  "

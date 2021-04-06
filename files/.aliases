@@ -3,15 +3,11 @@ alias softlimit='ulimit -n 2048'
 # Git
 alias gb='git branch --sort=committerdate'
 alias ga='git add -A :/'
-alias gac='ga && gc'
 alias gf='git fetch -p'
 alias gst='git status --short --branch'
-gs (){ git stash push -u -m "$1"}
-alias gsp='git stash pop'
 alias gbmd='gb --merged | rg -v "(\*|master)" | xargs git branch -d'
-alias gwhoops='git commit --amend -C HEAD'
-gcob () { gco -b "$@" && gp -u origin "$@" }
 alias monodiff='git diff --name-only origin/master... | grep "packages" | sed "s/packages\/\([^\/]*\).*/\1/g" | uniq'
+alias monofiles='git diff --name-only origin/master...'
 
 function gparent() {
     git show-branch \
@@ -28,11 +24,12 @@ alias prs="gh pr status"
 alias prc="gh pr create"
 alias prl="gh pr list"
 
+alias changes="gh pr diff | delta -s"
+
 
 
 # data
-alias album="cat ~/Dropbox/data/albums.md | fzf"
-alias valbum="vim ~/Dropbox/data/albums.md"
+alias album="vd ~/Dropbox/data/albums.csv"
 
 # Node / npm / Yarn
 alias npm_patch_publish='npm version patch && git push --follow-tags && npm publish'

@@ -66,6 +66,3 @@ z() {
 
 }
 
-push_pr() {
-    git push -u && hub pull-request -b ${1:-master}
-}
