@@ -45,9 +45,9 @@ hi SpecialKey ctermfg=white
 hi SpellBad ctermfg=red ctermbg=none cterm=underline
 hi SpellCap ctermfg=yellow ctermbg=none cterm=underline
 hi SpellLocal ctermfg=none ctermbg=none cterm=none
-hi TabLine ctermfg=none ctermbg=none cterm=underline
-hi TabLineFill ctermfg=none ctermbg=none cterm=underline
-hi TabLineSel ctermfg=black ctermbg=grey
+hi TabLine ctermfg=none ctermbg=none cterm=none
+hi TabLineFill ctermfg=none ctermbg=none cterm=none
+hi TabLineSel ctermfg=green ctermbg=none cterm=none
 hi VertSplit ctermfg=white cterm=none ctermbg=none
 hi Visual ctermbg=240
 hi WarningMsg ctermfg=yellow ctermbg=black
