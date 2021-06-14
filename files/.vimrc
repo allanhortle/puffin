@@ -130,6 +130,7 @@ let g:ale_linters = {'javascript': ['eslint', 'flow']}
 
 " markdown
 let g:markdown_fold_style = 'nested'
+let g:markdown_fenced_languages = ['javascript', 'typescript']
 
 " emmet
 "let g:user_emmet_expandabbr_key='<Tab>'
@@ -156,8 +157,8 @@ let g:fzf_layout = { 'up': '50%' }
 
 
 " Nerd Tree
-map <C-o> :NERDTreeToggle<CR>
-map <C-l> :NERDTreeFind<CR>
+map <C-O> :NERDTreeToggle<CR>
+map <C-I> :NERDTreeFind<CR>
 let NERDTreeShowHidden = 1
 let NERDTreeQuitOnOpen = 1
 let NERDTreeMinimalUI = 1
