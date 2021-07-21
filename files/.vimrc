@@ -25,8 +25,8 @@ Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'iberianpig/tig-explorer.vim'
 Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' } 
-Plug 'junegunn/vim-peekaboo'
 Plug 'junegunn/goyo.vim'
+Plug 'junegunn/vim-peekaboo'
 Plug 'mattn/emmet-vim'
 Plug 'mbbill/undotree'
 Plug 'mhinz/vim-startify'
@@ -35,20 +35,21 @@ Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'scrooloose/nerdcommenter'
 Plug 'scrooloose/nerdtree'
 Plug 'tpope/vim-abolish'
+Plug 'tpope/vim-commentary'
 Plug 'tpope/vim-fugitive'
 Plug 'tpope/vim-markdown'
 Plug 'tpope/vim-repeat'
 Plug 'tpope/vim-surround'
 
 " Syntax
-Plug 'calviken/vim-gdscript3'
 Plug 'cakebaker/scss-syntax.vim'
+Plug 'calviken/vim-gdscript3'
 Plug 'editorconfig/editorconfig-vim'
+Plug 'jason0x43/vim-js-indent'
 Plug 'jparise/vim-graphql'
 Plug 'maxmellon/vim-jsx-pretty'
 Plug 'pangloss/vim-javascript'
 Plug 'peitalin/vim-jsx-typescript'
-Plug 'jason0x43/vim-js-indent'
 
 
 call plug#end() 
@@ -92,6 +93,7 @@ set tabstop=4                   " a tab is four spaces
 set timeoutlen=1000 ttimeoutlen=0
 set updatetime=250
 set wildmenu
+set wildmode=longest:full,full
 set numberwidth=1               " make line numbers closer to ~
 
 set writebackup                 " protect against crash-during-write
@@ -125,8 +127,6 @@ filetype plugin on
 
 " {{{ Plugins
 
-" ALE
-let g:ale_linters = {'javascript': ['eslint', 'flow']}
 
 " markdown
 let g:markdown_fold_style = 'nested'
@@ -157,8 +157,9 @@ let g:fzf_layout = { 'up': '50%' }
 
 
 " Nerd Tree
-map <C-O> :NERDTreeToggle<CR>
-map <C-I> :NERDTreeFind<CR>
+nnoremap <C-O> :NERDTreeToggle<CR>
+nnoremap <silent> <expr> <C-L> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : "\:NERDTreeFind<CR>" 
+
 let NERDTreeShowHidden = 1
 let NERDTreeQuitOnOpen = 1
 let NERDTreeMinimalUI = 1
@@ -262,9 +263,7 @@ nnoremap <Space> .
 nnoremap <MiddleMouse> :call CocAction('doHover')<CR>
 nnoremap <C-p> :Files<CR>
 nnoremap <expr> <C-p> (expand('%') =~ 'NERD_tree' ? ":NERDTreeToggle\<CR>" : '').":Files\<cr>"
-nnoremap <C-g> :Rg<CR>
-nmap <C-f> <Plug>CtrlSFPrompt
-vmap <C-f> <Plug>CtrlSFVwordExec
+nnoremap <C-f> <Plug>CtrlSFPrompt
 nnoremap <CR> :noh<CR><CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
