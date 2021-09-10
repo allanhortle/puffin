@@ -20,7 +20,6 @@ call plug#begin('~/.vim/plugged')
 Plug '/usr/local/opt/fzf' | Plug 'junegunn/fzf.vim'
 Plug 'airblade/vim-gitgutter'
 Plug 'benmills/vimux'
-Plug 'chrisbra/csv.vim'
 Plug 'docunext/closetag.vim'
 Plug 'dyng/ctrlsf.vim'
 Plug 'iberianpig/tig-explorer.vim'
@@ -47,7 +46,6 @@ Plug 'calviken/vim-gdscript3'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'jason0x43/vim-js-indent'
 Plug 'jparise/vim-graphql'
-Plug 'maxmellon/vim-jsx-pretty'
 Plug 'pangloss/vim-javascript'
 Plug 'peitalin/vim-jsx-typescript'
 
@@ -90,6 +88,7 @@ set suffixesadd=.jsx,.md,.js
 set t_Co=256
 set t_BE=
 set tabstop=4                   " a tab is four spaces
+set ttymouse=sgr                " make the mouse work after line 223
 set timeoutlen=1000 ttimeoutlen=0
 set updatetime=250
 set wildmenu
@@ -157,8 +156,11 @@ let g:fzf_layout = { 'up': '50%' }
 
 
 " Nerd Tree
-nnoremap <C-O> :NERDTreeToggle<CR>
-nnoremap <silent> <expr> <C-L> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : "\:NERDTreeFind<CR>" 
+"nnoremap <C-O> :NERDTreeToggle<CR>
+"nnoremap <silent> <expr> <C-L> g:NERDTree.IsOpen() ? "\:NERDTreeClose<CR>" : "\:NERDTreeFind<CR>" 
+
+nnoremap <C-O> :CocCommand explorer<CR>
+nnoremap <C-L> :execute 'CocCommand explorer ' . expand('%:h')<CR>
 
 let NERDTreeShowHidden = 1
 let NERDTreeQuitOnOpen = 1
@@ -259,18 +261,21 @@ nnoremap k gk
 nnoremap gj j
 nnoremap gk k
 
+
+nnoremap Y y$
+nnoremap <Leader><Leader> <c-^>
 nnoremap <Space> .
 nnoremap <MiddleMouse> :call CocAction('doHover')<CR>
 nnoremap <C-p> :Files<CR>
 nnoremap <expr> <C-p> (expand('%') =~ 'NERD_tree' ? ":NERDTreeToggle\<CR>" : '').":Files\<cr>"
-nnoremap <C-f> <Plug>CtrlSFPrompt
+nmap <C-f> <Plug>CtrlSFPrompt
 nnoremap <CR> :noh<CR><CR>
 nnoremap <Leader>h :Startify<CR>
 nnoremap <Leader>b :bp<CR>
 nnoremap <Leader>e :CocList --normal -A diagnostics<CR>
 nnoremap <Leader>a :CocAction<CR>
 nnoremap <Leader>f :bn<CR>
-nnoremap <Leader>q :bw<CR>
+nnoremap <Leader>q :bp \|bw #<CR>
 nnoremap <Leader>s :Startify<CR>
 nnoremap <Leader>r :source $MYVIMRC<CR>
 nnoremap <Leader>u :UndotreeToggle<CR>
@@ -329,7 +334,7 @@ nnoremap q: <nop>
 " jsx files
 augroup filetypedetect
     au BufRead,BufNewFile *.jsx set filetype=javascript
-    au BufRead,BufNewFile *.tsx set filetype=typescript.tsx
+    au BufRead,BufNewFile *.tsx set filetype=typescriptreact
 augroup END
 
 

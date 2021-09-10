@@ -10,7 +10,7 @@ hi Normal cterm=none ctermfg=white ctermbg=none
 "
 " Basic
 "
-hi Comment ctermfg=242
+hi Comment ctermfg=242 cterm=italic
 hi Constant ctermfg=blue cterm=none
 
 
@@ -193,6 +193,7 @@ hi typescriptTry ctermfg=red
 hi typescriptAccessibilityModifier ctermfg=red
 hi typescriptForOperator ctermfg=red
 hi typescriptExportType ctermfg=red
+hi typescriptAsyncFor ctermfg=red
 
 " constants
 hi typescriptNull ctermfg=blue
@@ -211,7 +212,6 @@ hi typescriptTypeBrackets ctermfg=magenta
 hi typescriptPredefinedType ctermfg=magenta
 hi typescriptAliasDeclaration ctermfg=magenta
 hi typescriptAliasKeyword ctermfg=magenta
-"hi typescriptMember ctermfg=magenta "type/class function overlap
 hi typescriptTypeAnnotation ctermfg=magenta
 hi typescriptUnion ctermfg=magenta
 hi typescriptUnion ctermfg=magenta
@@ -220,6 +220,14 @@ hi typescriptTypeBracket ctermfg=magenta
 hi typescriptTypeParameter ctermfg=magenta
 hi typescriptTypeQuery ctermfg=magenta
 hi typescriptCastKeyword ctermfg=magenta
+hi tsxTypeBraces ctermfg=magenta
+
+hi tsxTagName ctermfg=yellow
+hi tsxTag ctermfg=yellow
+hi tsxAttrib ctermfg=yellow
+hi tsxAttributeBraces ctermfg=yellow
+hi tsxEqual ctermfg=yellow
+hi tsxCloseTag ctermfg=yellow
 
 
 "
