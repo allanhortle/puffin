@@ -206,6 +206,8 @@ hi typescriptStringProperty ctermfg=green
 hi typescriptTemplateSB ctermfg=green
 hi typescriptStringLiteralType ctermfg=green
 hi typescriptStringMember ctermfg=green
+hi typescriptRegexpString ctermfg=green
+hi tsxString ctermfg=green
 
 hi typescriptTypeReference ctermfg=magenta
 hi typescriptTypeBrackets ctermfg=magenta

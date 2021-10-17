@@ -46,6 +46,7 @@ Plug 'calviken/vim-gdscript3'
 Plug 'editorconfig/editorconfig-vim'
 Plug 'jason0x43/vim-js-indent'
 Plug 'jparise/vim-graphql'
+Plug 'maxmellon/vim-jsx-pretty'
 Plug 'pangloss/vim-javascript'
 Plug 'peitalin/vim-jsx-typescript'
 
@@ -261,6 +262,14 @@ nnoremap k gk
 nnoremap gj j
 nnoremap gk k
 
+" Moving Lines
+vnoremap ˚ :m '<-2<CR>gv=gv
+nnoremap ∆ :m .+1<CR>==
+nnoremap ˚ :m .-2<CR>==
+inoremap ∆ <Esc>:m .+1<CR>==gi
+inoremap ˚ <Esc>:m .-2<CR>==gi
+vnoremap ∆ :m '>+1<CR>gv=gv
+
 
 nnoremap Y y$
 nnoremap <Leader><Leader> <c-^>
@@ -285,6 +294,9 @@ nnoremap <Leader>d3 :diffget REMOTE<CR>
 
 nnoremap Q @@
 vnoremap Y "*y
+nnoremap + <C-a>
+nnoremap - <C-x>
+
 
 
 " tig
@@ -307,8 +319,12 @@ nnoremap <leader>s<down>   :rightbelow new<CR>
 "
 " Commands
 "
-command! -bang W w<bang>
 command! -bang Q q<bang>
+command! -bang Qa qa<bang>
+command! -bang QA qa<bang>
+command! -bang W w<bang>
+command! -bang Wa wa<bang>
+command! -bang WA wa<bang>
 command! -bang Wq wq<bang>
 command! -bang WQ wq<bang>
 command! -bang Wqa wqa<bang>
@@ -334,7 +350,7 @@ nnoremap q: <nop>
 " jsx files
 augroup filetypedetect
     au BufRead,BufNewFile *.jsx set filetype=javascript
-    au BufRead,BufNewFile *.tsx set filetype=typescriptreact
+    au BufRead,BufNewFile *.tsx set filetype=typescript.tsx
 augroup END
 
 
