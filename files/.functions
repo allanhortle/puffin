@@ -8,11 +8,12 @@ function ip() {
 }
 
 
-#--------------------------------------------------------------------
-# any function from http://onethingwell.org/post/14669173541/any
-# search for running processes
-#--------------------------------------------------------------------
+timezsh() {
+    shell=${1-$SHELL}
+    for i in $(seq 1 10); do /usr/bin/time $shell -i -c exit; done
+}
 
+# any function from http://onethingwell.org/post/14669173541/any
 function any() {
     emulate -L zsh
     unsetopt KSH_ARRAYS
@@ -24,14 +25,6 @@ function any() {
     fi
 }
 
-function any_stats() {
-    local memory cpu
-    memory=$(ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"| awk '{ print $4  }' | awk '{s+=$1} END {print s}')
-    cpu=$(ps xauwww | grep -i --color=auto "[${1[1]}]${1[2,-1]}"| awk '{ print $3  }' | awk '{s+=$1} END {print s}')
-
-    echo "Memory: ${memory}%, CPU: ${cpu}%";
-}
-
 function findByPort() {
     if [[ -z "$1" ]] ; then
         echo "findByPort - search for running processes on a port" >&2
@@ -41,23 +34,9 @@ function findByPort() {
     fi
 }
 
-
-#
-# Weather
-#
 function weather() {
     bom ${PUFFIN_WEATHER_LOCATION:-"hobart"} -p "%t°C"
 }
-
-function radar() {
-    image-to-ascii -i http://www.bom.gov.au/radar/IDR024.gif
-}
-
-
-
-# 
-# FZF Helpers
-#
 
 unalias z 2> /dev/null
 z() {

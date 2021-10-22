@@ -1,0 +1,52 @@
+window:
+  startup_mode: SimpleFullScreen
+  padding:
+    x: 8
+    y: 8
+
+selection:
+  semantic_escape_chars: ",│`|:\"' ()[]{}<>\t"
+  save_to_clipboard: true
+
+font:
+  size: 12.0
+  use_thin_strokes: true
+  glyph_offset:
+    y: 1
+  normal:
+    family: Menlo
+    style: Regular
+  bold:
+    family: Menlo
+    style: Bold
+  italic:
+    family: Menlo
+    style: Italic
+
+
+key_bindings:
+  - { key: Key6, mods: Control, chars: "\x1e" } # some dodgy hack cause ctrl + 6 stopped working
+
+
+colors:
+  primary:
+    background: '0x212733'
+    foreground: '0xd9d7ce'
+  normal:
+    black:   '0x212733'
+    red:     '0xf07178'
+    green:   '0xbae67e'
+    yellow:  '0xffcc66'
+    blue:    '0x36a3d9'
+    magenta: '0xd4bfff'
+    cyan:    '0x95e6cb'
+    white:   '0xc7c7c7'
+  bright:
+    black:   '0x686868'
+    red:     '0xf07178'
+    green:   '0xcbe645'
+    yellow:  '0xffdf80'
+    blue:    '0x6871ff'
+    magenta: '0xff77ff'
+    cyan:    '0xa6fde1'
+    white:   '0xffffff'

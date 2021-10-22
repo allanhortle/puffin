@@ -13,10 +13,12 @@ export NVM_LAZY_LOAD=true
 export NVM_COMPLETION=true
 ENABLE_CORRECTION="true"
 DISABLE_AUTO_TITLE="true"
-plugins=(git brew tmux yarn npm aws vi-mode history-substring-search zsh-nvm fzf deno)
+plugins=(git brew tmux yarn npm aws vi-mode history-substring-search fzf deno)
 export PATH=$HOME/bin:/usr/local/bin:$PATH
 export KEYTIMEOUT=1
 source $ZSH/oh-my-zsh.sh
+
+eval "$(fnm env --use-on-cd)"
 
 unsetopt correct_all  
 setopt correct
