@@ -1,11 +1,13 @@
 -- Timestamps are RFC 3339 text in UTC.
 
--- A repository puffin knows about, found by scanning the configured roots.
+-- A repository puffin knows about. A row appears as soon as a pull request in
+-- it does, which for a review can be long before there is a clone, so the two
+-- local columns stay NULL until scanning the configured roots finds one.
 CREATE TABLE repo (
   id              INTEGER PRIMARY KEY,
   name_with_owner TEXT NOT NULL UNIQUE,
-  main_clone_path TEXT NOT NULL,
-  default_branch  TEXT NOT NULL
+  main_clone_path TEXT,
+  default_branch  TEXT
 ) STRICT;
 
 -- What you sit down to do. Owns a tmux session and a directory, and belongs to

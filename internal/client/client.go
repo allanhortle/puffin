@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"net/url"
 	"syscall"
 
 	"puffin/internal/api"
@@ -40,6 +41,29 @@ func (c *Client) Status(ctx context.Context) (api.Status, error) {
 
 func (c *Client) Shutdown(ctx context.Context) error {
 	return c.call(ctx, http.MethodPost, api.ShutdownPath, nil)
+}
+
+// Refresh runs a poll cycle now. force refetches from GitHub even when
+// nothing appears to have moved.
+func (c *Client) Refresh(ctx context.Context, force bool) (api.Cycle, error) {
+	path := api.RefreshPath
+	if force {
+		path += "?force=1"
+	}
+	var cycle api.Cycle
+	return cycle, c.call(ctx, http.MethodPost, path, &cycle)
+}
+
+func (c *Client) Reviews(ctx context.Context) (api.Reviews, error) {
+	var r api.Reviews
+	return r, c.call(ctx, http.MethodGet, api.ReviewsPath, &r)
+}
+
+// PR resolves a query to a pull request. The query's keys are those of the
+// daemon's pr endpoint: target, or repo with branch or number.
+func (c *Client) PR(ctx context.Context, query url.Values) (api.PR, error) {
+	var found api.PR
+	return found, c.call(ctx, http.MethodGet, api.PRPath+"?"+query.Encode(), &found)
 }
 
 func (c *Client) call(ctx context.Context, method, path string, out any) error {

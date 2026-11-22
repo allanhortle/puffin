@@ -12,12 +12,15 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"sync"
 	"syscall"
 	"time"
 
 	"puffin/internal/api"
 	"puffin/internal/config"
 	"puffin/internal/store"
+	"puffin/internal/tmux"
 )
 
 // ErrRunning means another daemon already holds the lock.
@@ -34,6 +37,7 @@ type Options struct {
 type daemon struct {
 	opts      Options
 	store     *store.Store
+	poller    *poller
 	startedAt time.Time
 	shutdown  context.CancelFunc
 }
@@ -70,11 +74,41 @@ func Run(ctx context.Context, opts Options) error {
 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	d := &daemon{opts: opts, store: st, startedAt: time.Now().UTC(), shutdown: cancel}
+	tm := tmux.Client{Socket: opts.Config.TmuxSocket}
+	d := &daemon{
+		opts:      opts,
+		store:     st,
+		poller:    newPoller(st, tm),
+		startedAt: time.Now().UTC(),
+		shutdown:  cancel,
+	}
+
+	var polling sync.WaitGroup
+	polling.Add(1)
+	go func() {
+		defer polling.Done()
+		d.poller.run(ctx)
+	}()
+	// A stopped daemon takes its letters and its count down with it rather
+	// than leaving stale ones on the bar. Deferred, so it also runs when the
+	// server fails; and after the poller has finished, so nothing redraws
+	// them.
+	defer func() {
+		cancel()
+		polling.Wait()
+		clearing, done := context.WithTimeout(context.Background(), 5*time.Second)
+		defer done()
+		if err := tm.Clear(clearing); err != nil && !errors.Is(err, tmux.ErrNoServer) {
+			slog.Error("clearing the bar failed", "err", err)
+		}
+	}()
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET "+api.StatusPath, d.status)
 	mux.HandleFunc("POST "+api.ShutdownPath, d.stop)
+	mux.HandleFunc("POST "+api.RefreshPath, d.refresh)
+	mux.HandleFunc("GET "+api.ReviewsPath, d.reviews)
+	mux.HandleFunc("GET "+api.PRPath, d.pr)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -94,6 +128,18 @@ func Run(ctx context.Context, opts Options) error {
 	grace, done := context.WithTimeout(context.Background(), 5*time.Second)
 	defer done()
 	return server.Shutdown(grace)
+}
+
+// Running reports whether a daemon holds the lock. This outlasts the socket:
+// a daemon on its way out stops listening first and lets go of the lock last,
+// and only then can another take its place.
+func Running(lock string) bool {
+	f, err := acquire(lock)
+	if err != nil {
+		return errors.Is(err, ErrRunning)
+	}
+	f.Close()
+	return false
 }
 
 func acquire(path string) (*os.File, error) {
@@ -125,7 +171,13 @@ func (d *daemon) status(w http.ResponseWriter, r *http.Request) {
 		fail(w, err)
 		return
 	}
+	poll, err := d.poller.snapshot(r.Context())
+	if err != nil {
+		fail(w, err)
+		return
+	}
 	reply(w, http.StatusOK, api.Status{
+		Poll:          poll,
 		Version:       d.opts.Version,
 		PID:           os.Getpid(),
 		StartedAt:     d.startedAt,
@@ -140,7 +192,41 @@ func (d *daemon) stop(w http.ResponseWriter, _ *http.Request) {
 	d.shutdown()
 }
 
+func (d *daemon) refresh(w http.ResponseWriter, r *http.Request) {
+	cycle, err := d.poller.Refresh(r.Context(), r.URL.Query().Get("force") != "")
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	reply(w, http.StatusOK, cycle)
+}
+
+func (d *daemon) reviews(w http.ResponseWriter, r *http.Request) {
+	reviews, err := d.poller.reviews(r.Context())
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	reply(w, http.StatusOK, reviews)
+}
+
+func (d *daemon) pr(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	number, _ := strconv.Atoi(q.Get("number"))
+	found, err := d.poller.find(r.Context(), q.Get("target"), q.Get("repo"), q.Get("branch"), number)
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	reply(w, http.StatusOK, found)
+}
+
 func fail(w http.ResponseWriter, err error) {
+	var missing errNoMatch
+	if errors.As(err, &missing) {
+		reply(w, http.StatusNotFound, api.Error{Error: err.Error()})
+		return
+	}
 	slog.Error("request failed", "err", err)
 	reply(w, http.StatusInternalServerError, api.Error{Error: err.Error()})
 }

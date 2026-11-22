@@ -20,6 +20,9 @@ type Config struct {
 	TasksDir string `toml:"tasks_dir"`
 	// The command an agent window runs.
 	Agent string `toml:"agent"`
+	// The name of the tmux server to talk to, as given to `tmux -L`. Empty
+	// means whichever server tmux would pick on its own.
+	TmuxSocket string `toml:"tmux_socket"`
 	// Keyed by owner/name.
 	Repo map[string]Repo `toml:"repo"`
 }
