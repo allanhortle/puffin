@@ -1,0 +1,33 @@
+# Copy to ~/.config/puffin/config.toml. Every key is optional.
+
+# Directories scanned for the main clone of each repository.
+roots = ["~/code"]
+
+# Where each task's directory is made. Worktrees are mounted inside it.
+# tasks_dir = "~/.local/share/puffin/tasks"
+
+# The command an agent window runs.
+agent = "claude"
+
+# What a worktree of one repository needs, keyed by owner/name. Nothing here
+# runs for a task until a worktree of this repository is attached to it.
+[repo."owner/name"]
+# Globs, relative to the main clone, copied into a new worktree.
+copy = ["packages/*/.env", "packages/*/.env.local"]
+# Run in a new worktree.
+setup = ["yarn install"]
+# Run in a worktree before it is removed.
+pre_remove = ["yarn stack down || true"]
+
+# The window's panes, in order. "<agent>" stands for the agent command.
+[[repo."owner/name".panes]]
+command = "clear"
+
+[[repo."owner/name".panes]]
+split = "horizontal"
+command = "tail -f setup.log"
+
+[[repo."owner/name".panes]]
+split = "vertical"
+command = "<agent>"
+focus = true
