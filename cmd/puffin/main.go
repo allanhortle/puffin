@@ -51,6 +51,8 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
                            start, or return to, the review of a pull request
   puffin tasks [NAME]      every task, or one, with its worktrees and pull requests; --json
   puffin switch NAME       go to a task's session, bringing it back if it has gone
+  puffin rename [NAME] NEW give a task and its session another name; the directory and
+                           branches keep theirs
   puffin close [NAME]      remove a task's worktrees, session and directory
       --force              even if a worktree has uncommitted work
   puffin sweep             close every task whose pull requests have all merged or closed
@@ -133,6 +135,8 @@ func main() {
 		err = switchTo(arg)
 	case "close":
 		err = closeTask(args)
+	case "rename":
+		err = rename(args)
 	case "sweep":
 		err = sweep()
 	case "repos":
@@ -1067,6 +1071,30 @@ func closeTask(args []string) error {
 	ctx, cancel := timeout(taskTimeout)
 	defer cancel()
 	return daemonClient().Close(ctx, slug, force)
+}
+
+func rename(args []string) error {
+	var from, to string
+	var err error
+	switch len(args) {
+	case 1:
+		to = args[0]
+		if from, err = currentTask(); err != nil {
+			return err
+		}
+	case 2:
+		from, to = args[0], args[1]
+	default:
+		return errors.New("rename needs a new name, and the task unless you are in its session")
+	}
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	t, err := daemonClient().Rename(ctx, from, to)
+	if err != nil {
+		return err
+	}
+	fmt.Println(t.Slug)
+	return nil
 }
 
 func sweep() error {

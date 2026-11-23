@@ -531,6 +531,39 @@ func (m *Manager) ensure(ctx context.Context, t store.Task) error {
 	return nil
 }
 
+// Rename gives a task, and its session, another name. The directory and the
+// branches stay as they are: moving a directory would cost each agent in it
+// its history, which is kept by path, and a branch may already be pushed.
+func (m *Manager) Rename(ctx context.Context, from, to string) (store.Task, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	t, err := m.store.Task(ctx, from)
+	if err != nil {
+		return store.Task{}, fmt.Errorf("%q: %w", from, err)
+	}
+	slug := Slugify(to)
+	if slug == "" {
+		return t, fmt.Errorf("%q has nothing in it a name can be made from", to)
+	}
+	if slug == t.Slug {
+		return t, nil
+	}
+	if taken, err := m.store.SlugTaken(ctx, slug); err != nil {
+		return t, err
+	} else if taken || m.tmux.HasSession(ctx, slug) {
+		return t, fmt.Errorf("%q is already in use", slug)
+	}
+	if m.tmux.HasSession(ctx, t.Slug) {
+		if err := m.tmux.RenameSession(ctx, t.Slug, slug); err != nil {
+			return t, err
+		}
+	}
+	if err := m.store.RenameTask(ctx, t.ID, slug); err != nil {
+		return t, err
+	}
+	return m.store.Task(ctx, slug)
+}
+
 // Close removes a task: its worktrees, its session and its directory. A
 // worktree with uncommitted work stops it, unless forced, and whatever was
 // removed before that stays removed.

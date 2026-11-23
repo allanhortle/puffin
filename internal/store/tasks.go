@@ -130,6 +130,13 @@ func (s *Store) CreateTask(ctx context.Context, t *Task, now time.Time) error {
 	return tx.Commit()
 }
 
+// RenameTask changes a task's slug. Its directory keeps the path it was made
+// with.
+func (s *Store) RenameTask(ctx context.Context, id int64, slug string) error {
+	_, err := s.DB.ExecContext(ctx, `UPDATE task SET slug = ? WHERE id = ?`, slug, id)
+	return err
+}
+
 // Tasks is every task that still has its directory, oldest first.
 func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 	rows, err := s.DB.QueryContext(ctx, `

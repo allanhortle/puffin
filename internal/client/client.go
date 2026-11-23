@@ -121,6 +121,12 @@ func (c *Client) Review(ctx context.Context, repo string, number int) (store.Tas
 	return t, c.call(ctx, http.MethodPost, api.ReviewPath+"?"+q.Encode(), &t)
 }
 
+func (c *Client) Rename(ctx context.Context, task, to string) (store.Task, error) {
+	var t store.Task
+	q := url.Values{"task": {task}, "to": {to}}
+	return t, c.call(ctx, http.MethodPost, api.RenamePath+"?"+q.Encode(), &t)
+}
+
 func (c *Client) Sweep(ctx context.Context) (api.Swept, error) {
 	var swept api.Swept
 	return swept, c.call(ctx, http.MethodPost, api.SweepPath, &swept)

@@ -23,6 +23,7 @@ const (
 	ClosePath    = "/v1/tasks/close"  // POST ?task=&force=1
 	SweepPath    = "/v1/tasks/sweep"  // POST
 	ReviewPath   = "/v1/tasks/review" // POST ?repo=&number=
+	RenamePath   = "/v1/tasks/rename" // POST ?task=&to=
 )
 
 type Status struct {

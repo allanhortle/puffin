@@ -234,6 +234,11 @@ func (c Client) NewSession(ctx context.Context, name, window, dir string) (strin
 	return strings.TrimSpace(out), err
 }
 
+func (c Client) RenameSession(ctx context.Context, from, to string) error {
+	_, err := c.Run(ctx, "rename-session", "-t", exact(from), to)
+	return err
+}
+
 func (c Client) KillSession(ctx context.Context, name string) error {
 	_, err := c.Run(ctx, "kill-session", "-t", exact(name))
 	return err
