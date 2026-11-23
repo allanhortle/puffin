@@ -89,10 +89,10 @@ func (s *Store) ApplyFetch(ctx context.Context, now time.Time, authored, reviews
 			case errors.Is(err, sql.ErrNoRows):
 				res, err := tx.ExecContext(ctx, `
 					INSERT INTO change (repo_id, head_ref, base_ref, pr_number, role, author, title,
-					                    state, is_draft, status, snapshot, fetched_at)
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					                    state, is_draft, status, snapshot, last_reviewed_sha, fetched_at)
+					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 					repo, p.Head, p.Base, p.Number, role, null(p.Author), p.Title,
-					p.State, p.IsDraft, p.Status, string(snapshot), at)
+					p.State, p.IsDraft, p.Status, string(snapshot), null(p.ReviewedSHA), at)
 				if err != nil {
 					return err
 				}
@@ -107,10 +107,11 @@ func (s *Store) ApplyFetch(ctx context.Context, now time.Time, authored, reviews
 				if _, err := tx.ExecContext(ctx, `
 					UPDATE change
 					SET base_ref = ?, pr_number = ?, role = ?, author = ?, title = ?, state = ?,
-					    is_draft = ?, status = ?, snapshot = ?, fetched_at = ?
+					    is_draft = ?, status = ?, snapshot = ?, fetched_at = ?,
+					    last_reviewed_sha = coalesce(?, last_reviewed_sha)
 					WHERE id = ?`,
 					p.Base, p.Number, role, null(p.Author), p.Title, p.State,
-					p.IsDraft, p.Status, string(snapshot), at, id); err != nil {
+					p.IsDraft, p.Status, string(snapshot), at, null(p.ReviewedSHA), id); err != nil {
 					return err
 				}
 			}
@@ -172,6 +173,28 @@ func (s *Store) ApplyFetch(ctx context.Context, now time.Time, authored, reviews
 		}
 	}
 	return tx.Commit()
+}
+
+// WatchedReviews is every pull request a review task owns: the ones that have
+// to be asked after by number, because once reviewed they are in no search.
+func (s *Store) WatchedReviews(ctx context.Context) ([]pr.PR, error) {
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT r.name_with_owner, c.pr_number FROM change c JOIN repo r ON r.id = c.repo_id
+		WHERE c.role = 'reviewer' AND c.task_id IS NOT NULL AND c.pr_number IS NOT NULL
+		  AND c.state = 'OPEN' ORDER BY c.id`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []pr.PR
+	for rows.Next() {
+		var p pr.PR
+		if err := rows.Scan(&p.Repo, &p.Number); err != nil {
+			return nil, err
+		}
+		out = append(out, p)
+	}
+	return out, rows.Err()
 }
 
 // Changes is every pull request held in one role, oldest row first.

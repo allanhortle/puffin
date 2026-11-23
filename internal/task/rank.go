@@ -26,7 +26,7 @@ func rankChange(c store.TaskChange) int {
 		return Mine
 	}
 	switch c.Status {
-	case pr.Failing, pr.Conflict, pr.ChangesRequested, pr.WaitingMe, pr.ReviewRequested:
+	case pr.Failing, pr.Conflict, pr.ChangesRequested, pr.WaitingMe, pr.ReviewRequested, pr.ReviewUpdated:
 		return Mine
 	case pr.Reviewed:
 		return Reviewer // back with its author, as my own is when out for review

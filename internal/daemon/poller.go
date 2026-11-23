@@ -357,8 +357,34 @@ func (p *poller) fetch(ctx context.Context, heartbeat github.Heartbeat) error {
 			authored = append(authored, pr.Authored(n))
 		}
 	}
+	requested := map[github.Ref]bool{}
 	for _, n := range data.Review.Nodes {
 		if n.Number != 0 {
+			requested[github.Ref{Repo: n.Repository.NameWithOwner, Number: n.Number}] = true
+		}
+	}
+	// A pull request with a review task is asked after by number, and that
+	// answer replaces the search's: it also knows which commit I reviewed.
+	watching, err := p.store.WatchedReviews(ctx)
+	if err != nil {
+		return err
+	}
+	refs := make([]github.Ref, len(watching))
+	for i, w := range watching {
+		refs[i] = github.Ref{Repo: w.Repo, Number: w.Number}
+	}
+	watched, err := p.gh.FetchWatched(ctx, author, refs)
+	if err != nil {
+		return err
+	}
+	answered := map[github.Ref]bool{}
+	for _, n := range watched {
+		ref := github.Ref{Repo: n.Repository.NameWithOwner, Number: n.Number}
+		answered[ref] = true
+		reviews = append(reviews, pr.Watched(n, requested[ref]))
+	}
+	for _, n := range data.Review.Nodes {
+		if n.Number != 0 && !answered[github.Ref{Repo: n.Repository.NameWithOwner, Number: n.Number}] {
 			reviews = append(reviews, pr.ToReview(n))
 		}
 	}

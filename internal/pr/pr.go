@@ -30,10 +30,12 @@ const (
 	Closed           = "CLOSED"
 	Unknown          = "UNKNOWN"
 
-	// The two a pull request I am reviewing can be in: asking for my review,
-	// or reviewed and back with its author.
+	// What a pull request I am reviewing can be in: asking for my review,
+	// reviewed and back with its author, or changed by its author since I
+	// reviewed it.
 	ReviewRequested = "REVIEW_REQUESTED"
 	Reviewed        = "REVIEWED"
+	ReviewUpdated   = "REVIEW_UPDATED"
 )
 
 type Label struct {
@@ -55,6 +57,11 @@ var labels = map[string]Label{
 	Merged:           {"M", "magenta"},
 	Closed:           {"X", "colour242"},
 	Unknown:          {"?", "colour242"},
+	// A review is a word, not a letter: it is somebody else's pull request,
+	// and should not read as one of mine.
+	ReviewRequested: {"rev", "red"},
+	ReviewUpdated:   {"new", "red"},
+	Reviewed:        {"rev", "blue"},
 }
 
 // LabelOf is the letter and colour for a status.
@@ -96,6 +103,10 @@ type PR struct {
 	QueuePosition    *int   `json:"queue_position"`
 	Unresolved       int    `json:"unresolved"`
 	Checks           Checks `json:"checks"`
+
+	// The commit my last review was submitted on, for a pull request I am
+	// reviewing.
+	ReviewedSHA string `json:"reviewed_sha,omitempty"`
 
 	Status string `json:"status"`
 }
@@ -164,6 +175,34 @@ func Authored(n github.Node) PR {
 func ToReview(n github.Node) PR {
 	p := base(n)
 	p.Status = ReviewRequested
+	return p
+}
+
+// Watched normalises a pull request I have a review task for, fetched by
+// number rather than found by a search. requested says it is also, right
+// now, asking for my review.
+//
+// With no request outstanding, the head having moved off the commit I
+// reviewed is the only sign that it wants another look. A restack moves it
+// too, so this can say "new" when nothing of substance changed; that is the
+// cheap side to be wrong on.
+func Watched(n github.Node, requested bool) PR {
+	p := base(n)
+	if n.Reviews != nil && len(n.Reviews.Nodes) > 0 && n.Reviews.Nodes[0].Commit != nil {
+		p.ReviewedSHA = n.Reviews.Nodes[0].Commit.Oid
+	}
+	switch {
+	case p.State == "MERGED":
+		p.Status = Merged
+	case p.State == "CLOSED":
+		p.Status = Closed
+	case requested || p.ReviewedSHA == "":
+		p.Status = ReviewRequested
+	case p.ReviewedSHA != p.HeadSHA:
+		p.Status = ReviewUpdated
+	default:
+		p.Status = Reviewed
+	}
 	return p
 }
 

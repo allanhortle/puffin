@@ -187,3 +187,42 @@ func TestStackSurvivesACycle(t *testing.T) {
 		t.Fatal("BottomOf did not return")
 	}
 }
+
+func TestWatched(t *testing.T) {
+	reviewedAt := func(oid string) func(*github.Node) {
+		return func(n *github.Node) {
+			n.Reviews = &struct {
+				Nodes []struct {
+					Commit *struct {
+						Oid string `json:"oid"`
+					} `json:"commit"`
+				} `json:"nodes"`
+			}{Nodes: make([]struct {
+				Commit *struct {
+					Oid string `json:"oid"`
+				} `json:"commit"`
+			}, 1)}
+			n.Reviews.Nodes[0].Commit = &struct {
+				Oid string `json:"oid"`
+			}{Oid: oid}
+		}
+	}
+	for name, c := range map[string]struct {
+		edit      func(*github.Node)
+		requested bool
+		want      string
+	}{
+		"reviewed at the head":              {reviewedAt("head"), false, Reviewed},
+		"the author pushed since":           {reviewedAt("older"), false, ReviewUpdated},
+		"asked again outranks pushed since": {reviewedAt("older"), true, ReviewRequested},
+		"never reviewed":                    {func(*github.Node) {}, false, ReviewRequested},
+		"merged":                            {func(n *github.Node) { n.State = "MERGED"; reviewedAt("older")(n) }, false, Merged},
+		"closed":                            {func(n *github.Node) { n.State = "CLOSED" }, true, Closed},
+	} {
+		n := github.Node{Number: 1, State: "OPEN", HeadRefName: "a", HeadRefOid: "head"}
+		c.edit(&n)
+		if got := Watched(n, c.requested).Status; got != c.want {
+			t.Errorf("%s: %s, want %s", name, got, c.want)
+		}
+	}
+}

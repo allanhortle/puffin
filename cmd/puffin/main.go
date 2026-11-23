@@ -767,10 +767,6 @@ func pickLine(t store.Task) string {
 	letters, shown := "", 0
 	for _, c := range t.Changes {
 		switch {
-		case c.Status == pr.ReviewRequested:
-			letters, shown = letters+paint("red", "rev"), shown+3
-		case c.Status == pr.Reviewed:
-			letters, shown = letters+paint("blue", "rev"), shown+3
 		case c.State == "MERGED" || c.State == "CLOSED":
 			if t.State == store.TaskOpen {
 				continue // what has shipped is not what the task is waiting on
@@ -778,7 +774,7 @@ func pickLine(t store.Task) string {
 			fallthrough
 		case c.Number != 0:
 			label := changeLabel(c)
-			letters, shown = letters+paint(label.Colour, label.Letter), shown+1
+			letters, shown = letters+paint(label.Colour, label.Letter), shown+len(label.Letter)
 			if c.Unresolved > 0 {
 				n := strconv.Itoa(c.Unresolved)
 				letters, shown = letters+paint("red", n), shown+len(n)

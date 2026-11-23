@@ -45,13 +45,7 @@ query($qOpen: String!, $qClosed: String!, $qReview: String!) {
     issueCount
     nodes { ...prLight }
   }
-}
-fragment prLight on PullRequest {
-  number title url state headRefName baseRefName headRefOid isDraft
-  isCrossRepository headRepositoryOwner { login }
-  repository { nameWithOwner }
-  author { login }
-}
+}` + lightFragment + `
 fragment prFull on PullRequest {
   ...prLight
   mergeable mergeStateStatus reviewDecision
@@ -70,6 +64,14 @@ fragment prFull on PullRequest {
       ... on StatusContext { context state description createdAt }
     } }
   } } } }
+}`
+
+const lightFragment = `
+fragment prLight on PullRequest {
+  number title url state headRefName baseRefName headRefOid isDraft
+  isCrossRepository headRepositoryOwner { login }
+  repository { nameWithOwner }
+  author { login }
 }`
 
 type Actor struct {
@@ -128,6 +130,16 @@ type Node struct {
 		NameWithOwner string `json:"nameWithOwner"`
 	} `json:"repository"`
 	Author *Actor `json:"author"`
+
+	// Only present on a pull request fetched by FetchWatched: the last review
+	// one person submitted.
+	Reviews *struct {
+		Nodes []struct {
+			Commit *struct {
+				Oid string `json:"oid"`
+			} `json:"commit"`
+		} `json:"nodes"`
+	} `json:"reviews"`
 
 	Mergeable        string `json:"mergeable"`
 	MergeStateStatus string `json:"mergeStateStatus"`
@@ -276,56 +288,101 @@ func (c *Client) NotificationsMoved(ctx context.Context, hb *Heartbeat) (bool, e
 	return true, nil
 }
 
+// Ref names one pull request.
+type Ref struct {
+	Repo   string // owner/name
+	Number int
+}
+
+// FetchWatched asks for specific pull requests, each with the last review
+// reviewer submitted on it. It is how a pull request stays in view after it
+// has been reviewed, when it no longer turns up in any search: nothing else
+// says that its author has pushed again, or that it merged.
+func (c *Client) FetchWatched(ctx context.Context, reviewer string, refs []Ref) ([]Node, error) {
+	if len(refs) == 0 {
+		return nil, nil
+	}
+	var query strings.Builder
+	query.WriteString("query($reviewer: String!) {\n")
+	for i, ref := range refs {
+		owner, name, _ := strings.Cut(ref.Repo, "/")
+		fmt.Fprintf(&query, "  w%d: repository(owner: %s, name: %s) { pullRequest(number: %d) {\n"+
+			"    ...prLight reviews(last: 1, author: $reviewer) { nodes { commit { oid } } }\n  } }\n",
+			i, strconv.Quote(owner), strconv.Quote(name), ref.Number)
+	}
+	query.WriteString("}" + lightFragment)
+
+	var data map[string]*struct {
+		PullRequest *Node `json:"pullRequest"`
+	}
+	if err := c.graphql(ctx, query.String(), map[string]string{"reviewer": reviewer}, &data); err != nil {
+		return nil, err
+	}
+	var nodes []Node
+	for i := range refs {
+		if found := data["w"+strconv.Itoa(i)]; found != nil && found.PullRequest != nil {
+			nodes = append(nodes, *found.PullRequest)
+		}
+	}
+	return nodes, nil
+}
+
 // FetchPRs asks for author's open pull requests, their recently closed ones,
 // and the open ones waiting on their review. It costs one rate limit point.
 func (c *Client) FetchPRs(ctx context.Context, author string, now time.Time) (*Data, error) {
 	since := now.Add(-closedWindow).UTC().Format("2006-01-02")
-	payload, err := json.Marshal(map[string]any{
-		"query": prQuery,
-		"variables": map[string]string{
-			"qOpen":   "is:pr is:open author:" + author,
-			"qClosed": "is:pr is:closed author:" + author + " sort:updated-desc updated:>=" + since,
-			// user-review-requested: and not review-requested:, so this only
-			// ever finds pull requests that named this person.
-			// review-requested: also matches anything aimed at a team they
-			// are on, which is the team's queue rather than theirs. Drafts are
-			// excluded: a draft is not asking yet. Submitting a review drops
-			// the pull request out of the search on its own.
-			"qReview": "is:pr is:open draft:false archived:false user-review-requested:" + author +
-				" -author:" + author + " sort:updated-desc",
-		},
-	})
-	if err != nil {
+	var data Data
+	if err := c.graphql(ctx, prQuery, map[string]string{
+		"qOpen":   "is:pr is:open author:" + author,
+		"qClosed": "is:pr is:closed author:" + author + " sort:updated-desc updated:>=" + since,
+		// user-review-requested: and not review-requested:, so this only
+		// ever finds pull requests that named this person.
+		// review-requested: also matches anything aimed at a team they
+		// are on, which is the team's queue rather than theirs. Drafts are
+		// excluded: a draft is not asking yet. Submitting a review drops
+		// the pull request out of the search on its own.
+		"qReview": "is:pr is:open draft:false archived:false user-review-requested:" + author +
+			" -author:" + author + " sort:updated-desc",
+	}, &data); err != nil {
 		return nil, err
+	}
+	return &data, nil
+}
+
+// graphql posts one query and decodes its data into out.
+func (c *Client) graphql(ctx context.Context, query string, variables map[string]string, out any) error {
+	payload, err := json.Marshal(map[string]any{"query": query, "variables": variables})
+	if err != nil {
+		return err
 	}
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, graphqlURL, bytes.NewReader(payload))
 	if err != nil {
-		return nil, err
+		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
 	res, err := c.do(ctx, req)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != http.StatusOK {
 		io.Copy(io.Discard, res.Body)
-		return nil, fmt.Errorf("graphql: HTTP %d", res.StatusCode)
+		return fmt.Errorf("graphql: HTTP %d", res.StatusCode)
 	}
 	var body struct {
-		Data   *Data `json:"data"`
+		Data   json.RawMessage `json:"data"`
 		Errors []struct {
 			Message string `json:"message"`
 		} `json:"errors"`
 	}
 	if err := json.NewDecoder(res.Body).Decode(&body); err != nil {
-		return nil, fmt.Errorf("graphql: %w", err)
+		return fmt.Errorf("graphql: %w", err)
 	}
 	if len(body.Errors) > 0 {
-		return nil, fmt.Errorf("graphql: %s", body.Errors[0].Message)
+		return fmt.Errorf("graphql: %s", body.Errors[0].Message)
 	}
-	if body.Data == nil {
-		return nil, errors.New("graphql: empty reply")
+	if len(body.Data) == 0 || string(body.Data) == "null" {
+		return errors.New("graphql: empty reply")
 	}
-	return body.Data, nil
+	return json.Unmarshal(body.Data, out)
 }
