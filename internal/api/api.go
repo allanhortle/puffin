@@ -16,6 +16,12 @@ const (
 	ReviewsPath  = "/v1/reviews"
 	PRPath       = "/v1/pr" // GET; ?target= or ?repo=&branch= or ?repo=&number=
 	PRsPath      = "/v1/prs"
+	ReposPath    = "/v1/repos"        // GET lists; POST scans the roots again
+	TasksPath    = "/v1/tasks"        // GET lists; POST makes one
+	AttachPath   = "/v1/tasks/attach" // POST
+	EnsurePath   = "/v1/tasks/ensure" // POST ?task=
+	ClosePath    = "/v1/tasks/close"  // POST ?task=&force=1
+	SweepPath    = "/v1/tasks/sweep"  // POST
 )
 
 type Status struct {
@@ -87,6 +93,30 @@ type PR struct {
 	PR        pr.PR      `json:"pr"`
 	Stack     []int      `json:"stack"`
 	FetchedAt *time.Time `json:"fetched_at"`
+}
+
+// NewTask asks for a task. Read names repositories its root agent may read;
+// Attach names repositories it gets a worktree of straight away.
+type NewTask struct {
+	Name   string   `json:"name,omitempty"`
+	Prompt string   `json:"prompt,omitempty"`
+	Read   []string `json:"read,omitempty"`
+	Attach []string `json:"attach,omitempty"`
+}
+
+// Attach asks for a worktree of Repo in Task, on Branch, or on a branch named
+// for the task when that is empty.
+type Attach struct {
+	Task   string `json:"task"`
+	Repo   string `json:"repo"`
+	Branch string `json:"branch,omitempty"`
+	Prompt string `json:"prompt,omitempty"`
+}
+
+// Swept is what a sweep did: the tasks it closed, and why it kept the rest.
+type Swept struct {
+	Closed []string          `json:"closed"`
+	Kept   map[string]string `json:"kept"`
 }
 
 type Error struct {

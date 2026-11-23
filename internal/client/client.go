@@ -3,10 +3,12 @@
 package client
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net"
 	"net/http"
@@ -14,6 +16,7 @@ import (
 	"syscall"
 
 	"github.com/allanhortle/puffin/internal/api"
+	"github.com/allanhortle/puffin/internal/store"
 )
 
 // ErrNotRunning means nothing is listening on the socket.
@@ -72,9 +75,64 @@ func (c *Client) PR(ctx context.Context, query url.Values) (api.PR, error) {
 	return found, c.call(ctx, http.MethodGet, api.PRPath+"?"+query.Encode(), &found)
 }
 
+func (c *Client) Repos(ctx context.Context, scan bool) ([]store.Repo, error) {
+	method := http.MethodGet
+	if scan {
+		method = http.MethodPost
+	}
+	var repos []store.Repo
+	return repos, c.call(ctx, method, api.ReposPath, &repos)
+}
+
+func (c *Client) Tasks(ctx context.Context) ([]store.Task, error) {
+	var tasks []store.Task
+	return tasks, c.call(ctx, http.MethodGet, api.TasksPath, &tasks)
+}
+
+func (c *Client) NewTask(ctx context.Context, req api.NewTask) (store.Task, error) {
+	var t store.Task
+	return t, c.send(ctx, api.TasksPath, req, &t)
+}
+
+func (c *Client) Attach(ctx context.Context, req api.Attach) (store.Task, error) {
+	var t store.Task
+	return t, c.send(ctx, api.AttachPath, req, &t)
+}
+
+// Ensure brings a task's session back if it has gone.
+func (c *Client) Ensure(ctx context.Context, task string) (store.Task, error) {
+	var t store.Task
+	return t, c.call(ctx, http.MethodPost, api.EnsurePath+"?"+url.Values{"task": {task}}.Encode(), &t)
+}
+
+func (c *Client) Close(ctx context.Context, task string, force bool) error {
+	q := url.Values{"task": {task}}
+	if force {
+		q.Set("force", "1")
+	}
+	return c.call(ctx, http.MethodPost, api.ClosePath+"?"+q.Encode(), nil)
+}
+
+func (c *Client) Sweep(ctx context.Context) (api.Swept, error) {
+	var swept api.Swept
+	return swept, c.call(ctx, http.MethodPost, api.SweepPath, &swept)
+}
+
+func (c *Client) send(ctx context.Context, path string, in, out any) error {
+	body, err := json.Marshal(in)
+	if err != nil {
+		return err
+	}
+	return c.do(ctx, http.MethodPost, path, bytes.NewReader(body), out)
+}
+
 func (c *Client) call(ctx context.Context, method, path string, out any) error {
+	return c.do(ctx, method, path, nil, out)
+}
+
+func (c *Client) do(ctx context.Context, method, path string, body io.Reader, out any) error {
 	// The host is ignored: the transport always dials the socket.
-	req, err := http.NewRequestWithContext(ctx, method, "http://puffin"+path, nil)
+	req, err := http.NewRequestWithContext(ctx, method, "http://puffin"+path, body)
 	if err != nil {
 		return err
 	}

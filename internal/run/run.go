@@ -34,15 +34,22 @@ func (e *Error) Error() string {
 func (e *Error) Unwrap() error { return e.Err }
 
 // Output runs a command and returns its stdout.
+//
+// It runs in the home directory. The daemon inherits its own directory from
+// whichever pane started it, often a worktree that is later removed, and a
+// child cannot be spawned in a directory that no longer exists.
 func Output(ctx context.Context, name string, args ...string) (string, error) {
-	ctx, cancel := context.WithTimeout(ctx, Timeout)
+	return In(ctx, home, Timeout, name, args...)
+}
+
+// In is Output with the directory and the deadline chosen by the caller, for
+// the few commands that need one or are slow for good reason.
+func In(ctx context.Context, dir string, timeout time.Duration, name string, args ...string) (string, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	cmd := exec.CommandContext(ctx, name, args...)
-	// The daemon inherits its directory from whichever pane started it, often
-	// a worktree that is later removed, and a child cannot be spawned in a
-	// directory that no longer exists.
-	cmd.Dir = home
+	cmd.Dir = dir
 	// Stop waiting on the pipes shortly after the deadline kills the command,
 	// even if a grandchild still holds them open.
 	cmd.WaitDelay = time.Second

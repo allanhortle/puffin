@@ -23,11 +23,28 @@ import (
 	"github.com/allanhortle/puffin/internal/git"
 	"github.com/allanhortle/puffin/internal/paths"
 	"github.com/allanhortle/puffin/internal/pr"
+	"github.com/allanhortle/puffin/internal/store"
+	"github.com/allanhortle/puffin/internal/tmux"
 )
 
 const version = "0.0.1"
 
 const help = `puffin: tasks, worktrees and pull requests, in tmux
+
+  puffin new [prompt...]   make a task: a directory, a tmux session, and an agent on the prompt
+      --read REPO          a repository the task's agent may read; repeatable
+      --attach REPO        give the task a worktree of REPO straight away; repeatable
+      --name NAME          the task's name, instead of one made from the prompt
+  puffin attach REPO [prompt...]
+                           give a task a worktree of REPO, with its own window and agent
+      --task NAME          the task, instead of the one this tmux session belongs to
+      --branch BRANCH      the branch, instead of one named for the task
+  puffin tasks             every task, with its worktrees and pull requests; --json
+  puffin switch NAME       go to a task's session, bringing it back if it has gone
+  puffin close [NAME]      remove a task's worktrees, session and directory
+      --force              even if a worktree has uncommitted work
+  puffin sweep             close every task whose pull requests have all merged or closed
+  puffin repos             the repositories found under the configured roots; --scan to look again
 
   puffin start             start the daemon in the background, if it is not running
   puffin stop              stop the daemon and clear the letters
@@ -48,7 +65,9 @@ const (
 	clientTimeout = 5 * time.Second
 	// A refresh waits out a whole cycle, which has its own deadline.
 	refreshTimeout = 100 * time.Second
-	watchInterval  = 2 * time.Second
+	// Making or removing a worktree takes as long as git takes.
+	taskTimeout   = 16 * time.Minute
+	watchInterval = 2 * time.Second
 
 	// Where a click lands: the pull request itself for a letter, and the
 	// dashboard for the review count, which has no single pull request behind
@@ -90,6 +109,20 @@ func main() {
 		} else {
 			err = start()
 		}
+	case "new":
+		err = newTask(args)
+	case "attach":
+		err = attach(args)
+	case "tasks":
+		err = tasks(flag("--json"))
+	case "switch":
+		err = switchTo(arg)
+	case "close":
+		err = closeTask(args)
+	case "sweep":
+		err = sweep()
+	case "repos":
+		err = repos(flag("--scan"))
 	case "status":
 		err = status(flag("--json"))
 	case "refresh":
@@ -493,6 +526,234 @@ func watchLine(p pr.PR, stack []int) string {
 		parts = append(parts, paint("red", "needs you: "+strings.Join(checks.AwaitingOn, ", ")))
 	}
 	return strings.Join(parts, " ")
+}
+
+// parse splits arguments into flags and the rest. A flag named in valued
+// takes the argument after it; any other flag is a switch. Everything after
+// `--` is the rest.
+func parse(args []string, valued ...string) (map[string][]string, []string, error) {
+	takes := map[string]bool{}
+	for _, name := range valued {
+		takes[name] = true
+	}
+	flags := map[string][]string{}
+	var rest []string
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		switch {
+		case a == "--":
+			return flags, append(rest, args[i+1:]...), nil
+		case !strings.HasPrefix(a, "--"):
+			rest = append(rest, a)
+		case takes[a]:
+			if i+1 == len(args) {
+				return nil, nil, fmt.Errorf("%s needs a value", a)
+			}
+			i++
+			flags[a] = append(flags[a], args[i])
+		default:
+			flags[a] = append(flags[a], "")
+		}
+	}
+	return flags, rest, nil
+}
+
+func last(values []string) string {
+	if len(values) == 0 {
+		return ""
+	}
+	return values[len(values)-1]
+}
+
+func tmuxClient() (tmux.Client, error) {
+	cfg, err := config.Load(paths.Config())
+	return tmux.Client{Socket: cfg.TmuxSocket}, err
+}
+
+// goTo moves this terminal to a task's session when it is inside tmux, and
+// says how to get there when it is not.
+func goTo(slug string) error {
+	if os.Getenv("TMUX") == "" {
+		fmt.Printf("%s is ready: tmux attach -t %s\n", slug, slug)
+		return nil
+	}
+	tm, err := tmuxClient()
+	if err != nil {
+		return err
+	}
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	return tm.Switch(ctx, slug)
+}
+
+// currentTask is the task this terminal's tmux session belongs to: a task's
+// session carries the task's name.
+func currentTask() (string, error) {
+	if os.Getenv("TMUX") == "" {
+		return "", errors.New("not inside tmux, so name the task")
+	}
+	tm, err := tmuxClient()
+	if err != nil {
+		return "", err
+	}
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	return tm.CurrentSession(ctx)
+}
+
+func newTask(args []string) error {
+	flags, rest, err := parse(args, "--read", "--attach", "--name")
+	if err != nil {
+		return err
+	}
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	t, err := daemonClient().NewTask(ctx, api.NewTask{
+		Name:   last(flags["--name"]),
+		Prompt: strings.Join(rest, " "),
+		Read:   flags["--read"],
+		Attach: flags["--attach"],
+	})
+	if err != nil {
+		return err
+	}
+	return goTo(t.Slug)
+}
+
+func attach(args []string) error {
+	flags, rest, err := parse(args, "--task", "--branch")
+	if err != nil {
+		return err
+	}
+	if len(rest) == 0 {
+		return errors.New("attach needs a repository")
+	}
+	task := last(flags["--task"])
+	if task == "" {
+		if task, err = currentTask(); err != nil {
+			return err
+		}
+	}
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	t, err := daemonClient().Attach(ctx, api.Attach{
+		Task:   task,
+		Repo:   rest[0],
+		Branch: last(flags["--branch"]),
+		Prompt: strings.Join(rest[1:], " "),
+	})
+	if err != nil {
+		return err
+	}
+	w := t.Worktrees[len(t.Worktrees)-1]
+	fmt.Printf("%s: %s on %s\n", t.Slug, w.Path, w.Ref)
+	return nil
+}
+
+var taskColours = map[string]string{store.TaskOpen: "green", store.TaskDone: "magenta", store.TaskDiscarded: "colour242"}
+
+func tasks(asJSON bool) error {
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	all, err := daemonClient().Tasks(ctx)
+	if err != nil {
+		return err
+	}
+	if asJSON {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(all)
+	}
+	for _, t := range all {
+		line := paint(taskColours[t.State], fmt.Sprintf("%-5s", t.State)) + " " + paint("bold", t.Slug)
+		if t.Title != "" && t.Title != t.Slug {
+			line += " " + paint("colour242", t.Title)
+		}
+		fmt.Println(line)
+		if len(t.Worktrees) == 0 {
+			fmt.Println("      " + paint("colour242", "exploring, no worktree"))
+		}
+		for _, w := range t.Worktrees {
+			ref := w.Ref
+			if ref == "" {
+				ref = "detached"
+			}
+			fmt.Printf("      %s %s\n", filepath.Base(w.Path), paint("colour242", w.Repo.Name+" on "+ref))
+		}
+		for _, c := range t.Changes {
+			if c.Number == 0 {
+				fmt.Printf("      %s %s\n", paint("colour242", "-"), paint("colour242", c.Head+", no pull request yet"))
+				continue
+			}
+			label := pr.LabelOf(c.Status)
+			fmt.Printf("      %s #%d %s\n", paint(label.Colour, label.Letter), c.Number, paint("colour242", c.Head))
+		}
+	}
+	return nil
+}
+
+func switchTo(slug string) error {
+	if slug == "" {
+		return errors.New("switch needs a task")
+	}
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	if _, err := daemonClient().Ensure(ctx, slug); err != nil {
+		return err
+	}
+	return goTo(slug)
+}
+
+func closeTask(args []string) error {
+	flags, rest, err := parse(args)
+	if err != nil {
+		return err
+	}
+	slug := ""
+	if len(rest) > 0 {
+		slug = rest[0]
+	} else if slug, err = currentTask(); err != nil {
+		return err
+	}
+	_, force := flags["--force"]
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	return daemonClient().Close(ctx, slug, force)
+}
+
+func sweep() error {
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	swept, err := daemonClient().Sweep(ctx)
+	if err != nil {
+		return err
+	}
+	for _, slug := range swept.Closed {
+		fmt.Println("closed", slug)
+	}
+	for slug, why := range swept.Kept {
+		fmt.Println(paint("yellow", "kept "+slug+": ") + why)
+	}
+	if len(swept.Closed)+len(swept.Kept) == 0 {
+		fmt.Println("nothing is done")
+	}
+	return nil
+}
+
+func repos(scan bool) error {
+	ctx, cancel := timeout(refreshTimeout)
+	defer cancel()
+	found, err := daemonClient().Repos(ctx, scan)
+	if err != nil {
+		return err
+	}
+	if len(found) == 0 {
+		fmt.Printf("none known; set roots in %s and run `puffin repos --scan`\n", paths.Config())
+	}
+	for _, r := range found {
+		fmt.Printf("%s %s\n", r.Name, paint("colour242", r.Path+" ("+r.DefaultBranch+")"))
+	}
+	return nil
 }
 
 // Keyed by tmux colour name, since that is how a label names its colour.

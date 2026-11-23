@@ -20,6 +20,7 @@ import (
 	"github.com/allanhortle/puffin/internal/api"
 	"github.com/allanhortle/puffin/internal/config"
 	"github.com/allanhortle/puffin/internal/store"
+	"github.com/allanhortle/puffin/internal/task"
 	"github.com/allanhortle/puffin/internal/tmux"
 )
 
@@ -38,6 +39,7 @@ type daemon struct {
 	opts      Options
 	store     *store.Store
 	poller    *poller
+	tasks     *task.Manager
 	startedAt time.Time
 	shutdown  context.CancelFunc
 }
@@ -75,10 +77,12 @@ func Run(ctx context.Context, opts Options) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	tm := tmux.Client{Socket: opts.Config.TmuxSocket}
+	tasks := task.New(opts.Config, st, tm)
 	d := &daemon{
 		opts:      opts,
 		store:     st,
-		poller:    newPoller(st, tm),
+		tasks:     tasks,
+		poller:    newPoller(st, tm, tasks),
 		startedAt: time.Now().UTC(),
 		shutdown:  cancel,
 	}
@@ -110,6 +114,14 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("GET "+api.ReviewsPath, d.reviews)
 	mux.HandleFunc("GET "+api.PRPath, d.pr)
 	mux.HandleFunc("GET "+api.PRsPath, d.prs)
+	mux.HandleFunc("GET "+api.ReposPath, d.repos)
+	mux.HandleFunc("POST "+api.ReposPath, d.scan)
+	mux.HandleFunc("GET "+api.TasksPath, d.listTasks)
+	mux.HandleFunc("POST "+api.TasksPath, d.newTask)
+	mux.HandleFunc("POST "+api.AttachPath, d.attach)
+	mux.HandleFunc("POST "+api.EnsurePath, d.ensure)
+	mux.HandleFunc("POST "+api.ClosePath, d.closeTask)
+	mux.HandleFunc("POST "+api.SweepPath, d.sweep)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -231,7 +243,91 @@ func (d *daemon) pr(w http.ResponseWriter, r *http.Request) {
 	reply(w, http.StatusOK, found)
 }
 
+// Changing a task takes as long as git takes, and must not stop half way
+// because whoever asked went away: closing a task kills the very pane that
+// asked for it.
+const taskTimeout = 15 * time.Minute
+
+func detached(r *http.Request) (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.WithoutCancel(r.Context()), taskTimeout)
+}
+
+func (d *daemon) repos(w http.ResponseWriter, r *http.Request) {
+	repos, err := d.store.Repos(r.Context())
+	answer(w, repos, err)
+}
+
+func (d *daemon) scan(w http.ResponseWriter, r *http.Request) {
+	repos, err := d.tasks.Scan(r.Context())
+	answer(w, repos, err)
+}
+
+func (d *daemon) listTasks(w http.ResponseWriter, r *http.Request) {
+	tasks, err := d.store.Tasks(r.Context())
+	if tasks == nil {
+		tasks = []store.Task{}
+	}
+	answer(w, tasks, err)
+}
+
+func (d *daemon) newTask(w http.ResponseWriter, r *http.Request) {
+	var req api.NewTask
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		reply(w, http.StatusBadRequest, api.Error{Error: err.Error()})
+		return
+	}
+	ctx, cancel := detached(r)
+	defer cancel()
+	t, err := d.tasks.New(ctx, req)
+	answer(w, t, err)
+}
+
+func (d *daemon) attach(w http.ResponseWriter, r *http.Request) {
+	var req api.Attach
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		reply(w, http.StatusBadRequest, api.Error{Error: err.Error()})
+		return
+	}
+	ctx, cancel := detached(r)
+	defer cancel()
+	t, err := d.tasks.Attach(ctx, req)
+	answer(w, t, err)
+}
+
+func (d *daemon) ensure(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := detached(r)
+	defer cancel()
+	t, err := d.tasks.Ensure(ctx, r.URL.Query().Get("task"))
+	answer(w, t, err)
+}
+
+func (d *daemon) closeTask(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := detached(r)
+	defer cancel()
+	q := r.URL.Query()
+	answer(w, struct{}{}, d.tasks.Close(ctx, q.Get("task"), q.Get("force") != ""))
+}
+
+func (d *daemon) sweep(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := detached(r)
+	defer cancel()
+	swept, err := d.tasks.Sweep(ctx)
+	answer(w, swept, err)
+}
+
+func answer(w http.ResponseWriter, body any, err error) {
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	reply(w, http.StatusOK, body)
+}
+
 func fail(w http.ResponseWriter, err error) {
+	if errors.Is(err, store.ErrNoTask) {
+		reply(w, http.StatusNotFound, api.Error{Error: err.Error()})
+		return
+	}
 	var missing errNoMatch
 	if errors.As(err, &missing) {
 		reply(w, http.StatusNotFound, api.Error{Error: err.Error()})

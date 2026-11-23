@@ -204,3 +204,109 @@ func (c Client) Clear(ctx context.Context) error {
 	}
 	return c.Push(ctx, ids, nil, 0)
 }
+
+// Options that bind tmux to puffin's rows. Live tmux state is never stored:
+// these are how a session or window says what it is showing.
+const (
+	TaskOption     = "@puffin_task"
+	WorktreeOption = "@puffin_worktree"
+)
+
+// exact stops tmux matching a session name by prefix.
+func exact(session string) string { return "=" + session }
+
+func (c Client) HasSession(ctx context.Context, name string) bool {
+	_, err := c.Run(ctx, "has-session", "-t", exact(name))
+	return err == nil
+}
+
+// NewSession makes a detached session with one window and returns that
+// window's pane.
+func (c Client) NewSession(ctx context.Context, name, window, dir string) (string, error) {
+	out, err := c.Run(ctx, "new-session", "-d", "-s", name, "-n", window, "-c", dir, "-P", "-F", "#{pane_id}")
+	return strings.TrimSpace(out), err
+}
+
+func (c Client) KillSession(ctx context.Context, name string) error {
+	_, err := c.Run(ctx, "kill-session", "-t", exact(name))
+	return err
+}
+
+func (c Client) SetSessionOption(ctx context.Context, session, key, value string) error {
+	// The target is a pane, so the trailing colon is what makes this name a
+	// session rather than a window to look for.
+	_, err := c.Run(ctx, "set-option", "-t", exact(session)+":", key, value)
+	return err
+}
+
+func (c Client) SetWindowOption(ctx context.Context, window, key, value string) error {
+	_, err := c.Run(ctx, "set-option", "-w", "-t", window, key, value)
+	return err
+}
+
+// NewWindow adds a window to a session without switching to it, and returns
+// the window and its pane.
+func (c Client) NewWindow(ctx context.Context, session, name, dir string) (window, pane string, err error) {
+	out, err := c.Run(ctx, "new-window", "-d", "-t", exact(session)+":", "-n", name, "-c", dir,
+		"-P", "-F", "#{window_id} #{pane_id}")
+	window, pane, _ = strings.Cut(strings.TrimSpace(out), " ")
+	return window, pane, err
+}
+
+// Split divides a pane and returns the new one: side by side when horizontal,
+// stacked otherwise.
+func (c Client) Split(ctx context.Context, pane, dir string, horizontal bool) (string, error) {
+	direction := "-v"
+	if horizontal {
+		direction = "-h"
+	}
+	out, err := c.Run(ctx, "split-window", "-d", direction, "-t", pane, "-c", dir, "-P", "-F", "#{pane_id}")
+	return strings.TrimSpace(out), err
+}
+
+// Type enters a command at a pane's shell. Typed rather than given to tmux as
+// the pane's command, so the shell is still there when the command exits and
+// it runs with everything the shell's startup files set up.
+func (c Client) Type(ctx context.Context, pane, command string) error {
+	if _, err := c.Run(ctx, "send-keys", "-t", pane, "-l", command); err != nil {
+		return err
+	}
+	_, err := c.Run(ctx, "send-keys", "-t", pane, "Enter")
+	return err
+}
+
+func (c Client) SelectPane(ctx context.Context, pane string) error {
+	_, err := c.Run(ctx, "select-pane", "-t", pane)
+	return err
+}
+
+// Switch moves the current client to a session.
+func (c Client) Switch(ctx context.Context, session string) error {
+	_, err := c.Run(ctx, "switch-client", "-t", exact(session))
+	return err
+}
+
+// CurrentSession is the name of the session the caller is running inside.
+func (c Client) CurrentSession(ctx context.Context) (string, error) {
+	out, err := c.Run(ctx, "display-message", "-p", "#{session_name}")
+	return strings.TrimSpace(out), err
+}
+
+// WorktreeWindows maps the value of each window's worktree option to the
+// window carrying it.
+func (c Client) WorktreeWindows(ctx context.Context) (map[string]string, error) {
+	out, err := c.Run(ctx, "list-windows", "-a", "-F", "#{window_id} #{"+WorktreeOption+"}")
+	if errors.Is(err, ErrNoServer) {
+		return map[string]string{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	found := map[string]string{}
+	for _, line := range lines(out) {
+		if window, value, ok := strings.Cut(line, " "); ok && value != "" {
+			found[value] = window
+		}
+	}
+	return found, nil
+}

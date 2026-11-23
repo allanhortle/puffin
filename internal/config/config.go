@@ -20,6 +20,9 @@ type Config struct {
 	TasksDir string `toml:"tasks_dir"`
 	// The command an agent window runs.
 	Agent string `toml:"agent"`
+	// The flag that lets the agent read a directory outside the one it starts
+	// in. Empty means the agent has no such flag.
+	AgentDirFlag string `toml:"agent_dir_flag"`
 	// The name of the tmux server to talk to, as given to `tmux -L`. Empty
 	// means whichever server tmux would pick on its own.
 	TmuxSocket string `toml:"tmux_socket"`
@@ -32,7 +35,8 @@ type Config struct {
 type Repo struct {
 	// Globs, relative to the main clone, copied into a new worktree.
 	Copy []string `toml:"copy"`
-	// Shell commands run in a new worktree.
+	// Shell commands run in a new worktree, in the pane whose command is
+	// "<setup>", or the first pane when none is.
 	Setup []string `toml:"setup"`
 	// Shell commands run in a worktree before it is removed.
 	PreRemove []string `toml:"pre_remove"`
@@ -41,7 +45,8 @@ type Repo struct {
 }
 
 type Pane struct {
-	// "<agent>" stands for the configured agent command.
+	// "<agent>" stands for the configured agent command, and "<setup>" for the
+	// repository's setup commands, which run only when the worktree is new.
 	Command string `toml:"command"`
 	// "horizontal" or "vertical"; empty for the window's first pane.
 	Split string `toml:"split"`
@@ -51,7 +56,7 @@ type Pane struct {
 // Load reads the file at path. A missing file is not an error: every setting
 // has a default.
 func Load(path string) (Config, error) {
-	cfg := Config{Agent: "claude", TasksDir: paths.Tasks()}
+	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", TasksDir: paths.Tasks()}
 	meta, err := toml.DecodeFile(path, &cfg)
 	if errors.Is(err, fs.ErrNotExist) {
 		return cfg, nil

@@ -13,6 +13,7 @@ import (
 	"github.com/allanhortle/puffin/internal/github"
 	"github.com/allanhortle/puffin/internal/pr"
 	"github.com/allanhortle/puffin/internal/store"
+	"github.com/allanhortle/puffin/internal/task"
 	"github.com/allanhortle/puffin/internal/tmux"
 )
 
@@ -59,6 +60,7 @@ type poller struct {
 	store *store.Store
 	gh    *github.Client
 	tmux  tmux.Client
+	tasks *task.Manager
 
 	refresh chan refreshRequest
 
@@ -73,8 +75,9 @@ type poller struct {
 	windows     []api.Window
 }
 
-func newPoller(st *store.Store, tm tmux.Client) *poller {
+func newPoller(st *store.Store, tm tmux.Client, tasks *task.Manager) *poller {
 	return &poller{
+		tasks:   tasks,
 		store:   st,
 		gh:      github.New(),
 		tmux:    tm,
@@ -244,6 +247,12 @@ func (p *poller) cycle(ctx context.Context, force bool) (api.Cycle, error) {
 			return api.Cycle{}, err
 		}
 		p.busy = anyBusy(authored)
+	}
+
+	// Not worth failing the cycle over: the letters do not depend on it, and
+	// the next cycle tries again.
+	if err := p.tasks.Reconcile(ctx); err != nil {
+		slog.Error("reconciling tasks failed", "err", err)
 	}
 
 	var reviews int
