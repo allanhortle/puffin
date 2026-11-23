@@ -125,6 +125,7 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("POST "+api.ReviewPath, d.review)
 	mux.HandleFunc("POST "+api.RenamePath, d.rename)
 	mux.HandleFunc("POST "+api.AdoptPath, d.adopt)
+	mux.HandleFunc("POST "+api.AttentionPath, d.attention)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -265,8 +266,12 @@ func (d *daemon) scan(w http.ResponseWriter, r *http.Request) {
 	answer(w, repos, err)
 }
 
+func (d *daemon) attention(w http.ResponseWriter, r *http.Request) {
+	answer(w, struct{}{}, d.tasks.ShowAttention(r.Context()))
+}
+
 func (d *daemon) listTasks(w http.ResponseWriter, r *http.Request) {
-	tasks, err := d.store.Tasks(r.Context())
+	tasks, err := d.tasks.Tasks(r.Context())
 	if tasks == nil {
 		tasks = []store.Task{}
 	}

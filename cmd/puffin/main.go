@@ -71,6 +71,8 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin prs               every pull request the daemon holds; --json for other tools to read
   puffin reviews           the pull requests waiting on your review
   puffin open <target>     a pull request number, or "reviews", in the browser
+  puffin agent STATE       for an agent's hooks: say what the agent in this pane is doing.
+                           working, waiting, done, or off
   puffin daemon            run the daemon in the foreground
   puffin version
 `
@@ -138,6 +140,8 @@ func main() {
 		err = switchTo(arg)
 	case "close":
 		err = closeTask(args)
+	case "agent":
+		agent(arg) // never an error: it runs inside the agent's own hooks
 	case "adopt":
 		err = adopt(args)
 	case "rename":
@@ -904,14 +908,38 @@ func pickLine(t store.Task) string {
 		title = ""
 	}
 	return strings.Join([]string{taskRow + " " + t.Slug,
-		column(letters, shown, lettersWidth) + paint("bold", name), paint("colour242", title)}, "\t")
+		marker(task.Rank(t) == task.Mine) + column(letters, shown, lettersWidth) + agentIcon(t.Agent) + " " + paint("bold", name),
+		paint("colour242", title)}, "\t")
+}
+
+// marker flags a row that is waiting on me. It is the same mark as the count
+// in the status bar, and the count is the number of rows that carry it.
+func marker(mine bool) string {
+	if mine {
+		return paint("red", "▲") + " "
+	}
+	return "  "
+}
+
+// agentIcon is what a task's agent is doing: ~ working, ? waiting on me,
+// • finished its turn.
+func agentIcon(state string) string {
+	switch state {
+	case task.AgentWorking:
+		return paint("yellow", "~")
+	case task.AgentWaiting:
+		return paint("red", "?")
+	case task.AgentDone:
+		return paint("green", "•")
+	}
+	return " "
 }
 
 // reviewLine is a pull request asking for my review that has no task yet.
 func reviewLine(p pr.PR) string {
 	name := fmt.Sprintf("%s#%d", p.Repo[strings.Index(p.Repo, "/")+1:], p.Number)
 	return strings.Join([]string{fmt.Sprintf("%s %s %d", reviewRow, p.Repo, p.Number),
-		column(paint("red", "rev"), 3, lettersWidth) + name, paint("colour242", p.Title+" @"+p.Author)}, "\t")
+		marker(true) + column(paint("red", "rev"), 3, lettersWidth) + "  " + name, paint("colour242", p.Title+" @"+p.Author)}, "\t")
 }
 
 // pickLines is the one list: my tasks and the reviews asked of me, whatever
@@ -1080,6 +1108,32 @@ func closeTask(args []string) error {
 	ctx, cancel := timeout(taskTimeout)
 	defer cancel()
 	return daemonClient().Close(ctx, slug, force)
+}
+
+// agent records what the agent in this pane is doing, for the agent's own
+// hooks to call. It must never get in the agent's way, so it is quick,
+// silent, and does nothing at all outside tmux.
+func agent(state string) {
+	pane := os.Getenv("TMUX_PANE")
+	if pane == "" {
+		return
+	}
+	switch state {
+	case task.AgentWorking, task.AgentWaiting, task.AgentDone:
+	case "off":
+		state = ""
+	default:
+		return
+	}
+	tm, err := tmuxClient()
+	if err != nil {
+		return
+	}
+	ctx, cancel := timeout(2 * time.Second)
+	defer cancel()
+	if tm.SetAgent(ctx, pane, state) == nil {
+		daemonClient().Recount(ctx)
+	}
 }
 
 func adopt(args []string) error {

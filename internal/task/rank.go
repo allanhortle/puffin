@@ -2,6 +2,7 @@ package task
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/allanhortle/puffin/internal/pr"
 	"github.com/allanhortle/puffin/internal/store"
@@ -83,6 +84,11 @@ func Rank(t store.Task) int {
 	if t.State != store.TaskOpen {
 		return Finished
 	}
+	// An agent that has stopped to ask something is waiting on me, whatever
+	// the pull requests say.
+	if t.Agent == AgentWaiting {
+		return Mine
+	}
 	live := Live(t)
 	if len(live) == 0 {
 		return Idle // exploring, or open with more to do than what has merged
@@ -90,9 +96,43 @@ func Rank(t store.Task) int {
 	return RankChange(Headline(live))
 }
 
-// Attention is how many tasks are waiting on me.
-func (m *Manager) Attention(ctx context.Context) (int, error) {
+// What an agent can report itself to be.
+const (
+	AgentWorking = "working"
+	AgentWaiting = "waiting" // stopped to ask for permission, or a question
+	AgentDone    = "done"    // finished its turn
+)
+
+// Tasks is every live task, with what its agents are doing.
+func (m *Manager) Tasks(ctx context.Context) ([]store.Task, error) {
 	tasks, err := m.store.Tasks(ctx)
+	if err != nil {
+		return nil, err
+	}
+	agents, err := m.tmux.Agents(ctx)
+	if err != nil {
+		return tasks, nil // the list is still worth having without them
+	}
+	// One task can have several agents. The one that needs me speaks for it,
+	// then one still working, then one that has finished.
+	order := []string{AgentWaiting, AgentWorking, AgentDone}
+	for i := range tasks {
+		states := agents[tasks[i].Slug]
+		for _, want := range order {
+			for _, state := range states {
+				if state == want && tasks[i].Agent == "" {
+					tasks[i].Agent = state
+				}
+			}
+		}
+	}
+	return tasks, nil
+}
+
+// Attention is how many things are waiting on me: tasks, and requests for my
+// review that have no task yet. It is the number of marked rows in the list.
+func (m *Manager) Attention(ctx context.Context) (int, error) {
+	tasks, err := m.Tasks(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -102,5 +142,29 @@ func (m *Manager) Attention(ctx context.Context) (int, error) {
 			n++
 		}
 	}
+	asking, err := m.store.Changes(ctx, store.RoleReviewer)
+	if err != nil {
+		return n, err
+	}
+	tasked := map[string]bool{}
+	for _, t := range tasks {
+		for _, c := range t.Changes {
+			tasked[c.Repo+"#"+strconv.Itoa(c.Number)] = true
+		}
+	}
+	for _, p := range asking {
+		if p.Status == pr.ReviewRequested && !tasked[p.Repo+"#"+strconv.Itoa(p.Number)] {
+			n++
+		}
+	}
 	return n, nil
+}
+
+// ShowAttention recounts and updates the status bar now.
+func (m *Manager) ShowAttention(ctx context.Context) error {
+	n, err := m.Attention(ctx)
+	if err != nil {
+		return err
+	}
+	return m.tmux.SetAttention(ctx, n)
 }

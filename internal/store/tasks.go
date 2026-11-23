@@ -44,15 +44,18 @@ type TaskChange struct {
 }
 
 type Task struct {
-	ID        int64        `json:"id"`
-	Slug      string       `json:"slug"`
-	Dir       string       `json:"dir"`
-	Title     string       `json:"title,omitempty"`
-	Flow      string       `json:"flow"`
-	State     string       `json:"state"`
-	LinearID  string       `json:"linear_id,omitempty"`
-	Prompt    string       `json:"prompt,omitempty"`
-	CreatedAt string       `json:"created_at"`
+	ID        int64  `json:"id"`
+	Slug      string `json:"slug"`
+	Dir       string `json:"dir"`
+	Title     string `json:"title,omitempty"`
+	Flow      string `json:"flow"`
+	State     string `json:"state"`
+	LinearID  string `json:"linear_id,omitempty"`
+	Prompt    string `json:"prompt,omitempty"`
+	CreatedAt string `json:"created_at"`
+	// What the task's agents are doing, the most pressing of them: waiting,
+	// working or done. Read from tmux when the task is listed, never stored.
+	Agent     string       `json:"agent,omitempty"`
 	Reads     []Repo       `json:"reads"`
 	Worktrees []Worktree   `json:"worktrees"`
 	Changes   []TaskChange `json:"changes"`

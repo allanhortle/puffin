@@ -215,7 +215,10 @@ func (c Client) Clear(ctx context.Context) error {
 // Options that bind tmux to puffin's rows. Live tmux state is never stored:
 // these are how a session or window says what it is showing.
 const (
-	TaskOption     = "@puffin_task"
+	TaskOption = "@puffin_task"
+	// What the agent in a window is doing: working, waiting or done. Set by
+	// the agent's own hooks, and read back live; it is never stored.
+	AgentOption    = "@puffin_agent"
 	WorktreeOption = "@puffin_worktree"
 )
 
@@ -332,4 +335,43 @@ func (c Client) WorktreeWindows(ctx context.Context) (map[string]string, error) 
 		}
 	}
 	return found, nil
+}
+
+// SetAgent records what the agent in a pane's window is doing. An empty
+// state clears it.
+func (c Client) SetAgent(ctx context.Context, pane, state string) error {
+	args := []string{"set-option", "-w", "-t", pane, AgentOption, state}
+	if state == "" {
+		args = []string{"set-option", "-uw", "-t", pane, AgentOption}
+	}
+	_, err := c.Run(ctx, args...)
+	return err
+}
+
+// Agents is the state of every agent that has reported one, by session.
+func (c Client) Agents(ctx context.Context) (map[string][]string, error) {
+	out, err := c.Run(ctx, "list-windows", "-a", "-F", "#{"+AgentOption+"} #{session_name}")
+	if errors.Is(err, ErrNoServer) {
+		return map[string][]string{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	found := map[string][]string{}
+	for _, line := range lines(out) {
+		if state, session, ok := strings.Cut(line, " "); ok && state != "" {
+			found[session] = append(found[session], state)
+		}
+	}
+	return found, nil
+}
+
+// SetAttention shows how many tasks are waiting on me, without waiting for
+// the next poll.
+func (c Client) SetAttention(ctx context.Context, n int) error {
+	if _, err := c.Run(ctx, "set", "-g", AttentionOption, count(n)); err != nil {
+		return err
+	}
+	c.Run(ctx, "refresh-client", "-S")
+	return nil
 }

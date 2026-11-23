@@ -121,6 +121,11 @@ func (c *Client) Review(ctx context.Context, repo string, number int) (store.Tas
 	return t, c.call(ctx, http.MethodPost, api.ReviewPath+"?"+q.Encode(), &t)
 }
 
+// Recount asks the daemon to recount what is waiting on me and show it.
+func (c *Client) Recount(ctx context.Context) error {
+	return c.call(ctx, http.MethodPost, api.AttentionPath, nil)
+}
+
 func (c *Client) Adopt(ctx context.Context, req api.Adopt) (store.Task, error) {
 	var t store.Task
 	return t, c.send(ctx, api.AdoptPath, req, &t)

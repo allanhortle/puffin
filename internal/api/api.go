@@ -10,21 +10,22 @@ import (
 )
 
 const (
-	StatusPath   = "/v1/status"
-	ShutdownPath = "/v1/shutdown"
-	RefreshPath  = "/v1/refresh" // POST; ?force=1 skips the "has anything moved" check
-	ReviewsPath  = "/v1/reviews"
-	PRPath       = "/v1/pr" // GET; ?target= or ?repo=&branch= or ?repo=&number=
-	PRsPath      = "/v1/prs"
-	ReposPath    = "/v1/repos"        // GET lists; POST scans the roots again
-	TasksPath    = "/v1/tasks"        // GET lists; POST makes one
-	AttachPath   = "/v1/tasks/attach" // POST
-	EnsurePath   = "/v1/tasks/ensure" // POST ?task=
-	ClosePath    = "/v1/tasks/close"  // POST ?task=&force=1
-	SweepPath    = "/v1/tasks/sweep"  // POST
-	ReviewPath   = "/v1/tasks/review" // POST ?repo=&number=
-	RenamePath   = "/v1/tasks/rename" // POST ?task=&to=
-	AdoptPath    = "/v1/tasks/adopt"  // POST
+	StatusPath    = "/v1/status"
+	ShutdownPath  = "/v1/shutdown"
+	RefreshPath   = "/v1/refresh" // POST; ?force=1 skips the "has anything moved" check
+	ReviewsPath   = "/v1/reviews"
+	PRPath        = "/v1/pr" // GET; ?target= or ?repo=&branch= or ?repo=&number=
+	PRsPath       = "/v1/prs"
+	ReposPath     = "/v1/repos"        // GET lists; POST scans the roots again
+	TasksPath     = "/v1/tasks"        // GET lists; POST makes one
+	AttachPath    = "/v1/tasks/attach" // POST
+	EnsurePath    = "/v1/tasks/ensure" // POST ?task=
+	ClosePath     = "/v1/tasks/close"  // POST ?task=&force=1
+	SweepPath     = "/v1/tasks/sweep"  // POST
+	ReviewPath    = "/v1/tasks/review" // POST ?repo=&number=
+	RenamePath    = "/v1/tasks/rename" // POST ?task=&to=
+	AdoptPath     = "/v1/tasks/adopt"  // POST
+	AttentionPath = "/v1/attention"    // POST; recount what is waiting on me, now
 )
 
 type Status struct {
