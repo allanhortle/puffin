@@ -864,32 +864,36 @@ func column(s string, shown, width int) string {
 	return s + strings.Repeat(" ", max(width-shown, 1))
 }
 
-const lettersWidth = 6
+const lettersWidth = 7
 
 // pickLine is one task as the list shows it. The first field says what Enter
 // should act on, and is not displayed.
+//
+// A task shows one letter however many pull requests it has: the most
+// pressing, which is the one that decides where the task sorts, then how many
+// more there are. A stack of eight is one piece of work, not eight letters.
 func pickLine(t store.Task) string {
-	letters, shown := "", 0
-	for _, c := range t.Changes {
-		switch {
-		case c.State == "MERGED" || c.State == "CLOSED":
-			if t.State == store.TaskOpen {
-				continue // what has shipped is not what the task is waiting on
-			}
-			fallthrough
-		case c.Number != 0:
-			label := changeLabel(c)
-			letters, shown = letters+paint(label.Colour, label.Letter), shown+len(label.Letter)
-			if c.Unresolved > 0 {
-				n := strconv.Itoa(c.Unresolved)
+	live := task.Live(t)
+	if t.State != store.TaskOpen {
+		live = t.Changes // a finished task shows how it ended
+	}
+	letters, shown := paint("colour242", "-"), 1
+	if len(live) > 0 {
+		first := task.Headline(live)
+		if first.Number == 0 {
+			letters, shown = paint("colour242", "·"), 1
+		} else {
+			label := changeLabel(first)
+			letters, shown = paint(label.Colour, label.Letter), len(label.Letter)
+			if first.Unresolved > 0 {
+				n := strconv.Itoa(first.Unresolved)
 				letters, shown = letters+paint("red", n), shown+len(n)
 			}
-		default:
-			letters, shown = letters+paint("colour242", "·"), shown+1
 		}
-	}
-	if shown == 0 {
-		letters, shown = paint("colour242", "-"), 1
+		if len(live) > 1 {
+			more := "+" + strconv.Itoa(len(live)-1)
+			letters, shown = letters+paint("colour242", more), shown+len(more)
+		}
 	}
 	name := t.Slug
 	if t.State != store.TaskOpen {

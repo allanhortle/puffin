@@ -33,7 +33,8 @@ func TestRank(t *testing.T) {
 		"building":                           {[]store.TaskChange{open(pr.Building), open(pr.WaitingReview)}, store.TaskOpen, Machine},
 		"out for review":                     {[]store.TaskChange{open(pr.WaitingReview), merged}, store.TaskOpen, Reviewer},
 		"all merged but not yet marked done": {[]store.TaskChange{merged}, store.TaskOpen, Idle},
-		"done":                               {[]store.TaskChange{merged}, store.TaskDone, Finished},
+		"a leftover branch does not outrank the stack": {[]store.TaskChange{local, open(pr.Building), open(pr.Building)}, store.TaskOpen, Machine},
+		"done": {[]store.TaskChange{merged}, store.TaskDone, Finished},
 	} {
 		if got := Rank(store.Task{State: c.state, Changes: c.changes}); got != c.want {
 			t.Errorf("%s: rank %d, want %d", name, got, c.want)

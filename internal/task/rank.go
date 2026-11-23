@@ -18,7 +18,8 @@ const (
 	Finished        // every pull request merged or closed; ready to sweep
 )
 
-func rankChange(c store.TaskChange) int {
+// RankChange is how pressing one pull request, or branch, is.
+func RankChange(c store.TaskChange) int {
 	switch {
 	case c.State == "MERGED" || c.State == "CLOSED":
 		return Finished
@@ -44,23 +45,49 @@ func rankChange(c store.TaskChange) int {
 	return Idle
 }
 
-// Rank is the most pressing thing among a task's pull requests.
+// Live is what a task is still waiting on: its pull requests that have not
+// merged or closed. A branch with no pull request counts only when there is
+// nothing else, because next to real pull requests it is usually the branch
+// the task started on, left behind once the work was split into a stack.
+func Live(t store.Task) []store.TaskChange {
+	var prs, local []store.TaskChange
+	for _, c := range t.Changes {
+		switch {
+		case c.State == "MERGED" || c.State == "CLOSED":
+		case c.Number == 0:
+			local = append(local, c)
+		default:
+			prs = append(prs, c)
+		}
+	}
+	if len(prs) > 0 {
+		return prs
+	}
+	return local
+}
+
+// Headline is the most pressing of a task's live changes: the one that
+// decides where it sorts, and the one worth a letter.
+func Headline(live []store.TaskChange) store.TaskChange {
+	first := live[0]
+	for _, c := range live[1:] {
+		if RankChange(c) < RankChange(first) {
+			first = c
+		}
+	}
+	return first
+}
+
+// Rank is how pressing a task is.
 func Rank(t store.Task) int {
 	if t.State != store.TaskOpen {
 		return Finished
 	}
-	rank := Finished
-	live := false
-	for _, c := range t.Changes {
-		if r := rankChange(c); r < rank {
-			rank = r
-		}
-		live = live || (c.State != "MERGED" && c.State != "CLOSED")
+	live := Live(t)
+	if len(live) == 0 {
+		return Idle // exploring, or open with more to do than what has merged
 	}
-	if !live {
-		return Idle // still open, so there is more to do than what has merged
-	}
-	return rank
+	return RankChange(Headline(live))
 }
 
 // Attention is how many tasks are waiting on me.
