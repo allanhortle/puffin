@@ -15,6 +15,8 @@ func TestRank(t *testing.T) {
 	local := store.TaskChange{State: "LOCAL", Status: pr.Unknown}
 	threads := open(pr.WaitingReview)
 	threads.Unresolved = 2
+	building := open(pr.Building)
+	building.Unresolved = 2
 	draft := open(pr.Ready)
 	draft.IsDraft = true
 
@@ -23,16 +25,17 @@ func TestRank(t *testing.T) {
 		state   string
 		want    int
 	}{
-		"exploring":                          {nil, store.TaskOpen, Idle},
-		"a branch with no pull request":      {[]store.TaskChange{local}, store.TaskOpen, Idle},
-		"failing":                            {[]store.TaskChange{open(pr.Failing)}, store.TaskOpen, Mine},
-		"the worst of a stack wins":          {[]store.TaskChange{open(pr.Building), open(pr.Conflict), merged}, store.TaskOpen, Mine},
-		"unresolved threads are mine":        {[]store.TaskChange{threads}, store.TaskOpen, Mine},
-		"ready":                              {[]store.TaskChange{open(pr.Ready), open(pr.WaitingReview)}, store.TaskOpen, Ready},
-		"a green draft waits on nobody":      {[]store.TaskChange{draft}, store.TaskOpen, Idle},
-		"building":                           {[]store.TaskChange{open(pr.Building), open(pr.WaitingReview)}, store.TaskOpen, Machine},
-		"out for review":                     {[]store.TaskChange{open(pr.WaitingReview), merged}, store.TaskOpen, Reviewer},
-		"all merged but not yet marked done": {[]store.TaskChange{merged}, store.TaskOpen, Idle},
+		"exploring":                                    {nil, store.TaskOpen, Idle},
+		"a branch with no pull request":                {[]store.TaskChange{local}, store.TaskOpen, Idle},
+		"failing":                                      {[]store.TaskChange{open(pr.Failing)}, store.TaskOpen, Mine},
+		"the worst of a stack wins":                    {[]store.TaskChange{open(pr.Building), open(pr.Conflict), merged}, store.TaskOpen, Mine},
+		"threads wait while it builds":                 {[]store.TaskChange{building}, store.TaskOpen, Machine},
+		"unresolved threads are mine":                  {[]store.TaskChange{threads}, store.TaskOpen, Mine},
+		"ready":                                        {[]store.TaskChange{open(pr.Ready), open(pr.WaitingReview)}, store.TaskOpen, Ready},
+		"a green draft waits on nobody":                {[]store.TaskChange{draft}, store.TaskOpen, Idle},
+		"building":                                     {[]store.TaskChange{open(pr.Building), open(pr.WaitingReview)}, store.TaskOpen, Machine},
+		"out for review":                               {[]store.TaskChange{open(pr.WaitingReview), merged}, store.TaskOpen, Reviewer},
+		"all merged but not yet marked done":           {[]store.TaskChange{merged}, store.TaskOpen, Idle},
 		"a leftover branch does not outrank the stack": {[]store.TaskChange{local, open(pr.Building), open(pr.Building)}, store.TaskOpen, Machine},
 		"done": {[]store.TaskChange{merged}, store.TaskDone, Finished},
 	} {

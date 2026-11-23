@@ -24,6 +24,11 @@ func RankChange(c store.TaskChange) int {
 	switch {
 	case c.State == "MERGED" || c.State == "CLOSED":
 		return Finished
+	// While checks run it is the machine's move, open threads or not: the
+	// push that started them is usually the answer to those threads. They
+	// count once the build has settled.
+	case c.Status == pr.Building || c.Status == pr.Queued:
+		return Machine
 	case c.Unresolved > 0:
 		return Mine
 	}
