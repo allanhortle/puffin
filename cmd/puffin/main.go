@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/url"
 	"os"
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -1243,9 +1245,54 @@ func agent(state string) {
 	defer cancel()
 	// The daemon turns this into what the session shows beside its name, and
 	// recounts what is waiting on me.
-	if tm.SetAgent(ctx, pane, state) == nil {
-		daemonClient().Recount(ctx)
+	if tm.SetAgent(ctx, pane, state) != nil {
+		return
 	}
+	c := daemonClient()
+	c.Recount(ctx)
+	// What an agent does on GitHub reaches me through no notification: my own
+	// review, push or pull request is not news to GitHub. So look when a turn
+	// ends, and straight after a command that will have changed something.
+	if state == task.AgentDone || (state == task.AgentWorking && touchedGitHub(hookInput())) {
+		c.Nudge(ctx)
+	}
+}
+
+// hookInput is the JSON the agent hands a hook on stdin, or nothing if there
+// is none to read. A hook must never hang, so it does not wait long.
+func hookInput() []byte {
+	if info, err := os.Stdin.Stat(); err != nil || info.Mode()&os.ModeCharDevice != 0 {
+		return nil
+	}
+	read := make(chan []byte, 1)
+	go func() {
+		data, _ := io.ReadAll(io.LimitReader(os.Stdin, 1<<20))
+		read <- data
+	}()
+	select {
+	case data := <-read:
+		return data
+	case <-time.After(300 * time.Millisecond):
+		return nil
+	}
+}
+
+// A command that pushes, opens, reviews or merges.
+var githubCommand = regexp.MustCompile(`(^|[;&|(\s])(gh\s+(pr|api|issue)|gt\s+\w+|git\s+push)(\s|$)`)
+
+// touchedGitHub reports whether a hook's input describes a shell command that
+// will have changed something on GitHub.
+func touchedGitHub(input []byte) bool {
+	var hook struct {
+		ToolName  string `json:"tool_name"`
+		ToolInput struct {
+			Command string `json:"command"`
+		} `json:"tool_input"`
+	}
+	if json.Unmarshal(input, &hook) != nil || hook.ToolName != "Bash" {
+		return false
+	}
+	return githubCommand.MatchString(hook.ToolInput.Command)
 }
 
 func inPlace(args []string) error {

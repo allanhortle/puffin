@@ -123,6 +123,12 @@ func (c *Client) Review(ctx context.Context, repo string, number int) (store.Tas
 	return t, c.send(ctx, api.ReviewPath+"?"+q.Encode(), nil, &t)
 }
 
+// Nudge tells the daemon that something has just changed on GitHub, so it
+// should look soon instead of waiting for its timer.
+func (c *Client) Nudge(ctx context.Context) error {
+	return c.call(ctx, http.MethodPost, api.NudgePath, nil)
+}
+
 // Recount asks the daemon to recount what is waiting on me and show it.
 func (c *Client) Recount(ctx context.Context) error {
 	return c.call(ctx, http.MethodPost, api.AttentionPath, nil)

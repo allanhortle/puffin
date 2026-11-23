@@ -63,6 +63,8 @@ type poller struct {
 	tasks *task.Manager
 
 	refresh chan refreshRequest
+	// Holds at most one: "something just changed on GitHub, go and look".
+	nudges chan struct{}
 
 	// Touched only by the loop.
 	windowKey string
@@ -82,6 +84,7 @@ func newPoller(st *store.Store, tm tmux.Client, tasks *task.Manager) *poller {
 		gh:      github.New(),
 		tmux:    tm,
 		refresh: make(chan refreshRequest),
+		nudges:  make(chan struct{}, 1),
 	}
 }
 
@@ -101,6 +104,26 @@ func (p *poller) Refresh(ctx context.Context, force bool) (api.Cycle, error) {
 	}
 }
 
+// Nudge says something has just changed on GitHub that no notification will
+// announce: an agent has finished a turn, or run a command that pushes or
+// reviews. It never blocks, and any number of them close together cause one
+// fetch.
+func (p *poller) Nudge() {
+	select {
+	case p.nudges <- struct{}{}:
+	default:
+	}
+}
+
+const (
+	// Long enough for a burst of commands to finish and for GitHub to have
+	// the result to give.
+	nudgeSettle = 2 * time.Second
+	// A second look, because what a search returns trails what just
+	// happened: a pull request opened a moment ago may not be in it yet.
+	nudgeEcho = 15 * time.Second
+)
+
 func (p *poller) run(ctx context.Context) {
 	failures := 0
 	force := false
@@ -112,6 +135,7 @@ func (p *poller) run(ctx context.Context) {
 		before := time.Now().Round(0)
 		timer := time.NewTimer(wait)
 		var asked *refreshRequest
+		nudged := false
 		select {
 		case <-ctx.Done():
 			timer.Stop()
@@ -119,6 +143,19 @@ func (p *poller) run(ctx context.Context) {
 		case req := <-p.refresh:
 			timer.Stop()
 			asked = &req
+		case <-p.nudges:
+			timer.Stop()
+			select {
+			case <-ctx.Done():
+				return
+			case <-time.After(nudgeSettle):
+			}
+			select { // whatever arrived while settling is covered by this fetch
+			case <-p.nudges:
+			default:
+			}
+			nudged = true
+			asked = &refreshRequest{force: true, reply: make(chan refreshReply, 1)}
 		case <-timer.C:
 			// Suspend and resume, not a slow timer. The notification feed
 			// cannot report the hours that just went missing, so skip it.
@@ -157,6 +194,9 @@ func (p *poller) run(ctx context.Context) {
 			wait = min(idle, backstopBusy)
 		}
 		wait *= time.Duration(min(1<<min(failures, 8), maxBackoff))
+		if nudged && err == nil {
+			wait, force = nudgeEcho, true
+		}
 	}
 }
 
@@ -370,12 +410,6 @@ func (p *poller) fetch(ctx context.Context, heartbeat github.Heartbeat) error {
 			authored = append(authored, pr.Authored(n))
 		}
 	}
-	requested := map[github.Ref]bool{}
-	for _, n := range data.Review.Nodes {
-		if n.Number != 0 {
-			requested[github.Ref{Repo: n.Repository.NameWithOwner, Number: n.Number}] = true
-		}
-	}
 	// A pull request with a review task is asked after by number, and that
 	// answer replaces the search's: it also knows which commit I reviewed.
 	watching, err := p.store.WatchedReviews(ctx)
@@ -394,7 +428,7 @@ func (p *poller) fetch(ctx context.Context, heartbeat github.Heartbeat) error {
 	for _, n := range watched {
 		ref := github.Ref{Repo: n.Repository.NameWithOwner, Number: n.Number}
 		answered[ref] = true
-		reviews = append(reviews, pr.Watched(n, requested[ref]))
+		reviews = append(reviews, pr.Watched(n, n.Asks(author)))
 	}
 	for _, n := range data.Review.Nodes {
 		if n.Number != 0 && !answered[github.Ref{Repo: n.Repository.NameWithOwner, Number: n.Number}] {

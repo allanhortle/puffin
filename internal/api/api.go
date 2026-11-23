@@ -28,6 +28,7 @@ const (
 	AdoptPath     = "/v1/tasks/adopt"  // POST
 	HerePath      = "/v1/tasks/here"   // POST
 	AttentionPath = "/v1/attention"    // POST; recount what is waiting on me, now
+	NudgePath     = "/v1/nudge"        // POST; something just changed on GitHub, look soon
 )
 
 type Status struct {

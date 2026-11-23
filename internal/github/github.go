@@ -141,6 +141,14 @@ type Node struct {
 		} `json:"nodes"`
 	} `json:"reviews"`
 
+	// Also only from FetchWatched: who the pull request is waiting on a
+	// review from, right now. A team's entry has no login.
+	ReviewRequests *struct {
+		Nodes []struct {
+			RequestedReviewer *Actor `json:"requestedReviewer"`
+		} `json:"nodes"`
+	} `json:"reviewRequests"`
+
 	Mergeable        string `json:"mergeable"`
 	MergeStateStatus string `json:"mergeStateStatus"`
 	ReviewDecision   string `json:"reviewDecision"`
@@ -288,6 +296,22 @@ func (c *Client) NotificationsMoved(ctx context.Context, hb *Heartbeat) (bool, e
 	return true, nil
 }
 
+// Asks reports whether the pull request is waiting on a review from login.
+// Only meaningful for a node from FetchWatched. This is the pull request's
+// own account of itself, and so is right the moment a review is submitted;
+// the search that finds review requests can trail by a minute.
+func (n Node) Asks(login string) bool {
+	if n.ReviewRequests == nil {
+		return false
+	}
+	for _, r := range n.ReviewRequests.Nodes {
+		if r.RequestedReviewer != nil && strings.EqualFold(r.RequestedReviewer.Login, login) {
+			return true
+		}
+	}
+	return false
+}
+
 // Ref names one pull request.
 type Ref struct {
 	Repo   string // owner/name
@@ -307,7 +331,8 @@ func (c *Client) FetchWatched(ctx context.Context, reviewer string, refs []Ref) 
 	for i, ref := range refs {
 		owner, name, _ := strings.Cut(ref.Repo, "/")
 		fmt.Fprintf(&query, "  w%d: repository(owner: %s, name: %s) { pullRequest(number: %d) {\n"+
-			"    ...prLight reviews(last: 1, author: $reviewer) { nodes { commit { oid } } }\n  } }\n",
+			"    ...prLight reviews(last: 1, author: $reviewer) { nodes { commit { oid } } }\n"+
+			"    reviewRequests(first: 50) { nodes { requestedReviewer { ... on User { login } } } }\n  } }\n",
 			i, strconv.Quote(owner), strconv.Quote(name), ref.Number)
 	}
 	query.WriteString("}" + lightFragment)

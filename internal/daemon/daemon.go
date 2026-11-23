@@ -127,6 +127,7 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("POST "+api.AdoptPath, d.adopt)
 	mux.HandleFunc("POST "+api.HerePath, d.here)
 	mux.HandleFunc("POST "+api.AttentionPath, d.attention)
+	mux.HandleFunc("POST "+api.NudgePath, d.nudge)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -302,6 +303,11 @@ func (d *daemon) repos(w http.ResponseWriter, r *http.Request) {
 func (d *daemon) scan(w http.ResponseWriter, r *http.Request) {
 	repos, err := d.tasks.Scan(r.Context())
 	answer(w, repos, err)
+}
+
+func (d *daemon) nudge(w http.ResponseWriter, _ *http.Request) {
+	d.poller.Nudge()
+	reply(w, http.StatusAccepted, struct{}{})
 }
 
 func (d *daemon) attention(w http.ResponseWriter, r *http.Request) {
