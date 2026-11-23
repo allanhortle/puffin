@@ -46,7 +46,7 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
       -e, --edit           write the prompt in $EDITOR
   puffin pick              one list of your tasks and the reviews asked of you, whatever
                            waits on you first. enter goes to it, starting a review if it is
-                           one; ctrl-o opens the pull request; ctrl-r refetches
+                           one; ctrl-o opens the pull request; ctrl-r refetches; ctrl-s sweeps
   puffin pr N              make, or return to, the task for a pull request: a worktree on its
                            branch. one of yours to carry on with, or one to review, with an
                            agent started on the review. OWNER/REPO#N if N alone is ambiguous
@@ -1027,7 +1027,10 @@ func pick(args []string) error {
 	q := func(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }
 	fzf := []string{"--ansi", "--no-sort", "--reverse", "--delimiter", "\t", "--with-nth", "2..",
 		"--expect", "ctrl-o",
-		"--bind", "ctrl-r:reload(" + q(self) + " refresh >/dev/null 2>&1; " + q(self) + " pick --list)"}
+		"--bind", "ctrl-r:reload(" + q(self) + " refresh >/dev/null 2>&1; " + q(self) + " pick --list)",
+		// What the sweep closed, and what it kept and why, becomes the header:
+		// a sweep that silently did nothing would look like a key that failed.
+		"--bind", "ctrl-s:transform-header(" + q(self) + " sweep 2>&1)+reload(" + q(self) + " pick --list)"}
 	if len(lines) == 0 {
 		fzf = append(fzf, "--header", "nothing open. start with: puffin new [--attach REPO] what it is for")
 	}

@@ -751,7 +751,12 @@ func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 				}
 			}
 			if err := git.RemoveWorktree(ctx, w.Repo.Path, w.Path, force); err != nil {
-				return fmt.Errorf("%s has work in it; commit it, or close with --force: %w", w.Path, err)
+				// The reason first and short: this is read in one line of the
+				// picker as often as in a terminal.
+				if strings.Contains(err.Error(), "modified or untracked") {
+					return fmt.Errorf("uncommitted work in %s; commit it, or close with --force", filepath.Base(w.Path))
+				}
+				return fmt.Errorf("could not remove %s: %w", filepath.Base(w.Path), err)
 			}
 		}
 		if err := m.store.RemoveWorktree(ctx, w.ID, time.Now()); err != nil {
