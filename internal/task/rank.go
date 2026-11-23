@@ -103,6 +103,19 @@ const (
 	AgentDone    = "done"    // finished its turn
 )
 
+// Foremost is the agent state that speaks for several: one that needs me,
+// then one still working, then one that has finished.
+func Foremost(states []string) string {
+	for _, want := range []string{AgentWaiting, AgentWorking, AgentDone} {
+		for _, state := range states {
+			if state == want {
+				return state
+			}
+		}
+	}
+	return ""
+}
+
 // Tasks is every live task, with what its agents are doing.
 func (m *Manager) Tasks(ctx context.Context) ([]store.Task, error) {
 	tasks, err := m.store.Tasks(ctx)
@@ -113,18 +126,8 @@ func (m *Manager) Tasks(ctx context.Context) ([]store.Task, error) {
 	if err != nil {
 		return tasks, nil // the list is still worth having without them
 	}
-	// One task can have several agents. The one that needs me speaks for it,
-	// then one still working, then one that has finished.
-	order := []string{AgentWaiting, AgentWorking, AgentDone}
 	for i := range tasks {
-		states := agents[tasks[i].Slug]
-		for _, want := range order {
-			for _, state := range states {
-				if state == want && tasks[i].Agent == "" {
-					tasks[i].Agent = state
-				}
-			}
-		}
+		tasks[i].Agent = Foremost(agents[tasks[i].Slug])
 	}
 	return tasks, nil
 }

@@ -921,16 +921,17 @@ func marker(mine bool) string {
 	return "  "
 }
 
-// agentIcon is what a task's agent is doing: ~ working, ? waiting on me,
-// • finished its turn.
+// What an agent is doing, as it is drawn everywhere: ~ working, ? waiting on
+// me, • finished its turn.
+var agentIcons = map[string]struct{ glyph, colour string }{
+	task.AgentWorking: {"~", "yellow"},
+	task.AgentWaiting: {"?", "red"},
+	task.AgentDone:    {"•", "green"},
+}
+
 func agentIcon(state string) string {
-	switch state {
-	case task.AgentWorking:
-		return paint("yellow", "~")
-	case task.AgentWaiting:
-		return paint("red", "?")
-	case task.AgentDone:
-		return paint("green", "•")
+	if icon, ok := agentIcons[state]; ok {
+		return paint(icon.colour, icon.glyph)
 	}
 	return " "
 }
@@ -1131,9 +1132,18 @@ func agent(state string) {
 	}
 	ctx, cancel := timeout(2 * time.Second)
 	defer cancel()
-	if tm.SetAgent(ctx, pane, state) == nil {
-		daemonClient().Recount(ctx)
+	if tm.SetAgent(ctx, pane, state) != nil {
+		return
 	}
+	// The session shows the most pressing of its agents, beside its name.
+	if session, states, err := tm.AgentsBeside(ctx, pane); err == nil {
+		styled := ""
+		if icon, ok := agentIcons[task.Foremost(states)]; ok {
+			styled = "#[fg=" + icon.colour + "]" + icon.glyph + "#[default]"
+		}
+		tm.SetStatus(ctx, session, styled)
+	}
+	daemonClient().Recount(ctx)
 }
 
 func adopt(args []string) error {

@@ -218,7 +218,10 @@ const (
 	TaskOption = "@puffin_task"
 	// What the agent in a window is doing: working, waiting or done. Set by
 	// the agent's own hooks, and read back live; it is never stored.
-	AgentOption    = "@puffin_agent"
+	AgentOption = "@puffin_agent"
+	// The same for a whole session, already styled, for the status bar: the
+	// most pressing of its windows' agents.
+	StatusOption   = "@puffin_status"
 	WorktreeOption = "@puffin_worktree"
 )
 
@@ -346,6 +349,31 @@ func (c Client) SetAgent(ctx context.Context, pane, state string) error {
 	}
 	_, err := c.Run(ctx, args...)
 	return err
+}
+
+// AgentsBeside is the state of every agent in the session a pane belongs to,
+// with that session's name.
+func (c Client) AgentsBeside(ctx context.Context, pane string) (session string, states []string, err error) {
+	out, err := c.Run(ctx, "display-message", "-p", "-t", pane, "#{session_name}")
+	if err != nil {
+		return "", nil, err
+	}
+	session = strings.TrimSpace(out)
+	out, err = c.Run(ctx, "list-windows", "-t", exact(session)+":", "-F", "#{"+AgentOption+"}")
+	return session, lines(out), err
+}
+
+// SetStatus sets what a session shows for its agents. Empty clears it.
+func (c Client) SetStatus(ctx context.Context, session, styled string) error {
+	args := []string{"set-option", "-t", exact(session) + ":", StatusOption, styled}
+	if styled == "" {
+		args = []string{"set-option", "-u", "-t", exact(session) + ":", StatusOption}
+	}
+	if _, err := c.Run(ctx, args...); err != nil {
+		return err
+	}
+	c.Run(ctx, "refresh-client", "-S")
+	return nil
 }
 
 // Agents is the state of every agent that has reported one, by session.
