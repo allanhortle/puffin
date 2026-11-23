@@ -45,11 +45,13 @@ type TaskChange struct {
 }
 
 type Task struct {
-	ID        int64  `json:"id"`
-	Slug      string `json:"slug"`
-	Dir       string `json:"dir"`
-	Title     string `json:"title,omitempty"`
-	Flow      string `json:"flow"`
+	ID    int64  `json:"id"`
+	Slug  string `json:"slug"`
+	Dir   string `json:"dir"`
+	Title string `json:"title,omitempty"`
+	Flow  string `json:"flow"`
+	// The task lives in a directory it does not own, which is never removed.
+	InPlace   bool   `json:"in_place,omitempty"`
 	State     string `json:"state"`
 	LinearID  string `json:"linear_id,omitempty"`
 	Prompt    string `json:"prompt,omitempty"`
@@ -111,9 +113,9 @@ func (s *Store) CreateTask(ctx context.Context, t *Task, now time.Time) error {
 	t.CreatedAt = stamp(now)
 	t.State = TaskOpen
 	res, err := tx.ExecContext(ctx, `
-		INSERT INTO task (slug, dir, title, flow, linear_id, prompt, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		t.Slug, t.Dir, t.Title, t.Flow, null(t.LinearID), t.Prompt, t.CreatedAt)
+		INSERT INTO task (slug, dir, title, flow, linear_id, prompt, created_at, in_place)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+		t.Slug, t.Dir, t.Title, t.Flow, null(t.LinearID), t.Prompt, t.CreatedAt, t.InPlace)
 	if err != nil {
 		return err
 	}
@@ -144,7 +146,7 @@ func (s *Store) RenameTask(ctx context.Context, id int64, slug string) error {
 // Tasks is every task that still has its directory, oldest first.
 func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT id, slug, dir, title, flow, state, coalesce(linear_id, ''), prompt, created_at
+		SELECT id, slug, dir, title, flow, state, coalesce(linear_id, ''), prompt, created_at, in_place
 		FROM task WHERE swept_at IS NULL ORDER BY id`)
 	if err != nil {
 		return nil, err
@@ -153,7 +155,7 @@ func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 	for rows.Next() {
 		t := Task{Reads: []Repo{}, Worktrees: []Worktree{}, Changes: []TaskChange{}}
 		if err := rows.Scan(&t.ID, &t.Slug, &t.Dir, &t.Title, &t.Flow, &t.State,
-			&t.LinearID, &t.Prompt, &t.CreatedAt); err != nil {
+			&t.LinearID, &t.Prompt, &t.CreatedAt, &t.InPlace); err != nil {
 			rows.Close()
 			return nil, err
 		}

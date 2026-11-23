@@ -50,6 +50,10 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin pr N              make, or return to, the task for a pull request: a worktree on its
                            branch. one of yours to carry on with, or one to review, with an
                            agent started on the review. OWNER/REPO#N if N alone is ambiguous
+  puffin here [PATH]       make a task that lives in a directory as it is, here or at PATH:
+                           a session and an agent, no worktree, no pull request to follow.
+                           for a clone you work on directly. closing it leaves the directory
+      --name NAME          the task's name, instead of the directory's
   puffin adopt [PATH]      make a task out of an existing worktree, here or at PATH, by
                            moving it into the task as it stands
       --name NAME          the task's name, instead of the branch's
@@ -143,6 +147,8 @@ func main() {
 		err = closeTask(args)
 	case "agent":
 		agent(arg) // never an error: it runs inside the agent's own hooks
+	case "here":
+		err = inPlace(args)
 	case "adopt":
 		err = adopt(args)
 	case "rename":
@@ -824,7 +830,10 @@ func printTask(t store.Task, detail bool) {
 		line += " " + paint("colour242", t.Title)
 	}
 	fmt.Println(line)
-	if len(t.Worktrees) == 0 {
+	switch {
+	case t.InPlace:
+		fmt.Println("      " + paint("colour242", "in place, "+t.Dir))
+	case len(t.Worktrees) == 0:
 		fmt.Println("      " + paint("colour242", "exploring, no worktree"))
 	}
 	for _, w := range t.Worktrees {
@@ -1143,6 +1152,27 @@ func agent(state string) {
 	if tm.SetAgent(ctx, pane, state) == nil {
 		daemonClient().Recount(ctx)
 	}
+}
+
+func inPlace(args []string) error {
+	flags, rest, err := parse(args, "--name")
+	if err != nil {
+		return err
+	}
+	path := "."
+	if len(rest) > 0 {
+		path = rest[0]
+	}
+	if path, err = filepath.Abs(path); err != nil {
+		return err
+	}
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	t, err := daemonClient().Here(ctx, api.Here{Path: path, Name: last(flags["--name"])})
+	if err != nil {
+		return err
+	}
+	return goTo(t.Slug)
 }
 
 func adopt(args []string) error {

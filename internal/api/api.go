@@ -25,6 +25,7 @@ const (
 	ReviewPath    = "/v1/tasks/review" // POST ?repo=&number=
 	RenamePath    = "/v1/tasks/rename" // POST ?task=&to=
 	AdoptPath     = "/v1/tasks/adopt"  // POST
+	HerePath      = "/v1/tasks/here"   // POST
 	AttentionPath = "/v1/attention"    // POST; recount what is waiting on me, now
 )
 
@@ -115,6 +116,12 @@ type Attach struct {
 	Repo   string `json:"repo"`
 	Branch string `json:"branch,omitempty"`
 	Prompt string `json:"prompt,omitempty"`
+}
+
+// Here asks for a task that lives in the directory at Path, as it is.
+type Here struct {
+	Path string `json:"path"`
+	Name string `json:"name,omitempty"`
 }
 
 // Adopt asks for the worktree at Path to become a task.

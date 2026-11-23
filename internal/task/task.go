@@ -358,6 +358,9 @@ func (m *Manager) Attach(ctx context.Context, req api.Attach) (store.Task, error
 	if err != nil {
 		return store.Task{}, fmt.Errorf("%q: %w", req.Task, err)
 	}
+	if t.InPlace {
+		return t, fmt.Errorf("%q lives in %s, which is not puffin's to put a worktree in; make a task for that with `puffin new --attach`", t.Slug, t.Dir)
+	}
 	r, err := m.repo(ctx, req.Repo)
 	if err != nil {
 		return store.Task{}, err
@@ -463,7 +466,11 @@ func (m *Manager) bind(ctx context.Context, t store.Task) error {
 // openSession makes the session of a task that has no worktree: one window,
 // with an agent at the task's root.
 func (m *Manager) openSession(ctx context.Context, t store.Task, prompt string) error {
-	pane, err := m.tmux.NewSession(ctx, t.Slug, rootWindow, t.Dir)
+	window := rootWindow
+	if t.InPlace {
+		window = filepath.Base(t.Dir)
+	}
+	pane, err := m.tmux.NewSession(ctx, t.Slug, window, t.Dir)
 	if err != nil {
 		return err
 	}
@@ -573,6 +580,50 @@ func (m *Manager) ensure(ctx context.Context, t store.Task) error {
 		}
 	}
 	return nil
+}
+
+// Here makes a task out of a directory as it is: a session and an agent in
+// it, and nothing else. It is for a clone that is worked on directly, with
+// no worktree and no pull request to follow. The directory is not puffin's:
+// nothing in it is made, moved or removed, now or when the task is closed.
+func (m *Manager) Here(ctx context.Context, req api.Here) (store.Task, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if info, err := os.Stat(req.Path); err != nil || !info.IsDir() {
+		return store.Task{}, fmt.Errorf("%s is not a directory", req.Path)
+	}
+	if rel, err := filepath.Rel(m.cfg.TasksDir, req.Path); err == nil && !strings.HasPrefix(rel, "..") {
+		return store.Task{}, fmt.Errorf("%s belongs to a task already", req.Path)
+	}
+	tasks, err := m.store.Tasks(ctx)
+	if err != nil {
+		return store.Task{}, err
+	}
+	for _, t := range tasks {
+		if t.InPlace && t.Dir == req.Path {
+			return store.Task{}, fmt.Errorf("%s is already the task %q", req.Path, t.Slug)
+		}
+	}
+	want := Slugify(req.Name)
+	if want == "" {
+		want = Slugify(filepath.Base(req.Path))
+	}
+	if want == "" {
+		return store.Task{}, fmt.Errorf("%s has nothing in it a name can be made from; give one with --name", req.Path)
+	}
+	slug, err := m.freeSlug(ctx, want)
+	if err != nil {
+		return store.Task{}, err
+	}
+	t := store.Task{Slug: slug, Dir: req.Path, Flow: "work", InPlace: true}
+	if err := m.store.CreateTask(ctx, &t, time.Now()); err != nil {
+		return store.Task{}, err
+	}
+	if err := m.openSession(ctx, t, ""); err != nil {
+		return t, err
+	}
+	return m.store.Task(ctx, slug)
 }
 
 // Adopt turns a worktree that was made some other way into a task. The
@@ -685,8 +736,10 @@ func (m *Manager) Close(ctx context.Context, slug string, force bool) error {
 
 func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 	// Never trust a stored path enough to delete it without checking where
-	// it points.
-	if rel, err := filepath.Rel(m.cfg.TasksDir, t.Dir); err != nil || rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel) {
+	// it points. A task that lives in a directory it does not own has
+	// nothing of its own on disk, and that directory is left alone.
+	owned := !t.InPlace
+	if rel, err := filepath.Rel(m.cfg.TasksDir, t.Dir); owned && (err != nil || rel == "." || strings.HasPrefix(rel, "..") || filepath.IsAbs(rel)) {
 		return fmt.Errorf("%s is not inside %s; refusing to remove it", t.Dir, m.cfg.TasksDir)
 	}
 
@@ -722,8 +775,10 @@ func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 			return err
 		}
 	}
-	if err := os.RemoveAll(t.Dir); err != nil {
-		return err
+	if owned {
+		if err := os.RemoveAll(t.Dir); err != nil {
+			return err
+		}
 	}
 	if err := m.store.MarkSwept(ctx, t.ID, time.Now()); err != nil {
 		return err

@@ -126,6 +126,11 @@ func (c *Client) Recount(ctx context.Context) error {
 	return c.call(ctx, http.MethodPost, api.AttentionPath, nil)
 }
 
+func (c *Client) Here(ctx context.Context, req api.Here) (store.Task, error) {
+	var t store.Task
+	return t, c.send(ctx, api.HerePath, req, &t)
+}
+
 func (c *Client) Adopt(ctx context.Context, req api.Adopt) (store.Task, error) {
 	var t store.Task
 	return t, c.send(ctx, api.AdoptPath, req, &t)
