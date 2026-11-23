@@ -122,6 +122,7 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("POST "+api.EnsurePath, d.ensure)
 	mux.HandleFunc("POST "+api.ClosePath, d.closeTask)
 	mux.HandleFunc("POST "+api.SweepPath, d.sweep)
+	mux.HandleFunc("POST "+api.ReviewPath, d.review)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -306,6 +307,15 @@ func (d *daemon) closeTask(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	q := r.URL.Query()
 	answer(w, struct{}{}, d.tasks.Close(ctx, q.Get("task"), q.Get("force") != ""))
+}
+
+func (d *daemon) review(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := detached(r)
+	defer cancel()
+	q := r.URL.Query()
+	number, _ := strconv.Atoi(q.Get("number"))
+	t, err := d.tasks.Review(ctx, q.Get("repo"), number)
+	answer(w, t, err)
 }
 
 func (d *daemon) sweep(w http.ResponseWriter, r *http.Request) {

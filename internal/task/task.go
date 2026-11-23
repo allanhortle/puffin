@@ -23,6 +23,7 @@ import (
 	"github.com/allanhortle/puffin/internal/api"
 	"github.com/allanhortle/puffin/internal/config"
 	"github.com/allanhortle/puffin/internal/git"
+	"github.com/allanhortle/puffin/internal/pr"
 	"github.com/allanhortle/puffin/internal/run"
 	"github.com/allanhortle/puffin/internal/store"
 	"github.com/allanhortle/puffin/internal/tmux"
@@ -239,6 +240,67 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 		if err := m.attach(ctx, t, r, slug, p); err != nil {
 			return t, err
 		}
+	}
+	return m.store.Task(ctx, slug)
+}
+
+// Review makes a task for reviewing a pull request that is asking for my
+// review: a worktree on its branch, and an agent started on the review. Asked
+// again for the same pull request, it returns the task it already made.
+func (m *Manager) Review(ctx context.Context, repo string, number int) (store.Task, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	tasks, err := m.store.Tasks(ctx)
+	if err != nil {
+		return store.Task{}, err
+	}
+	for _, t := range tasks {
+		for _, c := range t.Changes {
+			if c.Repo == repo && c.Number == number {
+				return t, m.ensure(ctx, t)
+			}
+		}
+	}
+
+	asking, err := m.store.Changes(ctx, store.RoleReviewer)
+	if err != nil {
+		return store.Task{}, err
+	}
+	var found *pr.PR
+	for i := range asking {
+		if asking[i].Repo == repo && asking[i].Number == number {
+			found = &asking[i]
+		}
+	}
+	if found == nil {
+		return store.Task{}, fmt.Errorf("%s#%d is not asking for your review", repo, number)
+	}
+	if strings.Contains(found.Head, ":") {
+		return store.Task{}, fmt.Errorf("%s#%d comes from a fork, which puffin cannot check out yet", repo, number)
+	}
+	r, err := m.repo(ctx, repo)
+	if err != nil {
+		return store.Task{}, err
+	}
+	slug, err := m.freeSlug(ctx, Slugify(fmt.Sprintf("review %d %s", number, found.Title)))
+	if err != nil {
+		return store.Task{}, err
+	}
+
+	t := store.Task{Slug: slug, Dir: filepath.Join(m.cfg.TasksDir, slug), Flow: "review",
+		Title: found.Title, Prompt: m.cfg.ReviewPrompt}
+	if err := os.MkdirAll(filepath.Join(t.Dir, stateDir), 0o755); err != nil {
+		return store.Task{}, err
+	}
+	if err := m.store.CreateTask(ctx, &t, time.Now()); err != nil {
+		return store.Task{}, err
+	}
+	if err := m.openSession(ctx, t, false, ""); err != nil {
+		return t, err
+	}
+	if err := m.attach(ctx, t, r, found.Head, m.cfg.ReviewPrompt); err != nil {
+		return t, err
 	}
 	return m.store.Task(ctx, slug)
 }

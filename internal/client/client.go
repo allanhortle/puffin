@@ -13,6 +13,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"syscall"
 
 	"github.com/allanhortle/puffin/internal/api"
@@ -111,6 +112,13 @@ func (c *Client) Close(ctx context.Context, task string, force bool) error {
 		q.Set("force", "1")
 	}
 	return c.call(ctx, http.MethodPost, api.ClosePath+"?"+q.Encode(), nil)
+}
+
+// Review makes, or finds, the task for reviewing a pull request.
+func (c *Client) Review(ctx context.Context, repo string, number int) (store.Task, error) {
+	var t store.Task
+	q := url.Values{"repo": {repo}, "number": {strconv.Itoa(number)}}
+	return t, c.call(ctx, http.MethodPost, api.ReviewPath+"?"+q.Encode(), &t)
 }
 
 func (c *Client) Sweep(ctx context.Context) (api.Swept, error) {

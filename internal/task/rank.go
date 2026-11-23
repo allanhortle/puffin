@@ -26,8 +26,10 @@ func rankChange(c store.TaskChange) int {
 		return Mine
 	}
 	switch c.Status {
-	case pr.Failing, pr.Conflict, pr.ChangesRequested, pr.WaitingMe:
+	case pr.Failing, pr.Conflict, pr.ChangesRequested, pr.WaitingMe, pr.ReviewRequested:
 		return Mine
+	case pr.Reviewed:
+		return Reviewer // back with its author, as my own is when out for review
 	case pr.Ready:
 		// A draft that is green is waiting on nobody until I say it is ready.
 		if c.IsDraft {

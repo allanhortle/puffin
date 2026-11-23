@@ -50,8 +50,11 @@ func refExists(ctx context.Context, clone, ref string) bool {
 // origin, is used as it is; otherwise it is created from base as origin has
 // it now.
 func AddWorktree(ctx context.Context, clone, path, branch, base string) error {
-	// Best effort: being offline should not stop work from starting.
+	// Best effort: being offline should not stop work from starting. The
+	// branch is fetched by name as well, on its own because it fails when the
+	// branch is new: someone else's branch is not here until it is asked for.
 	git(ctx, clone, "fetch", "origin", base)
+	git(ctx, clone, "fetch", "origin", "+refs/heads/"+branch+":refs/remotes/origin/"+branch)
 
 	var err error
 	switch {

@@ -41,7 +41,11 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
                            give a task a worktree of REPO, with its own window and agent
       --task NAME          the task, instead of the one this tmux session belongs to
       --branch BRANCH      the branch, instead of one named for the task
-  puffin pick              choose a task in a finder, the ones waiting on you first
+  puffin pick              one list of your tasks and the reviews asked of you, whatever
+                           waits on you first. enter goes to it, starting a review if it is
+                           one; ctrl-o opens the pull request; ctrl-r refetches
+  puffin review OWNER/REPO#N
+                           start, or return to, the review of a pull request
   puffin tasks [NAME]      every task, or one, with its worktrees and pull requests; --json
   puffin switch NAME       go to a task's session, bringing it back if it has gone
   puffin close [NAME]      remove a task's worktrees, session and directory
@@ -120,6 +124,8 @@ func main() {
 		err = tasks(args)
 	case "pick":
 		err = pick(args)
+	case "review":
+		err = reviewCommand(arg)
 	case "switch":
 		err = switchTo(arg)
 	case "close":
@@ -744,13 +750,27 @@ func printTask(t store.Task, detail bool) {
 	}
 }
 
-// pickLine is one task as the picker shows it. The first field is the task's
-// name for the picker's own use, and is not displayed.
+const (
+	taskRow   = "task"
+	reviewRow = "review"
+)
+
+func column(s string, shown, width int) string {
+	return s + strings.Repeat(" ", max(width-shown, 1))
+}
+
+const lettersWidth = 6
+
+// pickLine is one task as the list shows it. The first field says what Enter
+// should act on, and is not displayed.
 func pickLine(t store.Task) string {
-	const width = 8
 	letters, shown := "", 0
 	for _, c := range t.Changes {
 		switch {
+		case c.Status == pr.ReviewRequested:
+			letters, shown = letters+paint("red", "rev"), shown+3
+		case c.Status == pr.Reviewed:
+			letters, shown = letters+paint("blue", "rev"), shown+3
 		case c.State == "MERGED" || c.State == "CLOSED":
 			if t.State == store.TaskOpen {
 				continue // what has shipped is not what the task is waiting on
@@ -758,53 +778,91 @@ func pickLine(t store.Task) string {
 			fallthrough
 		case c.Number != 0:
 			label := changeLabel(c)
-			letters += paint(label.Colour, label.Letter)
-			shown++
+			letters, shown = letters+paint(label.Colour, label.Letter), shown+1
 			if c.Unresolved > 0 {
 				n := strconv.Itoa(c.Unresolved)
-				letters += paint("red", n)
-				shown += len(n)
+				letters, shown = letters+paint("red", n), shown+len(n)
 			}
 		default:
-			letters += paint("colour242", "·")
-			shown++
+			letters, shown = letters+paint("colour242", "·"), shown+1
 		}
 	}
 	if shown == 0 {
 		letters, shown = paint("colour242", "-"), 1
 	}
-	letters += strings.Repeat(" ", max(width-shown, 1))
-
-	where := "exploring"
-	if len(t.Worktrees) > 0 {
-		names := make([]string, len(t.Worktrees))
-		for i, w := range t.Worktrees {
-			names[i] = filepath.Base(w.Path)
-		}
-		where = strings.Join(names, " ")
-	}
 	name := t.Slug
 	if t.State != store.TaskOpen {
 		name += " (" + t.State + ")"
 	}
-	return strings.Join([]string{t.Slug, letters + paint("bold", name), paint("blue", where), paint("colour242", t.Title)}, "\t")
+	title := t.Title
+	if title == t.Slug {
+		title = ""
+	}
+	return strings.Join([]string{taskRow + " " + t.Slug,
+		column(letters, shown, lettersWidth) + paint("bold", name), paint("colour242", title)}, "\t")
 }
 
-// pick is the overview: every task in a finder, the ones waiting on me first.
-// It is what a popup runs, so it has to say something even with no tasks.
+// reviewLine is a pull request asking for my review that has no task yet.
+func reviewLine(p pr.PR) string {
+	name := fmt.Sprintf("%s#%d", p.Repo[strings.Index(p.Repo, "/")+1:], p.Number)
+	return strings.Join([]string{fmt.Sprintf("%s %s %d", reviewRow, p.Repo, p.Number),
+		column(paint("red", "rev"), 3, lettersWidth) + name, paint("colour242", p.Title+" @"+p.Author)}, "\t")
+}
+
+// pickLines is the one list: my tasks and the reviews asked of me, whatever
+// is waiting on me first. A review request counts as waiting on me, and
+// follows the tasks that are.
+func pickLines() ([]string, error) {
+	all, err := ranked()
+	if err != nil {
+		return nil, err
+	}
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	asked, err := daemonClient().Reviews(ctx)
+	if err != nil {
+		return nil, err
+	}
+	tasked := map[string]bool{}
+	for _, t := range all {
+		for _, c := range t.Changes {
+			tasked[fmt.Sprintf("%s#%d", c.Repo, c.Number)] = true
+		}
+	}
+	var lines []string
+	reviews := func() {
+		for _, p := range asked.PRs {
+			if !tasked[fmt.Sprintf("%s#%d", p.Repo, p.Number)] {
+				lines = append(lines, reviewLine(p))
+			}
+		}
+	}
+	placed := false
+	for _, t := range all {
+		if !placed && task.Rank(t) > task.Mine {
+			reviews()
+			placed = true
+		}
+		lines = append(lines, pickLine(t))
+	}
+	if !placed {
+		reviews()
+	}
+	return lines, nil
+}
+
+// pick is the one list, in a finder. Enter goes to a task, or starts the
+// review of a pull request and goes to that. ctrl-o opens the pull request
+// in the browser instead, and ctrl-r asks GitHub again.
 func pick(args []string) error {
 	flags, _, err := parse(args)
 	if err != nil {
 		return err
 	}
 	colourful = os.Getenv("NO_COLOR") == "" // fzf reads the colours, whatever stdout is
-	all, err := ranked()
+	lines, err := pickLines()
 	if err != nil {
 		return err
-	}
-	lines := make([]string, len(all))
-	for i, t := range all {
-		lines[i] = pickLine(t)
 	}
 	if _, list := flags["--list"]; list {
 		for _, line := range lines {
@@ -817,15 +875,14 @@ func pick(args []string) error {
 	if err != nil {
 		return err
 	}
-	header := "enter: go to the task   ctrl-o: open its pull request   ctrl-r: refresh"
-	if len(all) == 0 {
-		header = "no tasks yet. make one with: puffin new [--attach REPO] what it is for"
-	}
 	q := func(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }
-	cmd := exec.Command("fzf", "--ansi", "--no-sort", "--delimiter", "\t", "--with-nth", "2..",
-		"--expect", "ctrl-o", "--header", header,
-		"--preview", "CLICOLOR_FORCE=1 "+q(self)+" tasks {1}", "--preview-window", "down,40%,wrap",
-		"--bind", "ctrl-r:reload("+q(self)+" refresh >/dev/null 2>&1; "+q(self)+" pick --list)")
+	fzf := []string{"--ansi", "--no-sort", "--reverse", "--delimiter", "\t", "--with-nth", "2..",
+		"--expect", "ctrl-o",
+		"--bind", "ctrl-r:reload(" + q(self) + " refresh >/dev/null 2>&1; " + q(self) + " pick --list)"}
+	if len(lines) == 0 {
+		fzf = append(fzf, "--header", "nothing open. start with: puffin new [--attach REPO] what it is for")
+	}
+	cmd := exec.Command("fzf", fzf...)
 	cmd.Stdin = strings.NewReader(strings.Join(lines, "\n"))
 	cmd.Stderr = os.Stderr
 	out, err := cmd.Output()
@@ -837,24 +894,58 @@ func pick(args []string) error {
 		return fmt.Errorf("fzf: %w", err)
 	}
 	key, chosen, _ := strings.Cut(strings.TrimRight(string(out), "\n"), "\n")
-	slug, _, _ := strings.Cut(chosen, "\t")
-	if slug == "" {
-		return nil
-	}
-	if key != "ctrl-o" {
-		return switchTo(slug)
-	}
-	for _, t := range all {
-		if t.Slug != slug {
-			continue
+	id, _, _ := strings.Cut(chosen, "\t")
+	fields := strings.Fields(id)
+	browser := key == "ctrl-o"
+
+	switch {
+	case len(fields) == 2 && fields[0] == taskRow:
+		if !browser {
+			return switchTo(fields[1])
 		}
-		for _, c := range t.Changes {
-			if c.Number != 0 && c.State == "OPEN" {
-				return exec.Command("open", prURL(pr.PR{Repo: c.Repo, Number: c.Number})).Run()
+		ctx, cancel := timeout(clientTimeout)
+		defer cancel()
+		all, err := daemonClient().Tasks(ctx)
+		if err != nil {
+			return err
+		}
+		for _, t := range all {
+			for _, c := range t.Changes {
+				if t.Slug == fields[1] && c.Number != 0 && c.State == "OPEN" {
+					return exec.Command("open", prURL(pr.PR{Repo: c.Repo, Number: c.Number})).Run()
+				}
 			}
 		}
+		return fmt.Errorf("%s has no open pull request", fields[1])
+	case len(fields) == 3 && fields[0] == reviewRow:
+		number, _ := strconv.Atoi(fields[2])
+		if browser {
+			return exec.Command("open", prURL(pr.PR{Repo: fields[1], Number: number})).Run()
+		}
+		return review(fields[1], number)
 	}
-	return fmt.Errorf("%s has no open pull request", slug)
+	return nil
+}
+
+// review starts, or returns to, the review of a pull request.
+func review(repo string, number int) error {
+	fmt.Printf("checking out %s#%d…\n", repo, number) // a large checkout says nothing while it works
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	t, err := daemonClient().Review(ctx, repo, number)
+	if err != nil {
+		return err
+	}
+	return goTo(t.Slug)
+}
+
+func reviewCommand(target string) error {
+	repo, n, ok := strings.Cut(target, "#")
+	number, err := strconv.Atoi(n)
+	if !ok || err != nil || strings.Count(repo, "/") != 1 {
+		return errors.New("review needs a pull request as owner/repo#number")
+	}
+	return review(repo, number)
 }
 
 func switchTo(slug string) error {
