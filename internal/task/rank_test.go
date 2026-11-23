@@ -102,3 +102,19 @@ func TestOnlyTheBottomOfAStackSpeaks(t *testing.T) {
 		t.Errorf("of two stacks, headline is #%d", got.Number)
 	}
 }
+
+func TestATaskInPlaceSortsLast(t *testing.T) {
+	here := store.Task{State: store.TaskOpen, InPlace: true}
+	done := store.Task{State: store.TaskDone}
+	if Rank(here) <= Rank(done) {
+		t.Errorf("in place ranks %d, a finished task %d", Rank(here), Rank(done))
+	}
+	here.Agent = AgentDone
+	if Rank(here) != Standing {
+		t.Errorf("a finished agent moved it to %d", Rank(here))
+	}
+	here.Agent = AgentWaiting
+	if Rank(here) != Mine {
+		t.Errorf("an agent asking in place ranks %d, want it at the top", Rank(here))
+	}
+}

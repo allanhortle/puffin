@@ -17,6 +17,7 @@ const (
 	Machine         // checks are running, or it is in the merge queue
 	Reviewer        // out for review
 	Finished        // every pull request merged or closed; ready to sweep
+	Standing        // lives in a directory of its own with nothing to follow; always last
 )
 
 // RankChange is how pressing one pull request, or branch, is.
@@ -117,6 +118,11 @@ func Rank(t store.Task) int {
 	// the pull requests say.
 	if t.Agent == AgentWaiting {
 		return Mine
+	}
+	// A task that lives in place is somewhere to go back to, not a piece of
+	// work that moves. It sits beneath everything that does.
+	if t.InPlace {
+		return Standing
 	}
 	live := Live(t)
 	if len(live) == 0 {
