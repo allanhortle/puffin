@@ -239,7 +239,18 @@ func (c Client) RenameSession(ctx context.Context, from, to string) error {
 	return err
 }
 
+// KillSession ends a session. Anyone looking at it is moved to the session
+// they were in before, or failing that to any other, because tmux by default
+// detaches a client whose session is destroyed, and closing a task should
+// not throw its user out of tmux.
 func (c Client) KillSession(ctx context.Context, name string) error {
+	if out, err := c.Run(ctx, "list-clients", "-t", exact(name), "-F", "#{client_name}"); err == nil {
+		for _, client := range lines(out) {
+			if _, err := c.Run(ctx, "switch-client", "-c", client, "-l"); err != nil {
+				c.Run(ctx, "switch-client", "-c", client, "-n")
+			}
+		}
+	}
 	_, err := c.Run(ctx, "kill-session", "-t", exact(name))
 	return err
 }
