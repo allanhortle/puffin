@@ -246,9 +246,10 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 	return m.store.Task(ctx, slug)
 }
 
-// Review makes a task for reviewing a pull request that is asking for my
-// review: a worktree on its branch, and an agent started on the review. Asked
-// again for the same pull request, it returns the task it already made.
+// Review makes a task from a pull request. For one asking for my review, that
+// is a worktree on its branch and an agent started on the review. For one of
+// my own, it is a worktree on its branch to carry on working in. Asked again
+// for the same pull request, it returns the task it already made.
 func (m *Manager) Review(ctx context.Context, repo string, number int) (store.Task, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -262,6 +263,17 @@ func (m *Manager) Review(ctx context.Context, repo string, number int) (store.Ta
 			if c.Repo == repo && c.Number == number {
 				return t, m.ensure(ctx, t)
 			}
+		}
+	}
+
+	// One of my own is work to carry on with, not something to review.
+	mine, err := m.store.Changes(ctx, store.RoleAuthor)
+	if err != nil {
+		return store.Task{}, err
+	}
+	for _, p := range mine {
+		if p.Repo == repo && p.Number == number && p.State == "OPEN" {
+			return m.resume(ctx, p)
 		}
 	}
 
@@ -300,6 +312,38 @@ func (m *Manager) Review(ctx context.Context, repo string, number int) (store.Ta
 	}
 	if err := m.attach(ctx, t, r, found.Head, m.cfg.ReviewPrompt); err != nil {
 		return t, err
+	}
+	return m.store.Task(ctx, slug)
+}
+
+// resume makes a task for one of my own open pull requests: a worktree on its
+// branch, named for the branch, and an agent with nothing asked of it yet.
+// The rest of its stack joins the task on the next poll.
+func (m *Manager) resume(ctx context.Context, p pr.PR) (store.Task, error) {
+	r, err := m.repo(ctx, p.Repo)
+	if err != nil {
+		return store.Task{}, err
+	}
+	slug, err := m.freeSlug(ctx, Slugify(p.Head))
+	if err != nil {
+		return store.Task{}, err
+	}
+	t := store.Task{Slug: slug, Dir: filepath.Join(m.cfg.TasksDir, slug), Flow: "work", Title: p.Title}
+	if err := os.MkdirAll(filepath.Join(t.Dir, stateDir), 0o755); err != nil {
+		return store.Task{}, err
+	}
+	if err := m.store.CreateTask(ctx, &t, time.Now()); err != nil {
+		return store.Task{}, err
+	}
+	if err := m.attach(ctx, t, r, p.Head, ""); err != nil {
+		// Nothing was made but the row and an empty directory. Take them
+		// back, so the failure leaves no half task in the list.
+		m.store.MarkSwept(ctx, t.ID, time.Now())
+		os.RemoveAll(t.Dir)
+		if strings.Contains(err.Error(), "already used by worktree") {
+			return store.Task{}, fmt.Errorf("%s is checked out in another worktree; make that one the task with `puffin adopt PATH`: %w", p.Head, err)
+		}
+		return store.Task{}, err
 	}
 	return m.store.Task(ctx, slug)
 }

@@ -47,8 +47,9 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin pick              one list of your tasks and the reviews asked of you, whatever
                            waits on you first. enter goes to it, starting a review if it is
                            one; ctrl-o opens the pull request; ctrl-r refetches
-  puffin review OWNER/REPO#N
-                           start, or return to, the review of a pull request
+  puffin pr N              make, or return to, the task for a pull request: a worktree on its
+                           branch. one of yours to carry on with, or one to review, with an
+                           agent started on the review. OWNER/REPO#N if N alone is ambiguous
   puffin adopt [PATH]      make a task out of an existing worktree, here or at PATH, by
                            moving it into the task as it stands
       --name NAME          the task's name, instead of the branch's
@@ -134,7 +135,7 @@ func main() {
 		err = tasks(args)
 	case "pick":
 		err = pick(args)
-	case "review":
+	case "review", "pr":
 		err = reviewCommand(arg)
 	case "switch":
 		err = switchTo(arg)
@@ -1066,10 +1067,23 @@ func review(repo string, number int) error {
 }
 
 func reviewCommand(target string) error {
-	repo, n, ok := strings.Cut(target, "#")
+	repo, n, named := strings.Cut(target, "#")
+	if !named {
+		repo, n = "", target
+	}
 	number, err := strconv.Atoi(n)
-	if !ok || err != nil || strings.Count(repo, "/") != 1 {
-		return errors.New("review needs a pull request as owner/repo#number")
+	if err != nil || (named && strings.Count(repo, "/") != 1) {
+		return errors.New("give a pull request as a number, or as owner/repo#number")
+	}
+	if !named {
+		// A number alone: ask the daemon which repository it means.
+		ctx, cancel := timeout(clientTimeout)
+		found, err := daemonClient().PR(ctx, url.Values{"target": {n}})
+		cancel()
+		if err != nil {
+			return err
+		}
+		repo = found.PR.Repo
 	}
 	return review(repo, number)
 }
