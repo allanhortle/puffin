@@ -38,33 +38,39 @@ const (
 	ReviewUpdated   = "REVIEW_UPDATED"
 )
 
+// Label is how a status is drawn. The word is what the list and a session's
+// status show. The letter is for a window's tab, where there is no room for
+// more, and only ever describes one of my own pull requests.
 type Label struct {
+	Word   string
 	Letter string
 	Colour string // a tmux colour name
 }
 
-var draft = Label{"D", "colour242"}
+var draft = Label{"draft", "D", "colour242"}
 
 var labels = map[string]Label{
-	Ready:            {"G", "green"},
-	Building:         {"B", "yellow"},
-	WaitingReview:    {"W", "blue"},
-	WaitingMe:        {"W", "red"},
-	Failing:          {"F", "red"},
-	Conflict:         {"C", "red"},
-	ChangesRequested: {"R", "red"},
-	Queued:           {"Q", "yellow"},
-	Merged:           {"M", "magenta"},
-	Closed:           {"X", "colour242"},
-	Unknown:          {"?", "colour242"},
-	// A review is a word, not a letter: it is somebody else's pull request,
-	// and should not read as one of mine.
-	ReviewRequested: {"rev", "red"},
-	ReviewUpdated:   {"new", "red"},
-	Reviewed:        {"rev", "blue"},
+	Ready:    {"ready", "G", "green"},
+	Building: {"building", "B", "yellow"},
+	// One letter between them on a tab, told apart by colour. In words they
+	// are what they are: out with a reviewer, or held up on me.
+	WaitingReview:    {"waiting", "W", "blue"},
+	WaitingMe:        {"blocked", "W", "red"},
+	Failing:          {"failing", "F", "red"},
+	Conflict:         {"conflict", "C", "red"},
+	ChangesRequested: {"changes", "R", "red"},
+	Queued:           {"queued", "Q", "yellow"},
+	Merged:           {"merged", "M", "magenta"},
+	Closed:           {"closed", "X", "colour242"},
+	Unknown:          {"?", "?", "colour242"},
+	// Somebody else's pull request: a review asked of me, one whose author
+	// has pushed since I reviewed, and one that is back with its author.
+	ReviewRequested: {"review", "?", "red"},
+	ReviewUpdated:   {"updated", "?", "red"},
+	Reviewed:        {"reviewed", "?", "blue"},
 }
 
-// LabelOf is the letter and colour for a status.
+// LabelOf is how a status is drawn.
 func LabelOf(status string) Label {
 	if l, ok := labels[status]; ok {
 		return l

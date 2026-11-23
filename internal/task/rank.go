@@ -177,9 +177,9 @@ func letter(t store.Task) string {
 		return ""
 	}
 	label := pr.PR{Status: first.Status, IsDraft: first.IsDraft}.Label()
-	out := "#[range=user|" + strconv.Itoa(first.Number) + "]#[fg=" + label.Colour + "]" + label.Letter
+	out := "#[range=user|" + strconv.Itoa(first.Number) + "]#[fg=" + label.Colour + "]" + label.Word
 	if first.Unresolved > 0 {
-		out += "#[fg=red]" + strconv.Itoa(first.Unresolved)
+		out += " #[fg=red]" + strconv.Itoa(first.Unresolved)
 	}
 	return out + "#[norange]#[default]"
 }

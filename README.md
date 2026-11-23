@@ -40,15 +40,17 @@ Then: `puffin pick` (the list), `tasks [NAME]`, `switch NAME`, `rename`,
 
 ## Reading the list and the status bar
 
-`prefix Space` opens `puffin pick`. A row is: `▲` · PR letter · agent · name.
+`prefix Space` opens `puffin pick`. A row is: `▲` · status · agent · name.
 
 - `▲` marks a row waiting on you. The `▲N` in the status bar is the number of
   marked rows.
-- Letters: `G` ready, `D` draft, `B` building, `Q` queued, `W` waiting (blue on
-  a reviewer, red on you), `F` failing, `C` conflict, `R` changes requested,
-  `M` merged, `X` closed. `rev` is a review (red: asked of you, blue: back with
-  the author) and `new` is a reviewed PR whose author has pushed since.
-  A red digit is unresolved threads; `+N` is the rest of the stack.
+- The word is where the bottom PR of the task's stack stands. Your own:
+  `ready`, `draft`, `building`, `queued`, `waiting` (out with a reviewer),
+  `blocked` (held up on you), `failing`, `conflict`, `changes` (requested),
+  `merged`, `closed`. Someone else's: `review` (asked of you), `updated` (the
+  author pushed since you reviewed), `reviewed` (back with them). With no PR:
+  `local`, `explore`, or `here` for a task in place. A red number after it is
+  unresolved threads; `+N` is the rest of the stack.
 - Agent: `~` working, `?` asking you something, `•` finished its turn.
 
 A row is yours when its bottom PR is failing, conflicted, has changes
@@ -56,8 +58,9 @@ requested, is waiting on you, or has unresolved threads once its build has
 settled; when a review is asked of you and no agent is working on it; or when
 its agent is asking you something. Building or queued is the machine's move.
 
-The left of the status bar shows the same letter and agent icon in front of
-the session name. Windows outside any task still get a letter on their tab.
+The left of the status bar shows the same word and agent icon in front of
+the session name. Windows outside any task still get a single letter on their
+tab (`G D B Q W F C R M X`), where there is no room for a word.
 
 ## Setup
 

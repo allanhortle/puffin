@@ -380,7 +380,7 @@ func prs(asJSON bool) error {
 				continue
 			}
 			label := p.Label()
-			line := paint(label.Colour, label.Letter) + " " +
+			line := paint(label.Colour, fmt.Sprintf("%-8s", label.Word)) + " " +
 				paint("colour242", fmt.Sprintf("%s#%d", p.Repo, p.Number)) + " " + p.Title
 			if p.Unresolved > 0 {
 				line += " " + paint("red", fmt.Sprintf("•%d", p.Unresolved))
@@ -845,12 +845,12 @@ func printTask(t store.Task, detail bool) {
 	}
 	for _, c := range t.Changes {
 		if c.Number == 0 {
-			fmt.Printf("      %s %s\n", paint("colour242", "-"), paint("colour242", c.Head+", no pull request yet"))
+			fmt.Printf("      %s\n", paint("colour242", fmt.Sprintf("%-*s %s", wordWidth, "local", c.Head)))
 			continue
 		}
 		label := changeLabel(c)
-		line := fmt.Sprintf("      %s #%d %s %s", paint(label.Colour, label.Letter), c.Number,
-			strings.ToLower(strings.ReplaceAll(c.Status, "_", " ")), paint("colour242", c.Head))
+		line := fmt.Sprintf("      %s #%d %s", paint(label.Colour, fmt.Sprintf("%-*s", wordWidth, label.Word)),
+			c.Number, paint("colour242", c.Head))
 		if c.Unresolved > 0 {
 			line += " " + paint("red", fmt.Sprintf("•%d", c.Unresolved))
 		}
@@ -878,7 +878,12 @@ func column(s string, shown, width int) string {
 	return s + strings.Repeat(" ", max(width-shown, 1))
 }
 
-const lettersWidth = 7
+// The longest status word, and the whole status column: the word, a space,
+// two for threads, a space, three for the rest of the stack.
+const (
+	wordWidth    = 8
+	lettersWidth = wordWidth + 1 + 2 + 1 + 3
+)
 
 // pickLine is one task as the list shows it. The first field says what Enter
 // should act on, and is not displayed.
@@ -891,24 +896,32 @@ func pickLine(t store.Task) string {
 	if t.State != store.TaskOpen {
 		live = t.Changes // a finished task shows how it ended
 	}
-	letters, shown := paint("colour242", "-"), 1
+	// With no pull request there is still something to say about a task:
+	// where it lives, or that it has not got as far as one.
+	word, colour := "explore", "colour242"
+	if t.InPlace {
+		word = "here"
+	}
+	threads, more := "", ""
 	if len(live) > 0 {
 		first := task.Headline(live)
-		if first.Number == 0 {
-			letters, shown = paint("colour242", "·"), 1
-		} else {
+		word = "local"
+		if first.Number != 0 {
 			label := changeLabel(first)
-			letters, shown = paint(label.Colour, label.Letter), len(label.Letter)
+			word, colour = label.Word, label.Colour
 			if first.Unresolved > 0 {
-				n := strconv.Itoa(first.Unresolved)
-				letters, shown = letters+paint("red", n), shown+len(n)
+				threads = strconv.Itoa(first.Unresolved)
 			}
 		}
 		if len(live) > 1 {
-			more := "+" + strconv.Itoa(len(live)-1)
-			letters, shown = letters+paint("colour242", more), shown+len(more)
+			more = "+" + strconv.Itoa(len(live)-1)
 		}
 	}
+	// Three columns of fixed width, so every row's name starts in the same
+	// place: the word, its unresolved threads, the rest of its stack.
+	letters := paint(colour, fmt.Sprintf("%-*s", wordWidth, word)) + " " +
+		paint("red", fmt.Sprintf("%-2s", threads)) + " " + paint("colour242", fmt.Sprintf("%-3s", more))
+	shown := lettersWidth
 	name := t.Slug
 	if t.State != store.TaskOpen {
 		name += " (" + t.State + ")"
@@ -942,7 +955,7 @@ func agentIcon(state string) string {
 func reviewLine(p pr.PR) string {
 	name := fmt.Sprintf("%s#%d", p.Repo[strings.Index(p.Repo, "/")+1:], p.Number)
 	return strings.Join([]string{fmt.Sprintf("%s %s %d", reviewRow, p.Repo, p.Number),
-		marker(true) + column(paint("red", "rev"), 3, lettersWidth) + "  " + name, paint("colour242", p.Title+" @"+p.Author)}, "\t")
+		marker(true) + column(paint("red", "review"), len("review"), lettersWidth) + "  " + name, paint("colour242", p.Title+" @"+p.Author)}, "\t")
 }
 
 // pickLines is the one list: my tasks and the reviews asked of me, whatever
