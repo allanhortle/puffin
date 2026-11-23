@@ -41,7 +41,7 @@ repository's to say, in the config, not something to choose each time:
 
 - `-r REPO` names a repository other than the one you are in. Repeat it for
   work across several: each gets a worktree side by side in the task's
-  directory, and one agent at the root gets the prompt.
+  directory, and the session is one window with one agent at the root.
 - `--bare` skips the worktree: an agent that can read the repository and
   nothing more, for a question that is not going to become a change.
 - `-e` writes the prompt in `$EDITOR`.

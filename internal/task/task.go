@@ -308,36 +308,20 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 			return t, err
 		}
 	default:
+		// Work that spans repositories is one piece of work, so it is given
+		// to one agent in one window, at the task's root, where each worktree
+		// is a directory beside the others. The worktrees get no windows of
+		// their own: one is a keystroke away when it is wanted.
 		for _, p := range places {
-			if err := m.attach(ctx, t, p.repo, slug, ""); err != nil {
+			if _, err := m.checkout(ctx, t, p.repo, slug); err != nil {
 				return t, err
 			}
 		}
-		// Work that spans repositories is one piece of work, so it is given
-		// to one agent, at the task's root, where each worktree is a
-		// directory beside the others.
-		if err := m.openRoot(ctx, t, prompt); err != nil {
+		if err := m.openSession(ctx, t, prompt); err != nil {
 			return t, err
 		}
 	}
 	return m.store.Task(ctx, slug)
-}
-
-// openRoot adds a window at the task's root to a session that already
-// exists, with an agent in it on the prompt, and brings it to the front.
-func (m *Manager) openRoot(ctx context.Context, t store.Task, prompt string) error {
-	file, err := m.savePrompt(t, rootWindow, prompt)
-	if err != nil {
-		return err
-	}
-	window, pane, err := m.tmux.NewWindow(ctx, t.Slug, rootWindow, t.Dir)
-	if err != nil {
-		return err
-	}
-	if err := m.tmux.Type(ctx, pane, m.agent(nil, file)); err != nil {
-		return err
-	}
-	return m.tmux.SelectWindow(ctx, window)
 }
 
 // Review makes a task from a pull request. For one asking for my review, that
@@ -472,7 +456,19 @@ func (m *Manager) Attach(ctx context.Context, req api.Attach) (store.Task, error
 	return m.store.Task(ctx, t.Slug)
 }
 
+// attach gives a task a worktree and a window on it, with an agent on the
+// prompt.
 func (m *Manager) attach(ctx context.Context, t store.Task, r store.Repo, branch, prompt string) error {
+	w, err := m.checkout(ctx, t, r, branch)
+	if err != nil {
+		return err
+	}
+	step(ctx, "opening its window")
+	return m.openWindow(ctx, t, w, true, prompt)
+}
+
+// checkout gives a task a worktree of a repository on branch, and no more.
+func (m *Manager) checkout(ctx context.Context, t store.Task, r store.Repo, branch string) (store.Worktree, error) {
 	// A second stack from the same repository gets a numbered directory.
 	// Nothing depends on the name: the path is what is stored.
 	path := filepath.Join(t.Dir, short(r.Name))
@@ -485,23 +481,19 @@ func (m *Manager) attach(ctx context.Context, t store.Task, r store.Repo, branch
 
 	step(ctx, "fetching %s", short(r.Name))
 	git.Fetch(ctx, r.Path, r.DefaultBranch, branch)
-	step(ctx, "checking out %s", branch)
+	step(ctx, "checking out %s in %s", branch, short(r.Name))
 	if err := git.AddWorktree(ctx, r.Path, path, branch, r.DefaultBranch); err != nil {
-		return err
+		return store.Worktree{}, err
 	}
 	rc := m.cfg.Repo[r.Name]
 	if len(rc.Copy) > 0 {
 		step(ctx, "copying files into %s", filepath.Base(path))
 	}
 	if err := copyInto(ctx, r.Path, path, rc.Copy); err != nil {
-		return err
+		return store.Worktree{}, err
 	}
-	step(ctx, "opening its window")
 	w := store.Worktree{TaskID: t.ID, Repo: r, Path: path, Ref: branch}
-	if err := m.store.AddWorktree(ctx, &w, r.DefaultBranch, time.Now()); err != nil {
-		return err
-	}
-	return m.openWindow(ctx, t, w, true, prompt)
+	return w, m.store.AddWorktree(ctx, &w, r.DefaultBranch, time.Now())
 }
 
 // copyInto copies what a fresh checkout lacks, such as untracked env files,
@@ -677,10 +669,16 @@ func (m *Manager) Ensure(ctx context.Context, slug string) (store.Task, error) {
 
 func (m *Manager) ensure(ctx context.Context, t store.Task) error {
 	step(ctx, "opening %s", t.Slug)
-	if len(t.Worktrees) == 0 && !m.tmux.HasSession(ctx, t.Slug) {
+	// A task with no worktree, or with several, is one agent at its root. A
+	// task with one worktree is that worktree's window.
+	several := len(t.Worktrees) > 1
+	if (len(t.Worktrees) == 0 || several) && !m.tmux.HasSession(ctx, t.Slug) {
 		if err := m.openSession(ctx, t, ""); err != nil {
 			return err
 		}
+	}
+	if several {
+		return nil
 	}
 	open, err := m.tmux.WorktreeWindows(ctx)
 	if err != nil {

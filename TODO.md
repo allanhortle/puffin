@@ -43,8 +43,8 @@ Written 2026-11-23, at the end of the session that built puffin.
   and an explicit `--name` or `rename` is cut to four words like any other.
 - **`-r` of the same repo twice in one `new` fails**: both want the same
   branch.
-- **A task across several repos loses its root agent** when its session is
-  rebuilt, like an exploration that had a repo attached.
+- **A task across several repos never runs a repo's `setup` commands or pane
+  layout**, because its worktrees get no windows. Files are still copied.
 - **No notifications.** The only signals are the list and the status bar.
 - **The left status needs the daemon.** With it stopped, the status bar stops
   updating.
