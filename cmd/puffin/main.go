@@ -16,13 +16,13 @@ import (
 	"syscall"
 	"time"
 
-	"puffin/internal/api"
-	"puffin/internal/client"
-	"puffin/internal/config"
-	"puffin/internal/daemon"
-	"puffin/internal/git"
-	"puffin/internal/paths"
-	"puffin/internal/pr"
+	"github.com/allanhortle/puffin/internal/api"
+	"github.com/allanhortle/puffin/internal/client"
+	"github.com/allanhortle/puffin/internal/config"
+	"github.com/allanhortle/puffin/internal/daemon"
+	"github.com/allanhortle/puffin/internal/git"
+	"github.com/allanhortle/puffin/internal/paths"
+	"github.com/allanhortle/puffin/internal/pr"
 )
 
 const version = "0.0.1"
@@ -36,6 +36,7 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin status            daemon health, last fetch, resolved windows; --json for the raw reply
   puffin refresh           one poll cycle now; --force refetches even if nothing moved
   puffin watch [target]    follow one pull request; target is a number, branch or worktree
+  puffin prs               every pull request the daemon holds; --json for other tools to read
   puffin reviews           the pull requests waiting on your review
   puffin open <target>     a pull request number, or "reviews", in the browser
   puffin daemon            run the daemon in the foreground
@@ -93,6 +94,8 @@ func main() {
 		err = status(flag("--json"))
 	case "refresh":
 		err = refresh(flag("--force"))
+	case "prs":
+		err = prs(flag("--json"))
 	case "reviews":
 		err = reviews()
 	case "open":
@@ -287,6 +290,37 @@ func refresh(force bool) error {
 		suffix = " (refetched)"
 	}
 	fmt.Printf("%d prs, %d windows, %d to review%s\n", cycle.PRs, cycle.Windows, cycle.Reviews, suffix)
+	return nil
+}
+
+// prs lists my own pull requests, the ones needing something first. With
+// --json it is the interface other tools read instead of a state file.
+func prs(asJSON bool) error {
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	all, err := daemonClient().PRs(ctx)
+	if err != nil {
+		return err
+	}
+	if asJSON {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(all)
+	}
+	for _, open := range []bool{true, false} {
+		for _, p := range all.PRs {
+			if (p.State == "OPEN") != open {
+				continue
+			}
+			label := p.Label()
+			line := paint(label.Colour, label.Letter) + " " +
+				paint("colour242", fmt.Sprintf("%s#%d", p.Repo, p.Number)) + " " + p.Title
+			if p.Unresolved > 0 {
+				line += " " + paint("red", fmt.Sprintf("•%d", p.Unresolved))
+			}
+			fmt.Println(line)
+		}
+	}
 	return nil
 }
 

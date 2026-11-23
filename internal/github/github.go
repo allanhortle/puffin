@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"puffin/internal/run"
+	"github.com/allanhortle/puffin/internal/run"
 )
 
 const (

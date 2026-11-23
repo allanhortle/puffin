@@ -17,10 +17,10 @@ import (
 	"syscall"
 	"time"
 
-	"puffin/internal/api"
-	"puffin/internal/config"
-	"puffin/internal/store"
-	"puffin/internal/tmux"
+	"github.com/allanhortle/puffin/internal/api"
+	"github.com/allanhortle/puffin/internal/config"
+	"github.com/allanhortle/puffin/internal/store"
+	"github.com/allanhortle/puffin/internal/tmux"
 )
 
 // ErrRunning means another daemon already holds the lock.
@@ -109,6 +109,7 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("POST "+api.RefreshPath, d.refresh)
 	mux.HandleFunc("GET "+api.ReviewsPath, d.reviews)
 	mux.HandleFunc("GET "+api.PRPath, d.pr)
+	mux.HandleFunc("GET "+api.PRsPath, d.prs)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -208,6 +209,15 @@ func (d *daemon) reviews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reply(w, http.StatusOK, reviews)
+}
+
+func (d *daemon) prs(w http.ResponseWriter, r *http.Request) {
+	all, err := d.poller.all(r.Context())
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	reply(w, http.StatusOK, all)
 }
 
 func (d *daemon) pr(w http.ResponseWriter, r *http.Request) {

@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"puffin/internal/api"
-	"puffin/internal/github"
-	"puffin/internal/pr"
-	"puffin/internal/store"
-	"puffin/internal/tmux"
+	"github.com/allanhortle/puffin/internal/api"
+	"github.com/allanhortle/puffin/internal/github"
+	"github.com/allanhortle/puffin/internal/pr"
+	"github.com/allanhortle/puffin/internal/store"
+	"github.com/allanhortle/puffin/internal/tmux"
 )
 
 const (
@@ -490,19 +490,47 @@ func asNumber(s string) (int, bool) {
 	return n, true
 }
 
-func (p *poller) reviews(ctx context.Context) (api.Reviews, error) {
-	var out api.Reviews
-	if _, err := p.store.Meta(ctx, metaReviewCount, &out.Count); err != nil {
+func (p *poller) all(ctx context.Context) (api.PRs, error) {
+	// Empty lists rather than null, so a reader can iterate without checking.
+	out := api.PRs{PRs: []pr.PR{}, Windows: []api.Window{}}
+	var err error
+	if out.Reviews, err = p.reviews(ctx); err != nil {
 		return out, err
+	}
+	authored, err := p.store.Changes(ctx, store.RoleAuthor)
+	if err != nil {
+		return out, err
+	}
+	out.PRs = append(out.PRs, authored...)
+	var fetchedAt time.Time
+	if ok, err := p.store.Meta(ctx, metaFetchedAt, &fetchedAt); err != nil {
+		return out, err
+	} else if ok {
+		out.FetchedAt = &fetchedAt
+	}
+	p.mu.Lock()
+	out.Windows = append(out.Windows, p.windows...)
+	p.mu.Unlock()
+	return out, nil
+}
+
+func (p *poller) reviews(ctx context.Context) (api.Reviews, error) {
+	out := api.Reviews{PRs: []pr.PR{}}
+	return out, p.fillReviews(ctx, &out)
+}
+
+func (p *poller) fillReviews(ctx context.Context, out *api.Reviews) error {
+	if _, err := p.store.Meta(ctx, metaReviewCount, &out.Count); err != nil {
+		return err
 	}
 	all, err := p.store.Changes(ctx, store.RoleReviewer)
 	if err != nil {
-		return out, err
+		return err
 	}
 	for _, c := range all {
 		if c.Status == pr.ReviewRequested {
 			out.PRs = append(out.PRs, c)
 		}
 	}
-	return out, nil
+	return nil
 }

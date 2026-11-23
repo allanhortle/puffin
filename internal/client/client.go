@@ -13,7 +13,7 @@ import (
 	"net/url"
 	"syscall"
 
-	"puffin/internal/api"
+	"github.com/allanhortle/puffin/internal/api"
 )
 
 // ErrNotRunning means nothing is listening on the socket.
@@ -57,6 +57,12 @@ func (c *Client) Refresh(ctx context.Context, force bool) (api.Cycle, error) {
 func (c *Client) Reviews(ctx context.Context) (api.Reviews, error) {
 	var r api.Reviews
 	return r, c.call(ctx, http.MethodGet, api.ReviewsPath, &r)
+}
+
+// PRs is everything the poller holds.
+func (c *Client) PRs(ctx context.Context) (api.PRs, error) {
+	var all api.PRs
+	return all, c.call(ctx, http.MethodGet, api.PRsPath, &all)
 }
 
 // PR resolves a query to a pull request. The query's keys are those of the

@@ -1,4 +1,4 @@
-module puffin
+module github.com/allanhortle/puffin
 
 go 1.27.3
 

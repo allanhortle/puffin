@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"puffin/internal/run"
+	"github.com/allanhortle/puffin/internal/run"
 )
 
 type Info struct {

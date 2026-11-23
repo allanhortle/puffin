@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"puffin/internal/pr"
+	"github.com/allanhortle/puffin/internal/pr"
 )
 
 func mine(number int, head, state, status string) pr.PR {

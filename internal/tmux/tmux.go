@@ -13,8 +13,8 @@ import (
 	"strconv"
 	"strings"
 
-	"puffin/internal/git"
-	"puffin/internal/run"
+	"github.com/allanhortle/puffin/internal/git"
+	"github.com/allanhortle/puffin/internal/run"
 )
 
 // Options puffin writes. The letter and the number travel separately because

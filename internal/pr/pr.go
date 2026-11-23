@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"sort"
 
-	"puffin/internal/github"
+	"github.com/allanhortle/puffin/internal/github"
 )
 
 // One status per pull request, and its colour says whose move it is: yellow a

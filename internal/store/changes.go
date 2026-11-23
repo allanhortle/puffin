@@ -8,7 +8,7 @@ import (
 	"sort"
 	"time"
 
-	"puffin/internal/pr"
+	"github.com/allanhortle/puffin/internal/pr"
 )
 
 const (

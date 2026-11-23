@@ -10,7 +10,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 
-	"puffin/internal/paths"
+	"github.com/allanhortle/puffin/internal/paths"
 )
 
 type Config struct {

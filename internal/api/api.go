@@ -5,8 +5,8 @@ package api
 import (
 	"time"
 
-	"puffin/internal/pr"
-	"puffin/internal/store"
+	"github.com/allanhortle/puffin/internal/pr"
+	"github.com/allanhortle/puffin/internal/store"
 )
 
 const (
@@ -15,6 +15,7 @@ const (
 	RefreshPath  = "/v1/refresh" // POST; ?force=1 skips the "has anything moved" check
 	ReviewsPath  = "/v1/reviews"
 	PRPath       = "/v1/pr" // GET; ?target= or ?repo=&branch= or ?repo=&number=
+	PRsPath      = "/v1/prs"
 )
 
 type Status struct {
@@ -70,6 +71,16 @@ type Cycle struct {
 type Reviews struct {
 	Count int     `json:"count"`
 	PRs   []pr.PR `json:"prs"`
+}
+
+// PRs is everything the poller holds, for the tools that build their own
+// lists out of it: my pull requests, the ones asking for my review, and the
+// windows that have one open.
+type PRs struct {
+	FetchedAt *time.Time `json:"fetched_at"`
+	PRs       []pr.PR    `json:"prs"`
+	Reviews   Reviews    `json:"reviews"`
+	Windows   []Window   `json:"windows"`
 }
 
 type PR struct {

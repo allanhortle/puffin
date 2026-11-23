@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"puffin/internal/github"
+	"github.com/allanhortle/puffin/internal/github"
 )
 
 func ptr[T any](v T) *T { return &v }
