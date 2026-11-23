@@ -41,3 +41,28 @@ func TestRank(t *testing.T) {
 		}
 	}
 }
+
+func TestAgentChangesWhoseMoveItIs(t *testing.T) {
+	review := []store.TaskChange{{Number: 1, State: "OPEN", Status: pr.ReviewRequested}}
+	updated := []store.TaskChange{{Number: 1, State: "OPEN", Status: pr.ReviewUpdated}}
+	failing := []store.TaskChange{{Number: 1, State: "OPEN", Status: pr.Failing}}
+	waiting := []store.TaskChange{{Number: 1, State: "OPEN", Status: pr.WaitingReview}}
+	for name, c := range map[string]struct {
+		changes []store.TaskChange
+		agent   string
+		want    int
+	}{
+		"a review nobody has started":           {review, "", Mine},
+		"a review an agent is doing":            {review, AgentWorking, Machine},
+		"a pushed-since review an agent is on":  {updated, AgentWorking, Machine},
+		"a review whose agent has finished":     {review, AgentDone, Mine},
+		"a review whose agent is asking":        {review, AgentWaiting, Mine},
+		"my failing pull request, agent or not": {failing, AgentWorking, Mine},
+		"an agent asking outranks a quiet task": {waiting, AgentWaiting, Mine},
+	} {
+		got := Rank(store.Task{State: store.TaskOpen, Changes: c.changes, Agent: c.agent})
+		if got != c.want {
+			t.Errorf("%s: rank %d, want %d", name, got, c.want)
+		}
+	}
+}

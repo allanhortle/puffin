@@ -93,7 +93,13 @@ func Rank(t store.Task) int {
 	if len(live) == 0 {
 		return Idle // exploring, or open with more to do than what has merged
 	}
-	return RankChange(Headline(live))
+	first := Headline(live)
+	// A review that an agent is in the middle of is the agent's move. It
+	// comes back to me when the agent stops.
+	if t.Agent == AgentWorking && (first.Status == pr.ReviewRequested || first.Status == pr.ReviewUpdated) {
+		return Machine
+	}
+	return RankChange(first)
 }
 
 // What an agent can report itself to be.
