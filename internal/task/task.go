@@ -322,20 +322,23 @@ func copyInto(ctx context.Context, clone, worktree string, globs []string) error
 
 func quote(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }
 
-// agent is the command line that starts an agent: the directories it may read
-// beyond its own, and the prompt, read from a file so that no quoting of the
-// prompt itself is ever needed.
+// agent is the command line that starts an agent: the prompt, read from a
+// file so that no quoting of the prompt itself is ever needed, then the
+// directories it may read beyond its own.
+//
+// The prompt goes first. A flag like claude's --add-dir takes any number of
+// values, so a prompt placed after it is read as one more directory.
 func (m *Manager) agent(readable []store.Repo, promptFile string) string {
 	parts := []string{m.cfg.Agent}
+	if promptFile != "" {
+		parts = append(parts, `"$(cat `+quote(promptFile)+`)"`)
+	}
 	if m.cfg.AgentDirFlag != "" {
 		for _, r := range readable {
 			if r.Path != "" {
 				parts = append(parts, m.cfg.AgentDirFlag, quote(r.Path))
 			}
 		}
-	}
-	if promptFile != "" {
-		parts = append(parts, `"$(cat `+quote(promptFile)+`)"`)
 	}
 	return strings.Join(parts, " ")
 }
