@@ -921,17 +921,9 @@ func marker(mine bool) string {
 	return "  "
 }
 
-// What an agent is doing, as it is drawn everywhere: ~ working, ? waiting on
-// me, • finished its turn.
-var agentIcons = map[string]struct{ glyph, colour string }{
-	task.AgentWorking: {"~", "yellow"},
-	task.AgentWaiting: {"?", "red"},
-	task.AgentDone:    {"•", "green"},
-}
-
 func agentIcon(state string) string {
-	if icon, ok := agentIcons[state]; ok {
-		return paint(icon.colour, icon.glyph)
+	if icon, ok := task.Icons[state]; ok {
+		return paint(icon.Colour, icon.Glyph)
 	}
 	return " "
 }
@@ -1137,11 +1129,7 @@ func agent(state string) {
 	}
 	// The session shows the most pressing of its agents, beside its name.
 	if session, states, err := tm.AgentsBeside(ctx, pane); err == nil {
-		styled := ""
-		if icon, ok := agentIcons[task.Foremost(states)]; ok {
-			styled = "#[fg=" + icon.colour + "]" + icon.glyph + "#[default]"
-		}
-		tm.SetStatus(ctx, session, styled)
+		tm.SetStatus(ctx, session, task.StatusStyle(task.Foremost(states)))
 	}
 	daemonClient().Recount(ctx)
 }

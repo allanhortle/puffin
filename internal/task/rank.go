@@ -138,6 +138,48 @@ const (
 	AgentDone    = "done"    // finished its turn
 )
 
+// Icon is how an agent's state is drawn everywhere: ~ working, ? waiting on
+// me, • finished its turn.
+type Icon struct{ Glyph, Colour string }
+
+var Icons = map[string]Icon{
+	AgentWorking: {"~", "yellow"},
+	AgentWaiting: {"?", "red"},
+	AgentDone:    {"•", "green"},
+}
+
+// StatusStyle is a state as a session's status option holds it, styled for
+// the status bar. No state is no text.
+func StatusStyle(state string) string {
+	icon, ok := Icons[state]
+	if !ok {
+		return ""
+	}
+	return "#[fg=" + icon.Colour + "]" + icon.Glyph + "#[default]"
+}
+
+// SyncStatus makes every session show the most pressing of its agents. The
+// agents' hooks set this themselves as they go; this catches whatever they
+// could not, such as a window that was closed with its agent still in it.
+func (m *Manager) SyncStatus(ctx context.Context) error {
+	agents, err := m.tmux.Agents(ctx)
+	if err != nil {
+		return err
+	}
+	shown, err := m.tmux.Statuses(ctx)
+	if err != nil {
+		return err
+	}
+	for session, have := range shown {
+		if want := StatusStyle(Foremost(agents[session])); want != have {
+			if err := m.tmux.SetStatus(ctx, session, want); err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
 // Foremost is the agent state that speaks for several: one that needs me,
 // then one still working, then one that has finished.
 func Foremost(states []string) string {
@@ -200,6 +242,9 @@ func (m *Manager) Attention(ctx context.Context) (int, error) {
 
 // ShowAttention recounts and updates the status bar now.
 func (m *Manager) ShowAttention(ctx context.Context) error {
+	if err := m.SyncStatus(ctx); err != nil {
+		return err
+	}
 	n, err := m.Attention(ctx)
 	if err != nil {
 		return err

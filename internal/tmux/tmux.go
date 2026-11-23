@@ -376,6 +376,24 @@ func (c Client) SetStatus(ctx context.Context, session, styled string) error {
 	return nil
 }
 
+// Statuses is what every session currently shows for its agents, including
+// the sessions that show nothing.
+func (c Client) Statuses(ctx context.Context) (map[string]string, error) {
+	out, err := c.Run(ctx, "list-sessions", "-F", "#{session_name}\t#{"+StatusOption+"}")
+	if errors.Is(err, ErrNoServer) {
+		return map[string]string{}, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	found := map[string]string{}
+	for _, line := range lines(out) {
+		session, status, _ := strings.Cut(line, "\t")
+		found[session] = status
+	}
+	return found, nil
+}
+
 // Agents is the state of every agent that has reported one, by session.
 func (c Client) Agents(ctx context.Context) (map[string][]string, error) {
 	out, err := c.Run(ctx, "list-windows", "-a", "-F", "#{"+AgentOption+"} #{session_name}")

@@ -254,6 +254,9 @@ func (p *poller) cycle(ctx context.Context, force bool) (api.Cycle, error) {
 	if err := p.tasks.Reconcile(ctx); err != nil {
 		slog.Error("reconciling tasks failed", "err", err)
 	}
+	if err := p.tasks.SyncStatus(ctx); err != nil {
+		slog.Error("syncing agent status failed", "err", err)
+	}
 	attention, err := p.tasks.Attention(ctx)
 	if err != nil {
 		slog.Error("counting tasks failed", "err", err)
