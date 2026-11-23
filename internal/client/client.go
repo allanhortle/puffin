@@ -25,6 +25,8 @@ var ErrNotRunning = errors.New("the daemon is not running")
 
 type Client struct {
 	http *http.Client
+	// OnStep, when set, is told each step of a slow request as it starts.
+	OnStep func(string)
 }
 
 func New(socket string) *Client {
@@ -103,7 +105,7 @@ func (c *Client) Attach(ctx context.Context, req api.Attach) (store.Task, error)
 // Ensure brings a task's session back if it has gone.
 func (c *Client) Ensure(ctx context.Context, task string) (store.Task, error) {
 	var t store.Task
-	return t, c.call(ctx, http.MethodPost, api.EnsurePath+"?"+url.Values{"task": {task}}.Encode(), &t)
+	return t, c.send(ctx, api.EnsurePath+"?"+url.Values{"task": {task}}.Encode(), nil, &t)
 }
 
 func (c *Client) Close(ctx context.Context, task string, force bool) error {
@@ -111,14 +113,14 @@ func (c *Client) Close(ctx context.Context, task string, force bool) error {
 	if force {
 		q.Set("force", "1")
 	}
-	return c.call(ctx, http.MethodPost, api.ClosePath+"?"+q.Encode(), nil)
+	return c.send(ctx, api.ClosePath+"?"+q.Encode(), nil, nil)
 }
 
 // Review makes, or finds, the task for reviewing a pull request.
 func (c *Client) Review(ctx context.Context, repo string, number int) (store.Task, error) {
 	var t store.Task
 	q := url.Values{"repo": {repo}, "number": {strconv.Itoa(number)}}
-	return t, c.call(ctx, http.MethodPost, api.ReviewPath+"?"+q.Encode(), &t)
+	return t, c.send(ctx, api.ReviewPath+"?"+q.Encode(), nil, &t)
 }
 
 // Recount asks the daemon to recount what is waiting on me and show it.
@@ -139,20 +141,66 @@ func (c *Client) Adopt(ctx context.Context, req api.Adopt) (store.Task, error) {
 func (c *Client) Rename(ctx context.Context, task, to string) (store.Task, error) {
 	var t store.Task
 	q := url.Values{"task": {task}, "to": {to}}
-	return t, c.call(ctx, http.MethodPost, api.RenamePath+"?"+q.Encode(), &t)
+	return t, c.send(ctx, api.RenamePath+"?"+q.Encode(), nil, &t)
 }
 
 func (c *Client) Sweep(ctx context.Context) (api.Swept, error) {
 	var swept api.Swept
-	return swept, c.call(ctx, http.MethodPost, api.SweepPath, &swept)
+	return swept, c.send(ctx, api.SweepPath, nil, &swept)
 }
 
+// send posts a request that changes a task, with in as its body, and reads
+// the stream that comes back: steps as they happen, then the result into out.
 func (c *Client) send(ctx context.Context, path string, in, out any) error {
-	body, err := json.Marshal(in)
+	var body io.Reader
+	if in != nil {
+		encoded, err := json.Marshal(in)
+		if err != nil {
+			return err
+		}
+		body = bytes.NewReader(encoded)
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, "http://puffin"+path, body)
 	if err != nil {
 		return err
 	}
-	return c.do(ctx, http.MethodPost, path, bytes.NewReader(body), out)
+	res, err := c.http.Do(req)
+	if err != nil {
+		if errors.Is(err, fs.ErrNotExist) || errors.Is(err, syscall.ECONNREFUSED) {
+			return ErrNotRunning
+		}
+		return err
+	}
+	defer res.Body.Close()
+	dec := json.NewDecoder(res.Body)
+	if res.StatusCode >= 400 {
+		var e api.Error
+		if dec.Decode(&e) == nil && e.Error != "" {
+			return errors.New(e.Error)
+		}
+		return fmt.Errorf("POST %s: %s", path, res.Status)
+	}
+	for {
+		var p api.Progress
+		if err := dec.Decode(&p); err != nil {
+			if errors.Is(err, io.EOF) {
+				return errors.New("the daemon stopped answering before it had finished")
+			}
+			return err
+		}
+		switch {
+		case !p.Done:
+			if c.OnStep != nil {
+				c.OnStep(p.Step)
+			}
+		case p.Error != "":
+			return errors.New(p.Error)
+		case out == nil:
+			return nil
+		default:
+			return json.Unmarshal(p.Result, out)
+		}
+	}
 }
 
 func (c *Client) call(ctx context.Context, method, path string, out any) error {

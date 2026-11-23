@@ -253,8 +253,45 @@ func (d *daemon) pr(w http.ResponseWriter, r *http.Request) {
 // asked for it.
 const taskTimeout = 15 * time.Minute
 
-func detached(r *http.Request) (context.Context, context.CancelFunc) {
-	return context.WithTimeout(context.WithoutCancel(r.Context()), taskTimeout)
+// stream writes the reply to a request that changes a task: a line per step,
+// then the result.
+type stream struct {
+	mu sync.Mutex
+	w  http.ResponseWriter
+}
+
+func (s *stream) send(p api.Progress) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	json.NewEncoder(s.w).Encode(p) // a reader that has gone is not an error
+	if f, ok := s.w.(http.Flusher); ok {
+		f.Flush()
+	}
+}
+
+type streamKey struct{}
+
+// detached is the context for a request that changes a task. It outlives the
+// request, and reports each step to whoever is waiting as it happens.
+func detached(w http.ResponseWriter, r *http.Request) (context.Context, context.CancelFunc) {
+	w.Header().Set("Content-Type", "application/x-ndjson")
+	s := &stream{w: w}
+	ctx := context.WithValue(context.WithoutCancel(r.Context()), streamKey{}, s)
+	ctx = task.WithProgress(ctx, func(step string) { s.send(api.Progress{Step: step}) })
+	return context.WithTimeout(ctx, taskTimeout)
+}
+
+// finish ends the stream a detached request started.
+func finish(ctx context.Context, body any, err error) {
+	s := ctx.Value(streamKey{}).(*stream)
+	if err == nil {
+		var raw []byte
+		if raw, err = json.Marshal(body); err == nil {
+			s.send(api.Progress{Done: true, Result: raw})
+			return
+		}
+	}
+	s.send(api.Progress{Done: true, Error: err.Error()})
 }
 
 func (d *daemon) repos(w http.ResponseWriter, r *http.Request) {
@@ -285,10 +322,10 @@ func (d *daemon) newTask(w http.ResponseWriter, r *http.Request) {
 		reply(w, http.StatusBadRequest, api.Error{Error: err.Error()})
 		return
 	}
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	t, err := d.tasks.New(ctx, req)
-	answer(w, t, err)
+	finish(ctx, t, err)
 }
 
 func (d *daemon) attach(w http.ResponseWriter, r *http.Request) {
@@ -297,33 +334,33 @@ func (d *daemon) attach(w http.ResponseWriter, r *http.Request) {
 		reply(w, http.StatusBadRequest, api.Error{Error: err.Error()})
 		return
 	}
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	t, err := d.tasks.Attach(ctx, req)
-	answer(w, t, err)
+	finish(ctx, t, err)
 }
 
 func (d *daemon) ensure(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	t, err := d.tasks.Ensure(ctx, r.URL.Query().Get("task"))
-	answer(w, t, err)
+	finish(ctx, t, err)
 }
 
 func (d *daemon) closeTask(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	q := r.URL.Query()
-	answer(w, struct{}{}, d.tasks.Close(ctx, q.Get("task"), q.Get("force") != ""))
+	finish(ctx, struct{}{}, d.tasks.Close(ctx, q.Get("task"), q.Get("force") != ""))
 }
 
 func (d *daemon) review(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	q := r.URL.Query()
 	number, _ := strconv.Atoi(q.Get("number"))
 	t, err := d.tasks.Review(ctx, q.Get("repo"), number)
-	answer(w, t, err)
+	finish(ctx, t, err)
 }
 
 func (d *daemon) here(w http.ResponseWriter, r *http.Request) {
@@ -332,10 +369,10 @@ func (d *daemon) here(w http.ResponseWriter, r *http.Request) {
 		reply(w, http.StatusBadRequest, api.Error{Error: err.Error()})
 		return
 	}
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	t, err := d.tasks.Here(ctx, req)
-	answer(w, t, err)
+	finish(ctx, t, err)
 }
 
 func (d *daemon) adopt(w http.ResponseWriter, r *http.Request) {
@@ -344,25 +381,25 @@ func (d *daemon) adopt(w http.ResponseWriter, r *http.Request) {
 		reply(w, http.StatusBadRequest, api.Error{Error: err.Error()})
 		return
 	}
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	t, err := d.tasks.Adopt(ctx, req)
-	answer(w, t, err)
+	finish(ctx, t, err)
 }
 
 func (d *daemon) rename(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	q := r.URL.Query()
 	t, err := d.tasks.Rename(ctx, q.Get("task"), q.Get("to"))
-	answer(w, t, err)
+	finish(ctx, t, err)
 }
 
 func (d *daemon) sweep(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := detached(r)
+	ctx, cancel := detached(w, r)
 	defer cancel()
 	swept, err := d.tasks.Sweep(ctx)
-	answer(w, swept, err)
+	finish(ctx, swept, err)
 }
 
 func answer(w http.ResponseWriter, body any, err error) {

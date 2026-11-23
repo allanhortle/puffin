@@ -14,6 +14,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
@@ -184,6 +185,76 @@ func main() {
 }
 
 func daemonClient() *client.Client { return client.New(paths.Socket()) }
+
+// slow runs a request that takes as long as git takes, saying what it is
+// doing while it does. Without that, making or closing a task looks hung.
+func slow(first string, do func(ctx context.Context, c *client.Client) error) error {
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	spin := startSpinner(first)
+	defer spin.stop()
+	c := daemonClient()
+	c.OnStep = spin.set
+	return do(ctx, c)
+}
+
+// spinner is one line on the terminal: what is happening now, and for how
+// long the whole thing has been going. It draws nothing unless a person is
+// there to read it.
+type spinner struct {
+	mu      sync.Mutex
+	step    string
+	started time.Time
+	quit    chan struct{}
+	done    sync.WaitGroup
+}
+
+func startSpinner(first string) *spinner {
+	s := &spinner{step: first, started: time.Now(), quit: make(chan struct{})}
+	if info, err := os.Stderr.Stat(); err != nil || info.Mode()&os.ModeCharDevice == 0 {
+		return s
+	}
+	s.done.Add(1)
+	go func() {
+		defer s.done.Done()
+		frames := []rune("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
+		tick := time.NewTicker(80 * time.Millisecond)
+		defer tick.Stop()
+		for i := 0; ; i++ {
+			s.mu.Lock()
+			step := s.step
+			s.mu.Unlock()
+			line := fmt.Sprintf("%c %s", frames[i%len(frames)], step)
+			if elapsed := time.Since(s.started); elapsed >= 2*time.Second {
+				line += fmt.Sprintf(" \x1b[2m%s\x1b[0m", elapsed.Round(time.Second))
+			}
+			fmt.Fprint(os.Stderr, "\r\x1b[K"+line)
+			select {
+			case <-s.quit:
+				fmt.Fprint(os.Stderr, "\r\x1b[K")
+				return
+			case <-tick.C:
+			}
+		}
+	}()
+	return s
+}
+
+func (s *spinner) set(step string) {
+	s.mu.Lock()
+	s.step = step
+	s.mu.Unlock()
+}
+
+// stop clears the line. Safe to call more than once.
+func (s *spinner) stop() {
+	select {
+	case <-s.quit:
+	default:
+		close(s.quit)
+	}
+	s.done.Wait()
+}
 
 func timeout(d time.Duration) (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), d)
@@ -723,13 +794,15 @@ func newTask(args []string) error {
 	if err != nil {
 		return err
 	}
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	t, err := daemonClient().NewTask(ctx, api.NewTask{
-		Name:   last(flags["--name"]),
-		Prompt: prompt,
-		Read:   read,
-		Attach: attached,
+	var t store.Task
+	err = slow("making the task", func(ctx context.Context, c *client.Client) (err error) {
+		t, err = c.NewTask(ctx, api.NewTask{
+			Name:   last(flags["--name"]),
+			Prompt: prompt,
+			Read:   read,
+			Attach: attached,
+		})
+		return err
 	})
 	if err != nil {
 		return err
@@ -761,13 +834,15 @@ func attach(args []string) error {
 			return err
 		}
 	}
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	t, err := daemonClient().Attach(ctx, api.Attach{
-		Task:   task,
-		Repo:   names[0],
-		Branch: last(flags["--branch"]),
-		Prompt: prompt,
+	var t store.Task
+	err = slow("attaching", func(ctx context.Context, c *client.Client) (err error) {
+		t, err = c.Attach(ctx, api.Attach{
+			Task:   task,
+			Repo:   names[0],
+			Branch: last(flags["--branch"]),
+			Prompt: prompt,
+		})
+		return err
 	})
 	if err != nil {
 		return err
@@ -1081,10 +1156,11 @@ func pick(args []string) error {
 
 // review starts, or returns to, the review of a pull request.
 func review(repo string, number int) error {
-	fmt.Printf("checking out %s#%d…\n", repo, number) // a large checkout says nothing while it works
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	t, err := daemonClient().Review(ctx, repo, number)
+	var t store.Task
+	err := slow(fmt.Sprintf("checking out %s#%d", repo, number), func(ctx context.Context, c *client.Client) (err error) {
+		t, err = c.Review(ctx, repo, number)
+		return err
+	})
 	if err != nil {
 		return err
 	}
@@ -1117,9 +1193,11 @@ func switchTo(slug string) error {
 	if slug == "" {
 		return errors.New("switch needs a task")
 	}
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	if _, err := daemonClient().Ensure(ctx, slug); err != nil {
+	err := slow("opening "+slug, func(ctx context.Context, c *client.Client) error {
+		_, err := c.Ensure(ctx, slug)
+		return err
+	})
+	if err != nil {
 		return err
 	}
 	return goTo(slug)
@@ -1137,9 +1215,9 @@ func closeTask(args []string) error {
 		return err
 	}
 	_, force := flags["--force"]
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	return daemonClient().Close(ctx, slug, force)
+	return slow("closing "+slug, func(ctx context.Context, c *client.Client) error {
+		return c.Close(ctx, slug, force)
+	})
 }
 
 // agent records what the agent in this pane is doing, for the agent's own
@@ -1182,9 +1260,11 @@ func inPlace(args []string) error {
 	if path, err = filepath.Abs(path); err != nil {
 		return err
 	}
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	t, err := daemonClient().Here(ctx, api.Here{Path: path, Name: last(flags["--name"])})
+	var t store.Task
+	err = slow("opening a session", func(ctx context.Context, c *client.Client) (err error) {
+		t, err = c.Here(ctx, api.Here{Path: path, Name: last(flags["--name"])})
+		return err
+	})
 	if err != nil {
 		return err
 	}
@@ -1203,9 +1283,11 @@ func adopt(args []string) error {
 	if path, err = filepath.Abs(path); err != nil {
 		return err
 	}
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	t, err := daemonClient().Adopt(ctx, api.Adopt{Path: path, Name: last(flags["--name"])})
+	var t store.Task
+	err = slow("adopting the worktree", func(ctx context.Context, c *client.Client) (err error) {
+		t, err = c.Adopt(ctx, api.Adopt{Path: path, Name: last(flags["--name"])})
+		return err
+	})
 	if err != nil {
 		return err
 	}
@@ -1237,9 +1319,11 @@ func rename(args []string) error {
 }
 
 func sweep() error {
-	ctx, cancel := timeout(taskTimeout)
-	defer cancel()
-	swept, err := daemonClient().Sweep(ctx)
+	var swept api.Swept
+	err := slow("sweeping", func(ctx context.Context, c *client.Client) (err error) {
+		swept, err = c.Sweep(ctx)
+		return err
+	})
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@
 package api
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/allanhortle/puffin/internal/pr"
@@ -134,6 +135,17 @@ type Adopt struct {
 type Swept struct {
 	Closed []string          `json:"closed"`
 	Kept   map[string]string `json:"kept"`
+}
+
+// Progress is one line of the reply to anything that changes a task. Such a
+// request takes as long as git takes, so its reply is a stream: a line for
+// each step as it starts, then a last one, Done, carrying the result or the
+// error.
+type Progress struct {
+	Step   string          `json:"step,omitempty"`
+	Done   bool            `json:"done,omitempty"`
+	Result json.RawMessage `json:"result,omitempty"`
+	Error  string          `json:"error,omitempty"`
 }
 
 type Error struct {

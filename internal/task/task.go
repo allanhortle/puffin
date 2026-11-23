@@ -40,6 +40,20 @@ const (
 	setupToken = "<setup>"
 )
 
+type progressKey struct{}
+
+// WithProgress has every slow step of a task operation reported to report as
+// it starts, in a few words a person can read while they wait.
+func WithProgress(ctx context.Context, report func(string)) context.Context {
+	return context.WithValue(ctx, progressKey{}, report)
+}
+
+func step(ctx context.Context, format string, args ...any) {
+	if report, ok := ctx.Value(progressKey{}).(func(string)); ok {
+		report(fmt.Sprintf(format, args...))
+	}
+}
+
 type Manager struct {
 	cfg   config.Config
 	store *store.Store
@@ -389,13 +403,20 @@ func (m *Manager) attach(ctx context.Context, t store.Task, r store.Repo, branch
 		path = filepath.Join(t.Dir, short(r.Name)+"-"+strconv.Itoa(n))
 	}
 
+	step(ctx, "fetching %s", short(r.Name))
+	git.Fetch(ctx, r.Path, r.DefaultBranch, branch)
+	step(ctx, "checking out %s", branch)
 	if err := git.AddWorktree(ctx, r.Path, path, branch, r.DefaultBranch); err != nil {
 		return err
 	}
 	rc := m.cfg.Repo[r.Name]
+	if len(rc.Copy) > 0 {
+		step(ctx, "copying files into %s", filepath.Base(path))
+	}
 	if err := copyInto(ctx, r.Path, path, rc.Copy); err != nil {
 		return err
 	}
+	step(ctx, "opening its window")
 	w := store.Worktree{TaskID: t.ID, Repo: r, Path: path, Ref: branch}
 	if err := m.store.AddWorktree(ctx, &w, r.DefaultBranch, time.Now()); err != nil {
 		return err
@@ -562,6 +583,7 @@ func (m *Manager) Ensure(ctx context.Context, slug string) (store.Task, error) {
 }
 
 func (m *Manager) ensure(ctx context.Context, t store.Task) error {
+	step(ctx, "opening %s", t.Slug)
 	if len(t.Worktrees) == 0 && !m.tmux.HasSession(ctx, t.Slug) {
 		if err := m.openSession(ctx, t, ""); err != nil {
 			return err
@@ -671,6 +693,7 @@ func (m *Manager) Adopt(ctx context.Context, req api.Adopt) (store.Task, error) 
 	path := filepath.Join(t.Dir, short(r.Name))
 	// Run from the clone the worktree belongs to, which need not be the one
 	// puffin makes new worktrees from.
+	step(ctx, "moving %s into %s", info.Root, slug)
 	if err := git.MoveWorktree(ctx, filepath.Dir(info.CommonDir), info.Root, path); err != nil {
 		os.RemoveAll(t.Dir) // holds nothing but the directory just made
 		return store.Task{}, err
@@ -746,10 +769,12 @@ func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 	for _, w := range t.Worktrees {
 		if _, err := os.Stat(w.Path); err == nil {
 			for _, hook := range m.cfg.Repo[w.Repo.Name].PreRemove {
+				step(ctx, "running %s", hook)
 				if _, err := run.In(ctx, w.Path, hookTimeout, "sh", "-c", hook); err != nil && !force {
 					return fmt.Errorf("pre_remove in %s: %w", w.Path, err)
 				}
 			}
+			step(ctx, "removing the %s worktree", filepath.Base(w.Path))
 			if err := git.RemoveWorktree(ctx, w.Repo.Path, w.Path, force); err != nil {
 				// The reason first and short: this is read in one line of the
 				// picker as often as in a terminal.
@@ -781,6 +806,7 @@ func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 		}
 	}
 	if owned {
+		step(ctx, "removing %s", t.Dir)
 		if err := os.RemoveAll(t.Dir); err != nil {
 			return err
 		}
@@ -789,6 +815,7 @@ func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 		return err
 	}
 	// Last, because the request may have come from inside it.
+	step(ctx, "closing the session")
 	if m.tmux.HasSession(ctx, t.Slug) {
 		return m.tmux.KillSession(ctx, t.Slug)
 	}
@@ -809,6 +836,7 @@ func (m *Manager) Sweep(ctx context.Context) (api.Swept, error) {
 		if t.State != store.TaskDone {
 			continue
 		}
+		step(ctx, "closing %s", t.Slug)
 		if err := m.close(ctx, t, false); err != nil {
 			out.Kept[t.Slug] = err.Error()
 			continue

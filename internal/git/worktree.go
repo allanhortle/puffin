@@ -46,16 +46,19 @@ func refExists(ctx context.Context, clone, ref string) bool {
 	return err == nil
 }
 
-// AddWorktree checks branch out at path. A branch that exists, here or on
-// origin, is used as it is; otherwise it is created from base as origin has
-// it now.
-func AddWorktree(ctx context.Context, clone, path, branch, base string) error {
-	// Best effort: being offline should not stop work from starting. The
-	// branch is fetched by name as well, on its own because it fails when the
-	// branch is new: someone else's branch is not here until it is asked for.
+// Fetch brings base and branch up to date with origin. Best effort: being
+// offline should not stop work from starting. The branch is fetched by name
+// as well, on its own because it fails when the branch is new: someone else's
+// branch is not here until it is asked for.
+func Fetch(ctx context.Context, clone, base, branch string) {
 	git(ctx, clone, "fetch", "origin", base)
 	git(ctx, clone, "fetch", "origin", "+refs/heads/"+branch+":refs/remotes/origin/"+branch)
+}
 
+// AddWorktree checks branch out at path. A branch that exists, here or on
+// origin, is used as it is; otherwise it is created from base as origin had
+// it when last fetched.
+func AddWorktree(ctx context.Context, clone, path, branch, base string) error {
 	var err error
 	switch {
 	case refExists(ctx, clone, "refs/heads/"+branch):
