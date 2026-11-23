@@ -143,7 +143,7 @@ const (
 type Icon struct{ Glyph, Colour string }
 
 var Icons = map[string]Icon{
-	AgentWorking: {"~", "yellow"},
+	AgentWorking: {"~", "colour242"},
 	AgentWaiting: {"?", "red"},
 	AgentDone:    {"•", "colour242"},
 }
