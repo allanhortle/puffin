@@ -37,10 +37,13 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
       --read REPO          a repository the task's agent may read; repeatable
       --attach REPO        give the task a worktree of REPO straight away; repeatable
       --name NAME          the task's name, instead of one made from the prompt
+      -e, --edit           write the prompt in $EDITOR
+                           REPO can be "." for the repository you are standing in
   puffin attach REPO [prompt...]
                            give a task a worktree of REPO, with its own window and agent
       --task NAME          the task, instead of the one this tmux session belongs to
       --branch BRANCH      the branch, instead of one named for the task
+      -e, --edit           write the prompt in $EDITOR
   puffin pick              one list of your tasks and the reviews asked of you, whatever
                            waits on you first. enter goes to it, starting a review if it is
                            one; ctrl-o opens the pull request; ctrl-r refetches
@@ -554,7 +557,7 @@ func parse(args []string, valued ...string) (map[string][]string, []string, erro
 		switch {
 		case a == "--":
 			return flags, append(rest, args[i+1:]...), nil
-		case !strings.HasPrefix(a, "--"):
+		case !strings.HasPrefix(a, "-") || a == "-":
 			rest = append(rest, a)
 		case takes[a]:
 			if i+1 == len(args) {
@@ -612,8 +615,91 @@ func currentTask() (string, error) {
 	return tm.CurrentSession(ctx)
 }
 
+func wantsEditor(flags map[string][]string) bool {
+	_, short := flags["-e"]
+	_, long := flags["--edit"]
+	return short || long
+}
+
+// edit opens the editor on a prompt and returns what was saved. A long
+// prompt, or one pasted from somewhere, has no business on a command line.
+func edit(start string) (string, error) {
+	file, err := os.CreateTemp("", "puffin-prompt-*.md")
+	if err != nil {
+		return "", err
+	}
+	defer os.Remove(file.Name())
+	if _, err := file.WriteString(start); err != nil {
+		return "", err
+	}
+	file.Close()
+
+	editor := os.Getenv("VISUAL")
+	if editor == "" {
+		editor = os.Getenv("EDITOR")
+	}
+	if editor == "" {
+		editor = "vi"
+	}
+	// Through the shell, because $EDITOR is allowed to carry arguments.
+	cmd := exec.Command("sh", "-c", editor+` "$1"`, "sh", file.Name())
+	cmd.Stdin, cmd.Stdout, cmd.Stderr = os.Stdin, os.Stdout, os.Stderr
+	if err := cmd.Run(); err != nil {
+		return "", fmt.Errorf("%s: %w", editor, err)
+	}
+	saved, err := os.ReadFile(file.Name())
+	if err != nil {
+		return "", err
+	}
+	prompt := strings.TrimSpace(string(saved))
+	if prompt == "" {
+		return "", errors.New("the prompt was empty, so nothing was made")
+	}
+	return prompt, nil
+}
+
+// repoNames turns "." into the repository the current directory belongs to,
+// so a task can be started from wherever the work is without naming it.
+func repoNames(names []string) ([]string, error) {
+	out := make([]string, len(names))
+	for i, name := range names {
+		out[i] = name
+		if name != "." {
+			continue
+		}
+		dir, err := os.Getwd()
+		if err != nil {
+			return nil, err
+		}
+		ctx, cancel := timeout(clientTimeout)
+		info := git.Inspect(ctx, dir)
+		if info != nil {
+			out[i] = git.RepoName(ctx, info.CommonDir)
+		}
+		cancel()
+		if info == nil || out[i] == "" {
+			return nil, errors.New("\".\" needs to be inside a clone that has an origin")
+		}
+	}
+	return out, nil
+}
+
 func newTask(args []string) error {
 	flags, rest, err := parse(args, "--read", "--attach", "--name")
+	if err != nil {
+		return err
+	}
+	prompt := strings.Join(rest, " ")
+	if wantsEditor(flags) {
+		if prompt, err = edit(prompt); err != nil {
+			return err
+		}
+	}
+	read, err := repoNames(flags["--read"])
+	if err != nil {
+		return err
+	}
+	attached, err := repoNames(flags["--attach"])
 	if err != nil {
 		return err
 	}
@@ -621,9 +707,9 @@ func newTask(args []string) error {
 	defer cancel()
 	t, err := daemonClient().NewTask(ctx, api.NewTask{
 		Name:   last(flags["--name"]),
-		Prompt: strings.Join(rest, " "),
-		Read:   flags["--read"],
-		Attach: flags["--attach"],
+		Prompt: prompt,
+		Read:   read,
+		Attach: attached,
 	})
 	if err != nil {
 		return err
@@ -639,6 +725,16 @@ func attach(args []string) error {
 	if len(rest) == 0 {
 		return errors.New("attach needs a repository")
 	}
+	names, err := repoNames(rest[:1])
+	if err != nil {
+		return err
+	}
+	prompt := strings.Join(rest[1:], " ")
+	if wantsEditor(flags) {
+		if prompt, err = edit(prompt); err != nil {
+			return err
+		}
+	}
 	task := last(flags["--task"])
 	if task == "" {
 		if task, err = currentTask(); err != nil {
@@ -649,9 +745,9 @@ func attach(args []string) error {
 	defer cancel()
 	t, err := daemonClient().Attach(ctx, api.Attach{
 		Task:   task,
-		Repo:   rest[0],
+		Repo:   names[0],
 		Branch: last(flags["--branch"]),
-		Prompt: strings.Join(rest[1:], " "),
+		Prompt: prompt,
 	})
 	if err != nil {
 		return err
