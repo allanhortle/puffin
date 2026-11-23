@@ -145,7 +145,7 @@ type Icon struct{ Glyph, Colour string }
 var Icons = map[string]Icon{
 	AgentWorking: {"~", "yellow"},
 	AgentWaiting: {"?", "red"},
-	AgentDone:    {"•", "green"},
+	AgentDone:    {"•", "colour242"},
 }
 
 // StatusStyle is a state as a session's status option holds it, styled for
