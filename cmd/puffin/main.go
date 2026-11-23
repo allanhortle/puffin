@@ -1138,14 +1138,11 @@ func agent(state string) {
 	}
 	ctx, cancel := timeout(2 * time.Second)
 	defer cancel()
-	if tm.SetAgent(ctx, pane, state) != nil {
-		return
+	// The daemon turns this into what the session shows beside its name, and
+	// recounts what is waiting on me.
+	if tm.SetAgent(ctx, pane, state) == nil {
+		daemonClient().Recount(ctx)
 	}
-	// The session shows the most pressing of its agents, beside its name.
-	if session, states, err := tm.AgentsBeside(ctx, pane); err == nil {
-		tm.SetStatus(ctx, session, task.StatusStyle(task.Foremost(states)))
-	}
-	daemonClient().Recount(ctx)
 }
 
 func adopt(args []string) error {

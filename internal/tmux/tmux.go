@@ -86,11 +86,12 @@ func (c Client) WindowIDs(ctx context.Context) ([]string, error) {
 }
 
 type Window struct {
-	ID     string
-	Path   string // the worktree root; empty for a pinned window outside any repo
-	Branch string
-	Repo   string // owner/name
-	Pinned bool
+	ID      string
+	Session string
+	Path    string // the worktree root; empty for a pinned window outside any repo
+	Branch  string
+	Repo    string // owner/name
+	Pinned  bool
 }
 
 // Windows is every window that shows a branch, ordered by id.
@@ -147,15 +148,20 @@ func (c Client) Windows(ctx context.Context) ([]Window, error) {
 	// A session that starts in one repo can open its pull request in another,
 	// and no pane ever moves there, so the directory has nothing to say about
 	// it. The pin outranks the directory.
-	out, err = c.Run(ctx, "list-windows", "-a", "-F", "#{window_id} #{"+PinOption+"}")
+	out, err = c.Run(ctx, "list-windows", "-a", "-F", "#{window_id}\t#{session_name}\t#{"+PinOption+"}")
 	if err == nil {
 		for _, line := range lines(out) {
-			id, pin, _ := strings.Cut(line, " ")
+			id, rest, _ := strings.Cut(line, "\t")
+			session, pin, _ := strings.Cut(rest, "\t")
+			if w, ok := windows[id]; ok {
+				w.Session = session
+				windows[id] = w
+			}
 			repo, branch, ok := strings.Cut(pin, "#")
 			if !ok || branch == "" || strings.Count(repo, "/") != 1 {
 				continue
 			}
-			windows[id] = Window{ID: id, Path: windows[id].Path, Branch: branch, Repo: repo, Pinned: true}
+			windows[id] = Window{ID: id, Session: session, Path: windows[id].Path, Branch: branch, Repo: repo, Pinned: true}
 		}
 	}
 
@@ -219,8 +225,8 @@ const (
 	// What the agent in a window is doing: working, waiting or done. Set by
 	// the agent's own hooks, and read back live; it is never stored.
 	AgentOption = "@puffin_agent"
-	// The same for a whole session, already styled, for the status bar: the
-	// most pressing of its windows' agents.
+	// What a session shows in front of its name, already styled: its task's
+	// pull request letter, then the most pressing of its windows' agents.
 	StatusOption   = "@puffin_status"
 	WorktreeOption = "@puffin_worktree"
 )
@@ -351,19 +357,7 @@ func (c Client) SetAgent(ctx context.Context, pane, state string) error {
 	return err
 }
 
-// AgentsBeside is the state of every agent in the session a pane belongs to,
-// with that session's name.
-func (c Client) AgentsBeside(ctx context.Context, pane string) (session string, states []string, err error) {
-	out, err := c.Run(ctx, "display-message", "-p", "-t", pane, "#{session_name}")
-	if err != nil {
-		return "", nil, err
-	}
-	session = strings.TrimSpace(out)
-	out, err = c.Run(ctx, "list-windows", "-t", exact(session)+":", "-F", "#{"+AgentOption+"}")
-	return session, lines(out), err
-}
-
-// SetStatus sets what a session shows for its agents. Empty clears it.
+// SetStatus sets what a session shows in front of its name. Empty clears it.
 func (c Client) SetStatus(ctx context.Context, session, styled string) error {
 	args := []string{"set-option", "-t", exact(session) + ":", StatusOption, styled}
 	if styled == "" {

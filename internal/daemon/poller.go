@@ -274,6 +274,14 @@ func (p *poller) cycle(ctx context.Context, force bool) (api.Cycle, error) {
 	rendered := map[string]tmux.Rendered{}
 	ids := make([]string, len(windows))
 	view := make([]api.Window, len(windows))
+	// A task's session carries its pull request letter itself, in front of
+	// its name. Only windows outside any task still get one on the tab.
+	inTask := map[string]bool{}
+	if tasks, err := p.store.Tasks(ctx); err == nil {
+		for _, t := range tasks {
+			inTask[t.Slug] = true
+		}
+	}
 	for i, w := range windows {
 		ids[i] = w.ID
 		view[i] = api.Window{ID: w.ID, Repo: w.Repo, Branch: w.Branch, Path: w.Path, Pinned: w.Pinned}
@@ -289,7 +297,9 @@ func (p *poller) cycle(ctx context.Context, force bool) (api.Cycle, error) {
 		if bottom.Unresolved > 0 {
 			letter += fmt.Sprintf("#[fg=red]%d", bottom.Unresolved)
 		}
-		rendered[w.ID] = tmux.Rendered{Letter: letter, Number: bottom.Number}
+		if !inTask[w.Session] {
+			rendered[w.ID] = tmux.Rendered{Letter: letter, Number: bottom.Number}
+		}
 		view[i].PR, view[i].Status = held.Number, held.Status
 		view[i].Bottom, view[i].BottomStatus = bottom.Number, bottom.Status
 		view[i].Stack = stacks.StackOf(held)

@@ -158,9 +158,30 @@ func StatusStyle(state string) string {
 	return "#[fg=" + icon.Colour + "]" + icon.Glyph + "#[default]"
 }
 
-// SyncStatus makes every session show the most pressing of its agents. The
-// agents' hooks set this themselves as they go; this catches whatever they
-// could not, such as a window that was closed with its agent still in it.
+// letter is a task's pull request state as its session shows it: the letter
+// of the change that speaks for the task, and how many of its threads are
+// unresolved. Clicking it is a click on that pull request.
+func letter(t store.Task) string {
+	live := Live(t)
+	if len(live) == 0 {
+		return ""
+	}
+	first := Headline(live)
+	if first.Number == 0 {
+		return ""
+	}
+	label := pr.PR{Status: first.Status, IsDraft: first.IsDraft}.Label()
+	out := "#[range=user|" + strconv.Itoa(first.Number) + "]#[fg=" + label.Colour + "]" + label.Letter
+	if first.Unresolved > 0 {
+		out += "#[fg=red]" + strconv.Itoa(first.Unresolved)
+	}
+	return out + "#[norange]#[default]"
+}
+
+// SyncStatus makes every session show, in front of its name, where its task's
+// pull request stands and what its agents are doing: B? is building with an
+// agent asking, D• a draft whose agent has finished. A session that is not a
+// task shows its agents alone.
 func (m *Manager) SyncStatus(ctx context.Context) error {
 	agents, err := m.tmux.Agents(ctx)
 	if err != nil {
@@ -170,8 +191,16 @@ func (m *Manager) SyncStatus(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	tasks, err := m.store.Tasks(ctx)
+	if err != nil {
+		return err
+	}
+	letters := map[string]string{}
+	for _, t := range tasks {
+		letters[t.Slug] = letter(t)
+	}
 	for session, have := range shown {
-		if want := StatusStyle(Foremost(agents[session])); want != have {
+		if want := letters[session] + StatusStyle(Foremost(agents[session])); want != have {
 			if err := m.tmux.SetStatus(ctx, session, want); err != nil {
 				return err
 			}
