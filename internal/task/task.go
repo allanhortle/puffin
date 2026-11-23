@@ -176,9 +176,10 @@ func (m *Manager) freeSlug(ctx context.Context, want string) (string, error) {
 	}
 }
 
-// New makes a task and its session. With nothing attached, the root window
-// runs an agent on the prompt. With something attached, the prompt goes to
-// the agent in the first worktree instead and the root window is a shell.
+// New makes a task and its session. With nothing attached, its one window
+// runs an agent on the prompt at the task's root. With something attached,
+// the windows are the worktrees, and the prompt goes to the agent in the
+// first.
 func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
@@ -225,12 +226,13 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 		return store.Task{}, err
 	}
 
-	rootPrompt := prompt
-	if len(attach) > 0 {
-		rootPrompt = ""
-	}
-	if err := m.openSession(ctx, t, len(attach) == 0, rootPrompt); err != nil {
-		return t, err
+	// An exploration is an agent at the task's root. Anything attached gets
+	// a window of its own, and the first of those opens the session, so a
+	// task that starts as work has no empty window in front of it.
+	if len(attach) == 0 {
+		if err := m.openSession(ctx, t, prompt); err != nil {
+			return t, err
+		}
 	}
 	for i, r := range attach {
 		p := ""
@@ -295,9 +297,6 @@ func (m *Manager) Review(ctx context.Context, repo string, number int) (store.Ta
 	}
 	if err := m.store.CreateTask(ctx, &t, time.Now()); err != nil {
 		return store.Task{}, err
-	}
-	if err := m.openSession(ctx, t, false, ""); err != nil {
-		return t, err
 	}
 	if err := m.attach(ctx, t, r, found.Head, m.cfg.ReviewPrompt); err != nil {
 		return t, err
@@ -413,17 +412,19 @@ func savePrompt(t store.Task, name, prompt string) (string, error) {
 	return file, os.WriteFile(file, []byte(prompt+"\n"), 0o644)
 }
 
-// openSession makes the task's session, with its root window.
-func (m *Manager) openSession(ctx context.Context, t store.Task, withAgent bool, prompt string) error {
+func (m *Manager) bind(ctx context.Context, t store.Task) error {
+	return m.tmux.SetSessionOption(ctx, t.Slug, tmux.TaskOption, strconv.FormatInt(t.ID, 10))
+}
+
+// openSession makes the session of a task that has no worktree: one window,
+// with an agent at the task's root.
+func (m *Manager) openSession(ctx context.Context, t store.Task, prompt string) error {
 	pane, err := m.tmux.NewSession(ctx, t.Slug, rootWindow, t.Dir)
 	if err != nil {
 		return err
 	}
-	if err := m.tmux.SetSessionOption(ctx, t.Slug, tmux.TaskOption, strconv.FormatInt(t.ID, 10)); err != nil {
+	if err := m.bind(ctx, t); err != nil {
 		return err
-	}
-	if !withAgent {
-		return nil
 	}
 	file, err := savePrompt(t, rootWindow, prompt)
 	if err != nil {
@@ -455,7 +456,14 @@ func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree
 		placed = placed || strings.Contains(p.Command, setupToken)
 	}
 
-	window, pane, err := m.tmux.NewWindow(ctx, t.Slug, name, w.Path)
+	// The task's first window is what makes its session.
+	var window, pane string
+	if m.tmux.HasSession(ctx, t.Slug) {
+		window, pane, err = m.tmux.NewWindow(ctx, t.Slug, name, w.Path)
+	} else if pane, err = m.tmux.NewSession(ctx, t.Slug, name, w.Path); err == nil {
+		window = pane // a pane names its window well enough to set an option on it
+		err = m.bind(ctx, t)
+	}
 	if err != nil {
 		return err
 	}
@@ -503,8 +511,8 @@ func (m *Manager) Ensure(ctx context.Context, slug string) (store.Task, error) {
 }
 
 func (m *Manager) ensure(ctx context.Context, t store.Task) error {
-	if !m.tmux.HasSession(ctx, t.Slug) {
-		if err := m.openSession(ctx, t, len(t.Worktrees) == 0, ""); err != nil {
+	if len(t.Worktrees) == 0 && !m.tmux.HasSession(ctx, t.Slug) {
+		if err := m.openSession(ctx, t, ""); err != nil {
 			return err
 		}
 	}
