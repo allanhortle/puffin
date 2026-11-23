@@ -102,13 +102,23 @@ type PR struct {
 	FetchedAt *time.Time `json:"fetched_at"`
 }
 
-// NewTask asks for a task. Read names repositories its root agent may read;
-// Attach names repositories it gets a worktree of straight away.
+// RepoRef names a repository. Path is its clone, when whoever is asking is
+// standing in it: that is how a repository outside the configured roots can
+// be named at all, and where a task that works in place will live.
+type RepoRef struct {
+	Name string `json:"name,omitempty"` // owner/name, or just the name
+	Path string `json:"path,omitempty"`
+}
+
+// NewTask asks for a task in Repos. What that means is the repository's to
+// say: one configured for worktrees gets a branch and a worktree, any other
+// is worked on in place. Bare asks for neither: an agent that can read the
+// repositories and nothing more.
 type NewTask struct {
-	Name   string   `json:"name,omitempty"`
-	Prompt string   `json:"prompt,omitempty"`
-	Read   []string `json:"read,omitempty"`
-	Attach []string `json:"attach,omitempty"`
+	Name   string    `json:"name,omitempty"`
+	Prompt string    `json:"prompt,omitempty"`
+	Repos  []RepoRef `json:"repos,omitempty"`
+	Bare   bool      `json:"bare,omitempty"`
 }
 
 // Attach asks for a worktree of Repo in Task, on Branch, or on a branch named

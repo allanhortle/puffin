@@ -13,9 +13,15 @@ agent = "claude"
 # default server.
 # tmux_socket = "work"
 
-# What a worktree of one repository needs, keyed by owner/name. Nothing here
-# runs for a task until a worktree of this repository is attached to it.
+# The repository a new task is for when `puffin new` is run outside any.
+# default_repo = "owner/name"
+
+# What one repository needs, keyed by owner/name.
 [repo."owner/name"]
+# Work here happens on branches, each task in a worktree of its own. Without
+# this the repository is worked on in place: a task is a session in the clone
+# itself, and nothing below applies.
+worktree = true
 # Globs, relative to the main clone, copied into a new worktree.
 copy = ["packages/*/.env", "packages/*/.env.local"]
 # Run in a new worktree.

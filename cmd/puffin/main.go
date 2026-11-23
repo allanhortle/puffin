@@ -36,12 +36,15 @@ const version = "0.0.1"
 
 const help = `puffin: tasks, worktrees and pull requests, in tmux
 
-  puffin new [prompt...]   make a task: a directory, a tmux session, and an agent on the prompt
-      --read REPO          a repository the task's agent may read; repeatable
-      --attach REPO        give the task a worktree of REPO straight away; repeatable
+  puffin new [prompt...]   make a task for the repository you are standing in, and an agent
+                           on the prompt. the repository's config says what kind: with
+                           "worktree = true" a branch and a worktree, otherwise a session
+                           in the clone itself, which is returned to if it already exists
+      -r, --repo REPO      a repository other than the one you are in; repeat it for a
+                           task across several, side by side under one agent
+      --bare               no worktree: an agent that can only read the repository
       --name NAME          the task's name, instead of one made from the prompt
       -e, --edit           write the prompt in $EDITOR
-                           REPO can be "." for the repository you are standing in
   puffin attach REPO [prompt...]
                            give a task a worktree of REPO, with its own window and agent
       --task NAME          the task, instead of the one this tmux session belongs to
@@ -53,9 +56,8 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin pr N              make, or return to, the task for a pull request: a worktree on its
                            branch. one of yours to carry on with, or one to review, with an
                            agent started on the review. OWNER/REPO#N if N alone is ambiguous
-  puffin here [PATH]       make a task that lives in a directory as it is, here or at PATH:
-                           a session and an agent, no worktree, no pull request to follow.
-                           for a clone you work on directly. closing it leaves the directory
+  puffin here [PATH]       make a task that lives in any directory as it is, here or at PATH,
+                           git or not: a session and an agent. closing it leaves the directory
       --name NAME          the task's name, instead of the directory's
   puffin adopt [PATH]      make a task out of an existing worktree, here or at PATH, by
                            moving it into the task as it stands
@@ -777,10 +779,33 @@ func repoNames(names []string) ([]string, error) {
 	return out, nil
 }
 
+// standing is the repository the current directory belongs to: its name, if
+// it has an origin to take one from, and its clone.
+func standing() (api.RepoRef, bool) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return api.RepoRef{}, false
+	}
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	info := git.Inspect(ctx, dir)
+	if info == nil {
+		return api.RepoRef{}, false
+	}
+	// The clone, not the worktree: a worktree's common directory is its
+	// clone's .git.
+	return api.RepoRef{Name: git.RepoName(ctx, info.CommonDir), Path: filepath.Dir(info.CommonDir)}, true
+}
+
 func newTask(args []string) error {
-	flags, rest, err := parse(args, "--read", "--attach", "--name")
+	flags, rest, err := parse(args, "-r", "--repo", "--name")
 	if err != nil {
 		return err
+	}
+	for _, old := range []string{"--attach", "--read"} {
+		if _, used := flags[old]; used {
+			return fmt.Errorf("%s is gone: name a repository with -r, and add --bare for a task with no worktree", old)
+		}
 	}
 	prompt := strings.Join(rest, " ")
 	if wantsEditor(flags) {
@@ -788,22 +813,31 @@ func newTask(args []string) error {
 			return err
 		}
 	}
-	read, err := repoNames(flags["--read"])
-	if err != nil {
-		return err
+	// A task is for the repository you are standing in, unless you say
+	// otherwise. Standing in none is not an error: the daemon falls back to
+	// the configured default, and to a bare task after that.
+	var repos []api.RepoRef
+	for _, name := range append(flags["-r"], flags["--repo"]...) {
+		if name != "." {
+			repos = append(repos, api.RepoRef{Name: name})
+			continue
+		}
+		ref, ok := standing()
+		if !ok {
+			return errors.New("\".\" needs to be inside a repository")
+		}
+		repos = append(repos, ref)
 	}
-	attached, err := repoNames(flags["--attach"])
-	if err != nil {
-		return err
+	if len(repos) == 0 {
+		if ref, ok := standing(); ok {
+			repos = []api.RepoRef{ref}
+		}
 	}
+	_, bare := flags["--bare"]
+
 	var t store.Task
 	err = slow("making the task", func(ctx context.Context, c *client.Client) (err error) {
-		t, err = c.NewTask(ctx, api.NewTask{
-			Name:   last(flags["--name"]),
-			Prompt: prompt,
-			Read:   read,
-			Attach: attached,
-		})
+		t, err = c.NewTask(ctx, api.NewTask{Name: last(flags["--name"]), Prompt: prompt, Repos: repos, Bare: bare})
 		return err
 	})
 	if err != nil {

@@ -35,6 +35,9 @@ func TestExampleParses(t *testing.T) {
 	if !ok {
 		t.Fatalf("no owner/name section: %+v", cfg.Repo)
 	}
+	if !repo.Worktree {
+		t.Error("the example repository is not marked for worktrees")
+	}
 	if len(repo.Copy) == 0 || len(repo.PreRemove) == 0 || len(repo.Panes) != 3 {
 		t.Errorf("repo section incomplete: %+v", repo)
 	}

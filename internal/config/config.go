@@ -28,6 +28,8 @@ type Config struct {
 	// The name of the tmux server to talk to, as given to `tmux -L`. Empty
 	// means whichever server tmux would pick on its own.
 	TmuxSocket string `toml:"tmux_socket"`
+	// The repository a new task is for when it is not started inside one.
+	DefaultRepo string `toml:"default_repo"`
 	// Keyed by owner/name.
 	Repo map[string]Repo `toml:"repo"`
 }
@@ -35,6 +37,10 @@ type Config struct {
 // Repo is what a fresh worktree of one repository needs before it is usable,
 // and what has to happen before it is taken away.
 type Repo struct {
+	// Whether work in this repository happens on branches, each in a
+	// worktree of its own. Without it the repository is worked on in place:
+	// a task there is a session in the clone itself, and nothing is made.
+	Worktree bool `toml:"worktree"`
 	// Globs, relative to the main clone, copied into a new worktree.
 	Copy []string `toml:"copy"`
 	// Shell commands run in a new worktree, in the pane whose command is

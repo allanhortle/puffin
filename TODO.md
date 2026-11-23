@@ -11,7 +11,7 @@ Written 2026-11-23, at the end of the session that built puffin.
   removed, puffin's five added. There is no `puffin` command that installs
   them, so a new machine needs them added again.
 - **`wmt`/`wmn` in `.zshrc` still run workmux.** The replacement is
-  `puffin new --attach . -e`.
+  `puffin new -e`.
 - **`prstatusd` and `prstatusd.mjs` are still in dotfiles**, unused, and
   `~/.cache/prstatus/` is stale. `prstatusd.mjs` had uncommitted edits, which
   is why it was not deleted.
@@ -41,8 +41,10 @@ Written 2026-11-23, at the end of the session that built puffin.
   by directory.
 - **Names are word-chopped**, not model-generated as workmux's `auto_name` was,
   and an explicit `--name` or `rename` is cut to four words like any other.
-- **`--attach` of the same repo twice in one `new` fails**: both want the same
+- **`-r` of the same repo twice in one `new` fails**: both want the same
   branch.
+- **A task across several repos loses its root agent** when its session is
+  rebuilt, like an exploration that had a repo attached.
 - **No notifications.** The only signals are the list and the status bar.
 - **The left status needs the daemon.** With it stopped, the status bar stops
   updating.

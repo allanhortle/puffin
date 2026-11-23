@@ -24,16 +24,36 @@ It replaces `prstatusd` (PR status in the tmux bar) and most of `workmux`
 One binary: `puffin daemon` is the only writer to the SQLite database, and
 every other command is a thin client talking to it over a unix socket.
 
-## Kinds of task
+## Starting a task
 
-| Start it with | What you get |
+```
+puffin new [-e] [prompt…]
+```
+
+makes a task for the repository you are standing in. What kind of task is the
+repository's to say, in the config, not something to choose each time:
+
+| The repository | What `puffin new` gives you |
 |---|---|
-| `puffin new [--read REPO] prompt…` | Exploration: an agent at the task root, no branch |
-| `puffin new --attach REPO prompt…` | Work: a branch, a worktree, an agent in it. `-e` writes the prompt in `$EDITOR`; `REPO` can be `.` |
+| has `worktree = true` | a branch, a worktree, and an agent in it on the prompt |
+| anything else | a session in the clone itself, worked on in place. One per clone: asking again goes to it |
+| none (not in a repo) | `default_repo` from the config, or failing that an agent with no repo |
+
+- `-r REPO` names a repository other than the one you are in. Repeat it for
+  work across several: each gets a worktree side by side in the task's
+  directory, and one agent at the root gets the prompt.
+- `--bare` skips the worktree: an agent that can read the repository and
+  nothing more, for a question that is not going to become a change.
+- `-e` writes the prompt in `$EDITOR`.
+
+Other ways in:
+
+| Command | What you get |
+|---|---|
 | `puffin attach REPO` | Adds a worktree to the task you are in |
 | `puffin pr N` | A task from an open PR: yours to carry on, or one to review (agent starts on `/code-review`) |
 | `puffin adopt [PATH]` | Moves an existing worktree into a new task as it stands |
-| `puffin here [PATH]` | In place: a session and agent in a directory puffin does not own. No worktree, no PR tracking |
+| `puffin here [PATH]` | A session in any directory, git or not |
 
 Then: `puffin pick` (the list), `tasks [NAME]`, `switch NAME`, `rename`,
 `close [--force]`, `sweep`. `puffin help` has the rest.
@@ -71,7 +91,8 @@ puffin start
 
 - **Config**: `~/.config/puffin/config.toml`; see `config.example.toml`.
   `roots` are scanned for clones, and each `[repo."owner/name"]` section says
-  what a new worktree needs (`copy`, `setup`, `pre_remove`, `panes`).
+  whether the repository uses worktrees and what a new one needs (`copy`,
+  `setup`, `pre_remove`, `panes`).
 - **tmux**: start the daemon from `.tmux.conf`, bind `puffin pick` to a key,
   and use `@puffin_status`, `@puffin_attention`, `@prreview` and `@pr` in the
   status formats.

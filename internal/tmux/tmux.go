@@ -310,6 +310,11 @@ func (c Client) Type(ctx context.Context, pane, command string) error {
 	return err
 }
 
+func (c Client) SelectWindow(ctx context.Context, window string) error {
+	_, err := c.Run(ctx, "select-window", "-t", window)
+	return err
+}
+
 func (c Client) SelectPane(ctx context.Context, pane string) error {
 	_, err := c.Run(ctx, "select-pane", "-t", pane)
 	return err

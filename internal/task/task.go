@@ -190,15 +190,80 @@ func (m *Manager) freeSlug(ctx context.Context, want string) (string, error) {
 	}
 }
 
-// New makes a task and its session. With nothing attached, its one window
-// runs an agent on the prompt at the task's root. With something attached,
-// the windows are the worktrees, and the prompt goes to the agent in the
-// first.
+// placed is a repository a task was asked for, and the clone the asker was
+// standing in, if they were standing in one.
+type placed struct {
+	repo store.Repo
+	dir  string
+}
+
+// place resolves what a task was asked for. A repository named by where the
+// asker stands is registered on the spot if it was not known, which is what
+// lets one outside the configured roots be worked on at all.
+func (m *Manager) place(ctx context.Context, ref api.RepoRef) (placed, error) {
+	if ref.Name == "" {
+		// A repository with no origin has no name to be configured under,
+		// so it can only be worked on where it is.
+		return placed{dir: ref.Path}, nil
+	}
+	r, err := m.repo(ctx, ref.Name)
+	if err != nil {
+		if ref.Path == "" {
+			return placed{}, err
+		}
+		if err := m.store.SaveClone(ctx, ref.Name, ref.Path, git.DefaultBranch(ctx, ref.Path)); err != nil {
+			return placed{}, err
+		}
+		if r, err = m.repo(ctx, ref.Name); err != nil {
+			return placed{}, err
+		}
+	}
+	dir := ref.Path
+	if dir == "" {
+		dir = r.Path
+	}
+	return placed{repo: r, dir: dir}, nil
+}
+
+// New makes a task. What kind is the repository's to say, not the caller's:
+//
+//   - A repository configured for worktrees gets a branch and a worktree,
+//     with an agent in it on the prompt. Several of them share the task,
+//     side by side in its directory, with one agent above them all.
+//   - Any other repository is worked on in place: the task is a session in
+//     the clone itself. There is one per clone, so asking again goes to it.
+//   - Bare, or with no repository at all, the task is an agent at its own
+//     root, able to read the repositories and nothing more.
 func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	prompt := strings.TrimSpace(req.Prompt)
+	refs := req.Repos
+	if len(refs) == 0 && m.cfg.DefaultRepo != "" {
+		refs = []api.RepoRef{{Name: m.cfg.DefaultRepo}}
+	}
+	// Resolve everything that can be refused before anything is made.
+	var places []placed
+	for _, ref := range refs {
+		p, err := m.place(ctx, ref)
+		if err != nil {
+			return store.Task{}, err
+		}
+		places = append(places, p)
+	}
+	if !req.Bare {
+		for _, p := range places {
+			if m.cfg.Repo[p.repo.Name].Worktree {
+				continue
+			}
+			if len(places) > 1 {
+				return store.Task{}, fmt.Errorf("%s is worked on in place, so it cannot share a task; set `worktree = true` for it in the config to give it worktrees", filepath.Base(p.dir))
+			}
+			return m.here(ctx, p.dir, req.Name, prompt)
+		}
+	}
+
 	want := Slugify(req.Name)
 	if want == "" {
 		want = Slugify(prompt)
@@ -210,27 +275,18 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 	if err != nil {
 		return store.Task{}, err
 	}
-
-	// Resolve everything that can be refused before anything is made.
 	t := store.Task{Slug: slug, Dir: filepath.Join(m.cfg.TasksDir, slug), Flow: "work",
 		Prompt: prompt, LinearID: strings.ToUpper(linearID.FindString(prompt))}
 	if line, _, _ := strings.Cut(prompt, "\n"); line != "" {
 		t.Title = line
 	}
-	for _, name := range req.Read {
-		r, err := m.repo(ctx, name)
-		if err != nil {
-			return store.Task{}, err
+	if req.Bare {
+		for _, p := range places {
+			if p.repo.Name != "" {
+				t.Reads = append(t.Reads, p.repo)
+			}
 		}
-		t.Reads = append(t.Reads, r)
-	}
-	var attach []store.Repo
-	for _, name := range req.Attach {
-		r, err := m.repo(ctx, name)
-		if err != nil {
-			return store.Task{}, err
-		}
-		attach = append(attach, r)
+		places = nil
 	}
 
 	if err := os.MkdirAll(filepath.Join(t.Dir, stateDir), 0o755); err != nil {
@@ -240,24 +296,48 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 		return store.Task{}, err
 	}
 
-	// An exploration is an agent at the task's root. Anything attached gets
-	// a window of its own, and the first of those opens the session, so a
-	// task that starts as work has no empty window in front of it.
-	if len(attach) == 0 {
+	switch len(places) {
+	case 0:
 		if err := m.openSession(ctx, t, prompt); err != nil {
 			return t, err
 		}
-	}
-	for i, r := range attach {
-		p := ""
-		if i == 0 {
-			p = prompt
+	case 1:
+		// The worktree's window is the session's first, and its agent has
+		// the prompt.
+		if err := m.attach(ctx, t, places[0].repo, slug, prompt); err != nil {
+			return t, err
 		}
-		if err := m.attach(ctx, t, r, slug, p); err != nil {
+	default:
+		for _, p := range places {
+			if err := m.attach(ctx, t, p.repo, slug, ""); err != nil {
+				return t, err
+			}
+		}
+		// Work that spans repositories is one piece of work, so it is given
+		// to one agent, at the task's root, where each worktree is a
+		// directory beside the others.
+		if err := m.openRoot(ctx, t, prompt); err != nil {
 			return t, err
 		}
 	}
 	return m.store.Task(ctx, slug)
+}
+
+// openRoot adds a window at the task's root to a session that already
+// exists, with an agent in it on the prompt, and brings it to the front.
+func (m *Manager) openRoot(ctx context.Context, t store.Task, prompt string) error {
+	file, err := m.savePrompt(t, rootWindow, prompt)
+	if err != nil {
+		return err
+	}
+	window, pane, err := m.tmux.NewWindow(ctx, t.Slug, rootWindow, t.Dir)
+	if err != nil {
+		return err
+	}
+	if err := m.tmux.Type(ctx, pane, m.agent(nil, file)); err != nil {
+		return err
+	}
+	return m.tmux.SelectWindow(ctx, window)
 }
 
 // Review makes a task from a pull request. For one asking for my review, that
@@ -472,11 +552,24 @@ func (m *Manager) agent(readable []store.Repo, promptFile string) string {
 	return strings.Join(parts, " ")
 }
 
-func savePrompt(t store.Task, name, prompt string) (string, error) {
+// promptFile is where a prompt is kept for the agent to read as it starts. A
+// task that lives in a directory it does not own keeps nothing there, so its
+// prompts are kept beside the task directories instead.
+func (m *Manager) promptFile(t store.Task, name string) string {
+	if t.InPlace {
+		return filepath.Join(m.cfg.TasksDir, ".prompts", t.Slug+"."+name+".md")
+	}
+	return filepath.Join(t.Dir, stateDir, name+".prompt.md")
+}
+
+func (m *Manager) savePrompt(t store.Task, name, prompt string) (string, error) {
 	if prompt == "" {
 		return "", nil
 	}
-	file := filepath.Join(t.Dir, stateDir, name+".prompt.md")
+	file := m.promptFile(t, name)
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
+		return "", err
+	}
 	return file, os.WriteFile(file, []byte(prompt+"\n"), 0o644)
 }
 
@@ -498,7 +591,7 @@ func (m *Manager) openSession(ctx context.Context, t store.Task, prompt string) 
 	if err := m.bind(ctx, t); err != nil {
 		return err
 	}
-	file, err := savePrompt(t, rootWindow, prompt)
+	file, err := m.savePrompt(t, rootWindow, prompt)
 	if err != nil {
 		return err
 	}
@@ -515,7 +608,7 @@ func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree
 		panes = []config.Pane{{Command: agentToken, Focus: true}}
 	}
 	name := filepath.Base(w.Path)
-	file, err := savePrompt(t, name, prompt)
+	file, err := m.savePrompt(t, name, prompt)
 	if err != nil {
 		return err
 	}
@@ -605,44 +698,50 @@ func (m *Manager) ensure(ctx context.Context, t store.Task) error {
 }
 
 // Here makes a task out of a directory as it is: a session and an agent in
-// it, and nothing else. It is for a clone that is worked on directly, with
-// no worktree and no pull request to follow. The directory is not puffin's:
-// nothing in it is made, moved or removed, now or when the task is closed.
+// it, and nothing else. The directory is not puffin's: nothing in it is made,
+// moved or removed, now or when the task is closed. A directory has one such
+// task, so asking for it again returns the one there is.
 func (m *Manager) Here(ctx context.Context, req api.Here) (store.Task, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
+	return m.here(ctx, req.Path, req.Name, "")
+}
 
-	if info, err := os.Stat(req.Path); err != nil || !info.IsDir() {
-		return store.Task{}, fmt.Errorf("%s is not a directory", req.Path)
+func (m *Manager) here(ctx context.Context, dir, name, prompt string) (store.Task, error) {
+	if info, err := os.Stat(dir); err != nil || !info.IsDir() {
+		return store.Task{}, fmt.Errorf("%s is not a directory", dir)
 	}
-	if rel, err := filepath.Rel(m.cfg.TasksDir, req.Path); err == nil && !strings.HasPrefix(rel, "..") {
-		return store.Task{}, fmt.Errorf("%s belongs to a task already", req.Path)
+	if rel, err := filepath.Rel(m.cfg.TasksDir, dir); err == nil && !strings.HasPrefix(rel, "..") {
+		return store.Task{}, fmt.Errorf("%s belongs to a task already", dir)
 	}
 	tasks, err := m.store.Tasks(ctx)
 	if err != nil {
 		return store.Task{}, err
 	}
 	for _, t := range tasks {
-		if t.InPlace && t.Dir == req.Path {
-			return store.Task{}, fmt.Errorf("%s is already the task %q", req.Path, t.Slug)
+		if t.InPlace && t.Dir == dir {
+			return t, m.ensure(ctx, t)
 		}
 	}
-	want := Slugify(req.Name)
+	want := Slugify(name)
 	if want == "" {
-		want = Slugify(filepath.Base(req.Path))
+		want = Slugify(filepath.Base(dir))
 	}
 	if want == "" {
-		return store.Task{}, fmt.Errorf("%s has nothing in it a name can be made from; give one with --name", req.Path)
+		return store.Task{}, fmt.Errorf("%s has nothing in it a name can be made from; give one with --name", dir)
 	}
 	slug, err := m.freeSlug(ctx, want)
 	if err != nil {
 		return store.Task{}, err
 	}
-	t := store.Task{Slug: slug, Dir: req.Path, Flow: "work", InPlace: true}
+	t := store.Task{Slug: slug, Dir: dir, Flow: "work", InPlace: true, Prompt: prompt}
+	if line, _, _ := strings.Cut(prompt, "\n"); line != "" {
+		t.Title = line
+	}
 	if err := m.store.CreateTask(ctx, &t, time.Now()); err != nil {
 		return store.Task{}, err
 	}
-	if err := m.openSession(ctx, t, ""); err != nil {
+	if err := m.openSession(ctx, t, prompt); err != nil {
 		return t, err
 	}
 	return m.store.Task(ctx, slug)
@@ -804,6 +903,9 @@ func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 		if err := m.store.SetTaskState(ctx, t.ID, t.State, state, time.Now()); err != nil {
 			return err
 		}
+	}
+	if !owned {
+		os.Remove(m.promptFile(t, rootWindow))
 	}
 	if owned {
 		step(ctx, "removing %s", t.Dir)
