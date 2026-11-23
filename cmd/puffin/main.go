@@ -49,6 +49,9 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
                            one; ctrl-o opens the pull request; ctrl-r refetches
   puffin review OWNER/REPO#N
                            start, or return to, the review of a pull request
+  puffin adopt [PATH]      make a task out of an existing worktree, here or at PATH, by
+                           moving it into the task as it stands
+      --name NAME          the task's name, instead of the branch's
   puffin tasks [NAME]      every task, or one, with its worktrees and pull requests; --json
   puffin switch NAME       go to a task's session, bringing it back if it has gone
   puffin rename [NAME] NEW give a task and its session another name; the directory and
@@ -135,6 +138,8 @@ func main() {
 		err = switchTo(arg)
 	case "close":
 		err = closeTask(args)
+	case "adopt":
+		err = adopt(args)
 	case "rename":
 		err = rename(args)
 	case "sweep":
@@ -1071,6 +1076,27 @@ func closeTask(args []string) error {
 	ctx, cancel := timeout(taskTimeout)
 	defer cancel()
 	return daemonClient().Close(ctx, slug, force)
+}
+
+func adopt(args []string) error {
+	flags, rest, err := parse(args, "--name")
+	if err != nil {
+		return err
+	}
+	path := "."
+	if len(rest) > 0 {
+		path = rest[0]
+	}
+	if path, err = filepath.Abs(path); err != nil {
+		return err
+	}
+	ctx, cancel := timeout(taskTimeout)
+	defer cancel()
+	t, err := daemonClient().Adopt(ctx, api.Adopt{Path: path, Name: last(flags["--name"])})
+	if err != nil {
+		return err
+	}
+	return goTo(t.Slug)
 }
 
 func rename(args []string) error {

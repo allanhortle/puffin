@@ -531,6 +531,68 @@ func (m *Manager) ensure(ctx context.Context, t store.Task) error {
 	return nil
 }
 
+// Adopt turns a worktree that was made some other way into a task. The
+// worktree is moved into the task's directory as it stands, uncommitted and
+// untracked files included, so nothing has to be installed again. The task
+// is named for the branch unless a name is given.
+func (m *Manager) Adopt(ctx context.Context, req api.Adopt) (store.Task, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	info := git.Inspect(ctx, req.Path)
+	if info == nil {
+		return store.Task{}, fmt.Errorf("%s is not inside a git worktree", req.Path)
+	}
+	if info.Branch == "" {
+		return store.Task{}, fmt.Errorf("%s has no branch checked out", info.Root)
+	}
+	if rel, err := filepath.Rel(m.cfg.TasksDir, info.Root); err == nil && !strings.HasPrefix(rel, "..") {
+		return store.Task{}, fmt.Errorf("%s already belongs to a task", info.Root)
+	}
+	name := git.RepoName(ctx, info.CommonDir)
+	if name == "" {
+		return store.Task{}, fmt.Errorf("%s has no origin to say which repository it is", info.Root)
+	}
+	r, err := m.repo(ctx, name)
+	if err != nil {
+		return store.Task{}, err
+	}
+	if info.Root == filepath.Dir(info.CommonDir) {
+		return store.Task{}, fmt.Errorf("%s is a clone, not a worktree; a clone stays where it is", info.Root)
+	}
+
+	want := Slugify(req.Name)
+	if want == "" {
+		want = Slugify(info.Branch)
+	}
+	slug, err := m.freeSlug(ctx, want)
+	if err != nil {
+		return store.Task{}, err
+	}
+	t := store.Task{Slug: slug, Dir: filepath.Join(m.cfg.TasksDir, slug), Flow: "work"}
+	if err := os.MkdirAll(filepath.Join(t.Dir, stateDir), 0o755); err != nil {
+		return store.Task{}, err
+	}
+	path := filepath.Join(t.Dir, short(r.Name))
+	// Run from the clone the worktree belongs to, which need not be the one
+	// puffin makes new worktrees from.
+	if err := git.MoveWorktree(ctx, filepath.Dir(info.CommonDir), info.Root, path); err != nil {
+		os.RemoveAll(t.Dir) // holds nothing but the directory just made
+		return store.Task{}, err
+	}
+	if err := m.store.CreateTask(ctx, &t, time.Now()); err != nil {
+		return store.Task{}, err
+	}
+	w := store.Worktree{TaskID: t.ID, Repo: r, Path: path, Ref: info.Branch}
+	if err := m.store.AddWorktree(ctx, &w, r.DefaultBranch, time.Now()); err != nil {
+		return t, err
+	}
+	if err := m.openWindow(ctx, t, w, false, ""); err != nil {
+		return t, err
+	}
+	return m.store.Task(ctx, slug)
+}
+
 // Rename gives a task, and its session, another name. The directory and the
 // branches stay as they are: moving a directory would cost each agent in it
 // its history, which is kept by path, and a branch may already be pushed.

@@ -124,6 +124,7 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("POST "+api.SweepPath, d.sweep)
 	mux.HandleFunc("POST "+api.ReviewPath, d.review)
 	mux.HandleFunc("POST "+api.RenamePath, d.rename)
+	mux.HandleFunc("POST "+api.AdoptPath, d.adopt)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -316,6 +317,18 @@ func (d *daemon) review(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	number, _ := strconv.Atoi(q.Get("number"))
 	t, err := d.tasks.Review(ctx, q.Get("repo"), number)
+	answer(w, t, err)
+}
+
+func (d *daemon) adopt(w http.ResponseWriter, r *http.Request) {
+	var req api.Adopt
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		reply(w, http.StatusBadRequest, api.Error{Error: err.Error()})
+		return
+	}
+	ctx, cancel := detached(r)
+	defer cancel()
+	t, err := d.tasks.Adopt(ctx, req)
 	answer(w, t, err)
 }
 

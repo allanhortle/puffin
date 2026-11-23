@@ -72,6 +72,13 @@ func AddWorktree(ctx context.Context, clone, path, branch, base string) error {
 	return err
 }
 
+// MoveWorktree relocates a worktree, with everything in it that git does not
+// track, and tells the clone where it went.
+func MoveWorktree(ctx context.Context, clone, from, to string) error {
+	_, err := git(ctx, clone, "worktree", "move", from, to)
+	return err
+}
+
 // RemoveWorktree refuses a worktree with uncommitted work unless forced.
 func RemoveWorktree(ctx context.Context, clone, path string, force bool) error {
 	args := []string{"worktree", "remove"}

@@ -121,6 +121,11 @@ func (c *Client) Review(ctx context.Context, repo string, number int) (store.Tas
 	return t, c.call(ctx, http.MethodPost, api.ReviewPath+"?"+q.Encode(), &t)
 }
 
+func (c *Client) Adopt(ctx context.Context, req api.Adopt) (store.Task, error) {
+	var t store.Task
+	return t, c.send(ctx, api.AdoptPath, req, &t)
+}
+
 func (c *Client) Rename(ctx context.Context, task, to string) (store.Task, error) {
 	var t store.Task
 	q := url.Values{"task": {task}, "to": {to}}

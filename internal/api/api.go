@@ -24,6 +24,7 @@ const (
 	SweepPath    = "/v1/tasks/sweep"  // POST
 	ReviewPath   = "/v1/tasks/review" // POST ?repo=&number=
 	RenamePath   = "/v1/tasks/rename" // POST ?task=&to=
+	AdoptPath    = "/v1/tasks/adopt"  // POST
 )
 
 type Status struct {
@@ -113,6 +114,12 @@ type Attach struct {
 	Repo   string `json:"repo"`
 	Branch string `json:"branch,omitempty"`
 	Prompt string `json:"prompt,omitempty"`
+}
+
+// Adopt asks for the worktree at Path to become a task.
+type Adopt struct {
+	Path string `json:"path"`
+	Name string `json:"name,omitempty"`
 }
 
 // Swept is what a sweep did: the tasks it closed, and why it kept the rest.
