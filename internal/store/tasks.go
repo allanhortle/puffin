@@ -38,6 +38,9 @@ type TaskChange struct {
 	Number int    `json:"number,omitempty"`
 	State  string `json:"state"`
 	Status string `json:"status"`
+	// Review threads nobody has resolved.
+	Unresolved int  `json:"unresolved,omitempty"`
+	IsDraft    bool `json:"is_draft,omitempty"`
 }
 
 type Task struct {
@@ -185,7 +188,8 @@ func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 	}
 
 	changes, err := s.DB.QueryContext(ctx, `
-		SELECT c.task_id, r.name_with_owner, c.head_ref, coalesce(c.pr_number, 0), c.state, c.status
+		SELECT c.task_id, r.name_with_owner, c.head_ref, coalesce(c.pr_number, 0), c.state, c.status,
+		       coalesce(json_extract(c.snapshot, '$.unresolved'), 0), c.is_draft
 		FROM change c JOIN repo r ON r.id = c.repo_id
 		WHERE c.task_id IS NOT NULL ORDER BY c.id`)
 	if err != nil {
@@ -195,7 +199,8 @@ func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 	for changes.Next() {
 		var task int64
 		var c TaskChange
-		if err := changes.Scan(&task, &c.Repo, &c.Head, &c.Number, &c.State, &c.Status); err != nil {
+		if err := changes.Scan(&task, &c.Repo, &c.Head, &c.Number, &c.State, &c.Status,
+			&c.Unresolved, &c.IsDraft); err != nil {
 			return nil, err
 		}
 		if t := byID[task]; t != nil {

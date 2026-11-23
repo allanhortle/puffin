@@ -29,6 +29,9 @@ const (
 	// styling: a letter's colour is data, whereas this is always the same
 	// colour, which makes it the config's business.
 	ReviewOption = "@prreview"
+	// How many tasks are waiting on me. Server-scoped and bare, like the
+	// review count.
+	AttentionOption = "@puffin_attention"
 	// Read, never written: `owner/repo#branch`, set on a window by hand to say
 	// which pull request it shows.
 	PinOption = "@prpin"
@@ -170,14 +173,18 @@ type Rendered struct {
 	Number int
 }
 
-// Push writes the review count and a letter for every window in ids, clearing
-// the ones absent from rendered, in a single tmux invocation.
-func (c Client) Push(ctx context.Context, ids []string, rendered map[string]Rendered, reviews int) error {
-	count := ""
-	if reviews > 0 {
-		count = strconv.Itoa(reviews)
+// A count is shown only when there is something to count.
+func count(n int) string {
+	if n > 0 {
+		return strconv.Itoa(n)
 	}
-	args := []string{"set", "-g", ReviewOption, count}
+	return ""
+}
+
+// Push writes the two counts and a letter for every window in ids, clearing
+// the ones absent from rendered, in a single tmux invocation.
+func (c Client) Push(ctx context.Context, ids []string, rendered map[string]Rendered, reviews, attention int) error {
+	args := []string{"set", "-g", ReviewOption, count(reviews), ";", "set", "-g", AttentionOption, count(attention)}
 	for _, id := range ids {
 		if r, ok := rendered[id]; ok {
 			args = append(args, ";", "set", "-w", "-t", id, LetterOption, r.Letter)
@@ -202,7 +209,7 @@ func (c Client) Clear(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	return c.Push(ctx, ids, nil, 0)
+	return c.Push(ctx, ids, nil, 0, 0)
 }
 
 // Options that bind tmux to puffin's rows. Live tmux state is never stored:

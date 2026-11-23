@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -24,6 +25,7 @@ import (
 	"github.com/allanhortle/puffin/internal/paths"
 	"github.com/allanhortle/puffin/internal/pr"
 	"github.com/allanhortle/puffin/internal/store"
+	"github.com/allanhortle/puffin/internal/task"
 	"github.com/allanhortle/puffin/internal/tmux"
 )
 
@@ -39,7 +41,8 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
                            give a task a worktree of REPO, with its own window and agent
       --task NAME          the task, instead of the one this tmux session belongs to
       --branch BRANCH      the branch, instead of one named for the task
-  puffin tasks             every task, with its worktrees and pull requests; --json
+  puffin pick              choose a task in a finder, the ones waiting on you first
+  puffin tasks [NAME]      every task, or one, with its worktrees and pull requests; --json
   puffin switch NAME       go to a task's session, bringing it back if it has gone
   puffin close [NAME]      remove a task's worktrees, session and directory
       --force              even if a worktree has uncommitted work
@@ -114,7 +117,9 @@ func main() {
 	case "attach":
 		err = attach(args)
 	case "tasks":
-		err = tasks(flag("--json"))
+		err = tasks(args)
+	case "pick":
+		err = pick(args)
 	case "switch":
 		err = switchTo(arg)
 	case "close":
@@ -652,44 +657,204 @@ func attach(args []string) error {
 
 var taskColours = map[string]string{store.TaskOpen: "green", store.TaskDone: "magenta", store.TaskDiscarded: "colour242"}
 
-func tasks(asJSON bool) error {
+// ranked is every task, the ones waiting on me first.
+func ranked() ([]store.Task, error) {
 	ctx, cancel := timeout(clientTimeout)
 	defer cancel()
 	all, err := daemonClient().Tasks(ctx)
 	if err != nil {
+		return nil, err
+	}
+	sort.SliceStable(all, func(i, j int) bool { return task.Rank(all[i]) < task.Rank(all[j]) })
+	return all, nil
+}
+
+func tasks(args []string) error {
+	flags, rest, err := parse(args)
+	if err != nil {
 		return err
 	}
-	if asJSON {
+	all, err := ranked()
+	if err != nil {
+		return err
+	}
+	if _, asJSON := flags["--json"]; asJSON {
 		enc := json.NewEncoder(os.Stdout)
 		enc.SetIndent("", "  ")
 		return enc.Encode(all)
 	}
+	if len(rest) > 0 {
+		for _, t := range all {
+			if t.Slug == rest[0] {
+				printTask(t, true)
+				return nil
+			}
+		}
+		return fmt.Errorf("%q: %w", rest[0], store.ErrNoTask)
+	}
 	for _, t := range all {
-		line := paint(taskColours[t.State], fmt.Sprintf("%-5s", t.State)) + " " + paint("bold", t.Slug)
-		if t.Title != "" && t.Title != t.Slug {
-			line += " " + paint("colour242", t.Title)
-		}
-		fmt.Println(line)
-		if len(t.Worktrees) == 0 {
-			fmt.Println("      " + paint("colour242", "exploring, no worktree"))
-		}
-		for _, w := range t.Worktrees {
-			ref := w.Ref
-			if ref == "" {
-				ref = "detached"
-			}
-			fmt.Printf("      %s %s\n", filepath.Base(w.Path), paint("colour242", w.Repo.Name+" on "+ref))
-		}
-		for _, c := range t.Changes {
-			if c.Number == 0 {
-				fmt.Printf("      %s %s\n", paint("colour242", "-"), paint("colour242", c.Head+", no pull request yet"))
-				continue
-			}
-			label := pr.LabelOf(c.Status)
-			fmt.Printf("      %s #%d %s\n", paint(label.Colour, label.Letter), c.Number, paint("colour242", c.Head))
-		}
+		printTask(t, false)
 	}
 	return nil
+}
+
+func changeLabel(c store.TaskChange) pr.Label {
+	return pr.PR{Status: c.Status, IsDraft: c.IsDraft}.Label()
+}
+
+func printTask(t store.Task, detail bool) {
+	line := paint(taskColours[t.State], fmt.Sprintf("%-5s", t.State)) + " " + paint("bold", t.Slug)
+	if t.Title != "" && t.Title != t.Slug {
+		line += " " + paint("colour242", t.Title)
+	}
+	fmt.Println(line)
+	if len(t.Worktrees) == 0 {
+		fmt.Println("      " + paint("colour242", "exploring, no worktree"))
+	}
+	for _, w := range t.Worktrees {
+		ref := w.Ref
+		if ref == "" {
+			ref = "detached"
+		}
+		fmt.Printf("      %s %s\n", filepath.Base(w.Path), paint("colour242", w.Repo.Name+" on "+ref))
+	}
+	for _, c := range t.Changes {
+		if c.Number == 0 {
+			fmt.Printf("      %s %s\n", paint("colour242", "-"), paint("colour242", c.Head+", no pull request yet"))
+			continue
+		}
+		label := changeLabel(c)
+		line := fmt.Sprintf("      %s #%d %s %s", paint(label.Colour, label.Letter), c.Number,
+			strings.ToLower(strings.ReplaceAll(c.Status, "_", " ")), paint("colour242", c.Head))
+		if c.Unresolved > 0 {
+			line += " " + paint("red", fmt.Sprintf("•%d", c.Unresolved))
+		}
+		fmt.Println(line)
+	}
+	if !detail {
+		return
+	}
+	for _, r := range t.Reads {
+		fmt.Println("      " + paint("colour242", "reads "+r.Name))
+	}
+	fmt.Println("      " + paint("colour242", t.Dir))
+	if t.Prompt != "" {
+		fmt.Println()
+		fmt.Println(t.Prompt)
+	}
+}
+
+// pickLine is one task as the picker shows it. The first field is the task's
+// name for the picker's own use, and is not displayed.
+func pickLine(t store.Task) string {
+	const width = 8
+	letters, shown := "", 0
+	for _, c := range t.Changes {
+		switch {
+		case c.State == "MERGED" || c.State == "CLOSED":
+			if t.State == store.TaskOpen {
+				continue // what has shipped is not what the task is waiting on
+			}
+			fallthrough
+		case c.Number != 0:
+			label := changeLabel(c)
+			letters += paint(label.Colour, label.Letter)
+			shown++
+			if c.Unresolved > 0 {
+				n := strconv.Itoa(c.Unresolved)
+				letters += paint("red", n)
+				shown += len(n)
+			}
+		default:
+			letters += paint("colour242", "·")
+			shown++
+		}
+	}
+	if shown == 0 {
+		letters, shown = paint("colour242", "-"), 1
+	}
+	letters += strings.Repeat(" ", max(width-shown, 1))
+
+	where := "exploring"
+	if len(t.Worktrees) > 0 {
+		names := make([]string, len(t.Worktrees))
+		for i, w := range t.Worktrees {
+			names[i] = filepath.Base(w.Path)
+		}
+		where = strings.Join(names, " ")
+	}
+	name := t.Slug
+	if t.State != store.TaskOpen {
+		name += " (" + t.State + ")"
+	}
+	return strings.Join([]string{t.Slug, letters + paint("bold", name), paint("blue", where), paint("colour242", t.Title)}, "\t")
+}
+
+// pick is the overview: every task in a finder, the ones waiting on me first.
+// It is what a popup runs, so it has to say something even with no tasks.
+func pick(args []string) error {
+	flags, _, err := parse(args)
+	if err != nil {
+		return err
+	}
+	colourful = os.Getenv("NO_COLOR") == "" // fzf reads the colours, whatever stdout is
+	all, err := ranked()
+	if err != nil {
+		return err
+	}
+	lines := make([]string, len(all))
+	for i, t := range all {
+		lines[i] = pickLine(t)
+	}
+	if _, list := flags["--list"]; list {
+		for _, line := range lines {
+			fmt.Println(line)
+		}
+		return nil
+	}
+
+	self, err := os.Executable()
+	if err != nil {
+		return err
+	}
+	header := "enter: go to the task   ctrl-o: open its pull request   ctrl-r: refresh"
+	if len(all) == 0 {
+		header = "no tasks yet. make one with: puffin new [--attach REPO] what it is for"
+	}
+	q := func(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'" }
+	cmd := exec.Command("fzf", "--ansi", "--no-sort", "--delimiter", "\t", "--with-nth", "2..",
+		"--expect", "ctrl-o", "--header", header,
+		"--preview", "CLICOLOR_FORCE=1 "+q(self)+" tasks {1}", "--preview-window", "down,40%,wrap",
+		"--bind", "ctrl-r:reload("+q(self)+" refresh >/dev/null 2>&1; "+q(self)+" pick --list)")
+	cmd.Stdin = strings.NewReader(strings.Join(lines, "\n"))
+	cmd.Stderr = os.Stderr
+	out, err := cmd.Output()
+	var exit *exec.ExitError
+	if errors.As(err, &exit) && (exit.ExitCode() == 130 || exit.ExitCode() == 1) {
+		return nil // dismissed, or nothing matched
+	}
+	if err != nil {
+		return fmt.Errorf("fzf: %w", err)
+	}
+	key, chosen, _ := strings.Cut(strings.TrimRight(string(out), "\n"), "\n")
+	slug, _, _ := strings.Cut(chosen, "\t")
+	if slug == "" {
+		return nil
+	}
+	if key != "ctrl-o" {
+		return switchTo(slug)
+	}
+	for _, t := range all {
+		if t.Slug != slug {
+			continue
+		}
+		for _, c := range t.Changes {
+			if c.Number != 0 && c.State == "OPEN" {
+				return exec.Command("open", prURL(pr.PR{Repo: c.Repo, Number: c.Number})).Run()
+			}
+		}
+	}
+	return fmt.Errorf("%s has no open pull request", slug)
 }
 
 func switchTo(slug string) error {
@@ -765,6 +930,9 @@ var ansi = map[string]string{
 var colourful = func() bool {
 	if os.Getenv("NO_COLOR") != "" {
 		return false
+	}
+	if os.Getenv("CLICOLOR_FORCE") != "" {
+		return true
 	}
 	info, err := os.Stdout.Stat()
 	return err == nil && info.Mode()&os.ModeCharDevice != 0

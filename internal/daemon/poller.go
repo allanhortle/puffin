@@ -254,6 +254,10 @@ func (p *poller) cycle(ctx context.Context, force bool) (api.Cycle, error) {
 	if err := p.tasks.Reconcile(ctx); err != nil {
 		slog.Error("reconciling tasks failed", "err", err)
 	}
+	attention, err := p.tasks.Attention(ctx)
+	if err != nil {
+		slog.Error("counting tasks failed", "err", err)
+	}
 
 	var reviews int
 	if _, err := p.store.Meta(ctx, metaReviewCount, &reviews); err != nil {
@@ -290,7 +294,7 @@ func (p *poller) cycle(ctx context.Context, force bool) (api.Cycle, error) {
 	}
 
 	if server {
-		if err := p.tmux.Push(ctx, ids, rendered, reviews); err != nil && !errors.Is(err, tmux.ErrNoServer) {
+		if err := p.tmux.Push(ctx, ids, rendered, reviews, attention); err != nil && !errors.Is(err, tmux.ErrNoServer) {
 			return api.Cycle{}, err
 		}
 	}
