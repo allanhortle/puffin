@@ -69,3 +69,36 @@ func TestAgentChangesWhoseMoveItIs(t *testing.T) {
 		}
 	}
 }
+
+func TestOnlyTheBottomOfAStackSpeaks(t *testing.T) {
+	pull := func(number int, head, base, status string) store.TaskChange {
+		return store.TaskChange{Repo: "o/r", Number: number, Head: head, Base: base, State: "OPEN", Status: status}
+	}
+	stack := []store.TaskChange{
+		pull(3, "c", "b", pr.Failing),
+		pull(1, "a", "main", pr.Building),
+		pull(2, "b", "a", pr.Conflict),
+	}
+	task := store.Task{State: store.TaskOpen, Changes: stack}
+	if got := Headline(Live(task)); got.Number != 1 {
+		t.Errorf("headline is #%d, want the bottom", got.Number)
+	}
+	if got := Rank(task); got != Machine {
+		t.Errorf("rank %d: red higher up the stack leaked through", got)
+	}
+
+	// Once the bottom merges, the next one up is the bottom.
+	stack[1].State, stack[1].Status = "MERGED", pr.Merged
+	if got := Headline(Live(task)); got.Number != 2 {
+		t.Errorf("after the bottom merged, headline is #%d", got.Number)
+	}
+
+	// Two stacks in one task: the more pressing bottom.
+	two := store.Task{State: store.TaskOpen, Changes: []store.TaskChange{
+		pull(1, "a", "main", pr.WaitingReview), pull(2, "b", "a", pr.Failing),
+		pull(5, "x", "main", pr.Conflict),
+	}}
+	if got := Headline(Live(two)); got.Number != 5 {
+		t.Errorf("of two stacks, headline is #%d", got.Number)
+	}
+}

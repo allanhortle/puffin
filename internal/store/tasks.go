@@ -35,6 +35,7 @@ type Worktree struct {
 type TaskChange struct {
 	Repo   string `json:"repo"`
 	Head   string `json:"head"`
+	Base   string `json:"base,omitempty"`
 	Number int    `json:"number,omitempty"`
 	State  string `json:"state"`
 	Status string `json:"status"`
@@ -198,7 +199,7 @@ func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 	}
 
 	changes, err := s.DB.QueryContext(ctx, `
-		SELECT c.task_id, r.name_with_owner, c.head_ref, coalesce(c.pr_number, 0), c.state, c.status,
+		SELECT c.task_id, r.name_with_owner, c.head_ref, c.base_ref, coalesce(c.pr_number, 0), c.state, c.status,
 		       coalesce(json_extract(c.snapshot, '$.unresolved'), 0), c.is_draft
 		FROM change c JOIN repo r ON r.id = c.repo_id
 		WHERE c.task_id IS NOT NULL ORDER BY c.id`)
@@ -209,7 +210,7 @@ func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 	for changes.Next() {
 		var task int64
 		var c TaskChange
-		if err := changes.Scan(&task, &c.Repo, &c.Head, &c.Number, &c.State, &c.Status,
+		if err := changes.Scan(&task, &c.Repo, &c.Head, &c.Base, &c.Number, &c.State, &c.Status,
 			&c.Unresolved, &c.IsDraft); err != nil {
 			return nil, err
 		}

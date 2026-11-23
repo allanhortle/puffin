@@ -72,9 +72,33 @@ func Live(t store.Task) []store.TaskChange {
 	return local
 }
 
-// Headline is the most pressing of a task's live changes: the one that
-// decides where it sorts, and the one worth a letter.
+// bottoms is the foot of each stack among a task's live changes: the ones not
+// based on another of them.
+func bottoms(live []store.TaskChange) []store.TaskChange {
+	heads := map[string]bool{}
+	for _, c := range live {
+		heads[c.Repo+"#"+c.Head] = true
+	}
+	var out []store.TaskChange
+	for _, c := range live {
+		if !heads[c.Repo+"#"+c.Base] {
+			out = append(out, c)
+		}
+	}
+	if len(out) == 0 {
+		return live // bases that chase each other in a circle have no foot
+	}
+	return out
+}
+
+// Headline is the change that speaks for a task: the one that decides where
+// it sorts, and the one worth a letter. It is the bottom of the stack, and
+// nothing above it. Nothing higher can merge until the bottom does, so the
+// bottom is the next thing to act on, and a letter that might be describing
+// something three levels up cannot be read. A task with more than one stack
+// takes the most pressing of their bottoms.
 func Headline(live []store.TaskChange) store.TaskChange {
+	live = bottoms(live)
 	first := live[0]
 	for _, c := range live[1:] {
 		if RankChange(c) < RankChange(first) {
