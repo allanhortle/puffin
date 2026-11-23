@@ -4,7 +4,7 @@ Written 2026-11-23, at the end of the session that built puffin.
 
 ## Loose ends outside this repo
 
-- **Dotfiles are uncommitted.** `.tmux.conf`, `.local/bin/prq.mjs`,
+- **Dotfiles are uncommitted.** `.tmux.conf`,
   `.local/bin/ctx-fzf.mjs` and the new `.config/puffin/config.toml` all carry
   puffin changes.
 - **`~/.claude/settings.json` was edited by hand**: workmux's four status hooks
@@ -20,8 +20,6 @@ Written 2026-11-23, at the end of the session that built puffin.
 
 ## Still on workmux
 
-- `prq`'s review action calls `workmux add`. `prq` is no longer bound to a
-  key, and was the only place listing everyone's open PRs across the org.
 - Existing workmux worktrees are legacy by decision: move one over with
   `puffin adopt PATH` when picking it back up.
 
@@ -51,6 +49,9 @@ Written 2026-11-23, at the end of the session that built puffin.
 
 ## Not built
 
+- Browsing every open PR in the org, and viewing a PR's diff without a
+  worktree. Both went with `prq`, which was removed on 2026-11-23.
+  `puffin pr N` only knows your own PRs and your review requests.
 - `tmux -C` control mode. Windows outside a task are still matched to PRs by
   polling pane directories, as prstatusd did.
 - The `agent_run` table is in the schema and unused: agent state lives in tmux
