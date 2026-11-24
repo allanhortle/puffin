@@ -46,12 +46,16 @@ func refExists(ctx context.Context, clone, ref string) bool {
 	return err == nil
 }
 
-// Fetch brings base and branch up to date with origin. Best effort: being
-// offline should not stop work from starting. The branch is fetched by name
-// as well, on its own because it fails when the branch is new: someone else's
-// branch is not here until it is asked for.
-func Fetch(ctx context.Context, clone, base, branch string) {
+// FetchBase brings the branch new work starts from up to date with origin.
+// Best effort: being offline should not stop work from starting.
+func FetchBase(ctx context.Context, clone, base string) {
 	git(ctx, clone, "fetch", "origin", base)
+}
+
+// FetchBranch brings in a branch that already exists on origin: someone
+// else's is not here until it is asked for. It is its own connection, because
+// asking for a branch that is not there fails the whole fetch.
+func FetchBranch(ctx context.Context, clone, branch string) {
 	git(ctx, clone, "fetch", "origin", "+refs/heads/"+branch+":refs/remotes/origin/"+branch)
 }
 

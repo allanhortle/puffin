@@ -62,10 +62,17 @@ type Manager struct {
 	// One change to tasks at a time. They are rare, and each one touches the
 	// database, the filesystem, git and tmux in turn.
 	mu sync.Mutex
+	// When each clone's default branch was last fetched, under mu.
+	fetched map[string]time.Time
 }
 
+// Every connection to the remote costs seconds before any work is done, so
+// one is only made when it will tell us something. A default branch fetched
+// this recently is fresh enough to start new work from.
+const baseFresh = 5 * time.Minute
+
 func New(cfg config.Config, st *store.Store, tm tmux.Client) *Manager {
-	return &Manager{cfg: cfg, store: st, tmux: tm}
+	return &Manager{cfg: cfg, store: st, tmux: tm, fetched: map[string]time.Time{}}
 }
 
 // Scan looks one level into each configured root for clones and records them.
@@ -479,8 +486,17 @@ func (m *Manager) checkout(ctx context.Context, t store.Task, r store.Repo, bran
 		path = filepath.Join(t.Dir, short(r.Name)+"-"+strconv.Itoa(n))
 	}
 
-	step(ctx, "fetching %s", short(r.Name))
-	git.Fetch(ctx, r.Path, r.DefaultBranch, branch)
+	if time.Since(m.fetched[r.Path]) > baseFresh {
+		step(ctx, "fetching %s", short(r.Name))
+		git.FetchBase(ctx, r.Path, r.DefaultBranch)
+		m.fetched[r.Path] = time.Now()
+	}
+	// A branch named for the task is being made now, so there is nothing of
+	// it on origin to fetch. Any other name may be a branch that exists.
+	if branch != t.Slug {
+		step(ctx, "fetching %s", branch)
+		git.FetchBranch(ctx, r.Path, branch)
+	}
 	step(ctx, "checking out %s in %s", branch, short(r.Name))
 	if err := git.AddWorktree(ctx, r.Path, path, branch, r.DefaultBranch); err != nil {
 		return store.Worktree{}, err
