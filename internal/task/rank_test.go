@@ -124,11 +124,11 @@ func TestStatusNamesTheAuthorOfAReview(t *testing.T) {
 	review := store.Task{Changes: []store.TaskChange{
 		{Head: "fix", Number: 7, State: "OPEN", Status: pr.ReviewRequested, Author: "sam"},
 	}}
-	if got := letter(review); !strings.Contains(got, "review #[fg=blue]@sam") {
+	if got := letter(review); !strings.Contains(got, "review #[fg=white]sam") {
 		t.Errorf("a review does not name its author: %q", got)
 	}
 	mine := store.Task{Changes: []store.TaskChange{{Head: "fix", Number: 7, State: "OPEN", Status: pr.Ready}}}
-	if got := letter(mine); strings.Contains(got, "@") {
+	if got := letter(mine); strings.Contains(got, "white") {
 		t.Errorf("my own pull request names an author: %q", got)
 	}
 }

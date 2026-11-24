@@ -183,7 +183,7 @@ func letter(t store.Task) string {
 		out += " #[fg=red]" + strconv.Itoa(first.Unresolved)
 	}
 	if first.Author != "" {
-		out += " #[fg=blue]@" + first.Author
+		out += " #[fg=white]" + first.Author
 	}
 	return out + "#[norange]#[default]"
 }
