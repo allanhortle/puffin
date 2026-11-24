@@ -165,8 +165,9 @@ func StatusStyle(state string) string {
 }
 
 // letter is a task's pull request state as its session shows it: the letter
-// of the change that speaks for the task, and how many of its threads are
-// unresolved. Clicking it is a click on that pull request.
+// of the change that speaks for the task, how many of its threads are
+// unresolved, and whose it is when it is one I review. Clicking it is a click
+// on that pull request.
 func letter(t store.Task) string {
 	live := Live(t)
 	if len(live) == 0 {
@@ -180,6 +181,9 @@ func letter(t store.Task) string {
 	out := "#[range=user|" + strconv.Itoa(first.Number) + "]#[fg=" + label.Colour + "]" + label.Word
 	if first.Unresolved > 0 {
 		out += " #[fg=red]" + strconv.Itoa(first.Unresolved)
+	}
+	if first.Author != "" {
+		out += " #[fg=blue]@" + first.Author
 	}
 	return out + "#[norange]#[default]"
 }

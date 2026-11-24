@@ -42,6 +42,8 @@ type TaskChange struct {
 	// Review threads nobody has resolved.
 	Unresolved int  `json:"unresolved,omitempty"`
 	IsDraft    bool `json:"is_draft,omitempty"`
+	// Whose pull request it is, when it is somebody else's that I review.
+	Author string `json:"author,omitempty"`
 }
 
 type Task struct {
@@ -202,7 +204,8 @@ func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 
 	changes, err := s.DB.QueryContext(ctx, `
 		SELECT c.task_id, r.name_with_owner, c.head_ref, c.base_ref, coalesce(c.pr_number, 0), c.state, c.status,
-		       coalesce(json_extract(c.snapshot, '$.unresolved'), 0), c.is_draft
+		       coalesce(json_extract(c.snapshot, '$.unresolved'), 0), c.is_draft,
+		       CASE WHEN c.role = 'reviewer' THEN coalesce(c.author, '') ELSE '' END
 		FROM change c JOIN repo r ON r.id = c.repo_id
 		WHERE c.task_id IS NOT NULL ORDER BY c.id`)
 	if err != nil {
@@ -213,7 +216,7 @@ func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
 		var task int64
 		var c TaskChange
 		if err := changes.Scan(&task, &c.Repo, &c.Head, &c.Base, &c.Number, &c.State, &c.Status,
-			&c.Unresolved, &c.IsDraft); err != nil {
+			&c.Unresolved, &c.IsDraft, &c.Author); err != nil {
 			return nil, err
 		}
 		if t := byID[task]; t != nil {

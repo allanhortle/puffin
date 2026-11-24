@@ -1,6 +1,7 @@
 package task
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/allanhortle/puffin/internal/pr"
@@ -116,5 +117,18 @@ func TestATaskInPlaceSortsLast(t *testing.T) {
 	here.Agent = AgentWaiting
 	if Rank(here) != Mine {
 		t.Errorf("an agent asking in place ranks %d, want it at the top", Rank(here))
+	}
+}
+
+func TestStatusNamesTheAuthorOfAReview(t *testing.T) {
+	review := store.Task{Changes: []store.TaskChange{
+		{Head: "fix", Number: 7, State: "OPEN", Status: pr.ReviewRequested, Author: "sam"},
+	}}
+	if got := letter(review); !strings.Contains(got, "review #[fg=blue]@sam") {
+		t.Errorf("a review does not name its author: %q", got)
+	}
+	mine := store.Task{Changes: []store.TaskChange{{Head: "fix", Number: 7, State: "OPEN", Status: pr.Ready}}}
+	if got := letter(mine); strings.Contains(got, "@") {
+		t.Errorf("my own pull request names an author: %q", got)
 	}
 }
