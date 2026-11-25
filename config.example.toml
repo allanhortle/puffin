@@ -8,6 +8,9 @@ roots = ["~/code"]
 
 # The command an agent window runs.
 agent = "claude"
+# How the agent carries on its last conversation in a directory, used when a
+# session is brought back or a task reopened. "" always starts afresh.
+# agent_resume_flag = "--continue"
 
 # The tmux server to talk to, as given to `tmux -L`. Leave unset for the
 # default server.

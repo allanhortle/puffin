@@ -305,7 +305,7 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 
 	switch len(places) {
 	case 0:
-		if err := m.openSession(ctx, t, prompt); err != nil {
+		if err := m.openSession(ctx, t, prompt, false); err != nil {
 			return t, err
 		}
 	case 1:
@@ -324,7 +324,7 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 				return t, err
 			}
 		}
-		if err := m.openSession(ctx, t, prompt); err != nil {
+		if err := m.openSession(ctx, t, prompt, false); err != nil {
 			return t, err
 		}
 	}
@@ -471,7 +471,7 @@ func (m *Manager) attach(ctx context.Context, t store.Task, r store.Repo, branch
 		return err
 	}
 	step(ctx, "opening its window")
-	return m.openWindow(ctx, t, w, true, prompt)
+	return m.openWindow(ctx, t, w, true, prompt, false)
 }
 
 // checkout gives a task a worktree of a repository on branch, and no more.
@@ -545,7 +545,7 @@ func quote(s string) string { return "'" + strings.ReplaceAll(s, "'", `'\''`) + 
 //
 // The prompt goes first. A flag like claude's --add-dir takes any number of
 // values, so a prompt placed after it is read as one more directory.
-func (m *Manager) agent(readable []store.Repo, promptFile string) string {
+func (m *Manager) agent(readable []store.Repo, promptFile string, resume bool) string {
 	parts := []string{m.cfg.Agent}
 	if promptFile != "" {
 		parts = append(parts, `"$(cat `+quote(promptFile)+`)"`)
@@ -557,7 +557,13 @@ func (m *Manager) agent(readable []store.Repo, promptFile string) string {
 			}
 		}
 	}
-	return strings.Join(parts, " ")
+	plain := strings.Join(parts, " ")
+	// With no conversation here to carry on, the agent fails, and a fresh
+	// one starts in its place.
+	if resume && promptFile == "" && m.cfg.AgentResumeFlag != "" {
+		return m.cfg.Agent + " " + m.cfg.AgentResumeFlag + strings.TrimPrefix(plain, m.cfg.Agent) + " || " + plain
+	}
+	return plain
 }
 
 // promptFile is where a prompt is kept for the agent to read as it starts. A
@@ -587,7 +593,7 @@ func (m *Manager) bind(ctx context.Context, t store.Task) error {
 
 // openSession makes the session of a task that has no worktree: one window,
 // with an agent at the task's root.
-func (m *Manager) openSession(ctx context.Context, t store.Task, prompt string) error {
+func (m *Manager) openSession(ctx context.Context, t store.Task, prompt string, resume bool) error {
 	window := rootWindow
 	if t.InPlace {
 		window = filepath.Base(t.Dir)
@@ -603,13 +609,13 @@ func (m *Manager) openSession(ctx context.Context, t store.Task, prompt string) 
 	if err != nil {
 		return err
 	}
-	return m.tmux.Type(ctx, pane, m.agent(t.Reads, file))
+	return m.tmux.Type(ctx, pane, m.agent(t.Reads, file, resume))
 }
 
 // openWindow makes the window for a worktree, laid out as its repository
 // asks. fresh says the worktree was only just made, so its setup still has to
-// run.
-func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree, fresh bool, prompt string) error {
+// run. resume has its agent carry on the conversation it had there.
+func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree, fresh bool, prompt string, resume bool) error {
 	rc := m.cfg.Repo[w.Repo.Name]
 	panes := rc.Panes
 	if len(panes) == 0 {
@@ -650,7 +656,7 @@ func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree
 				return err
 			}
 		}
-		command := strings.ReplaceAll(p.Command, agentToken, m.agent(nil, file))
+		command := strings.ReplaceAll(p.Command, agentToken, m.agent(nil, file, resume))
 		command = strings.TrimSpace(strings.ReplaceAll(command, setupToken, setup))
 		if i == 0 && !placed && setup != "" {
 			command = strings.TrimSuffix(setup+" ; "+command, " ; ")
@@ -689,7 +695,7 @@ func (m *Manager) ensure(ctx context.Context, t store.Task) error {
 	// task with one worktree is that worktree's window.
 	several := len(t.Worktrees) > 1
 	if (len(t.Worktrees) == 0 || several) && !m.tmux.HasSession(ctx, t.Slug) {
-		if err := m.openSession(ctx, t, ""); err != nil {
+		if err := m.openSession(ctx, t, "", true); err != nil {
 			return err
 		}
 	}
@@ -704,11 +710,74 @@ func (m *Manager) ensure(ctx context.Context, t store.Task) error {
 		if _, ok := open[strconv.FormatInt(w.ID, 10)]; ok {
 			continue
 		}
-		if err := m.openWindow(ctx, t, w, false, ""); err != nil {
+		if err := m.openWindow(ctx, t, w, false, "", true); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// Reopen brings back a task that finished, or was swept, with more to do and
+// no pull request for it yet. It stays open until one opens. A swept task
+// gets its worktrees again, at the same paths on the same branches, made
+// afresh from the default branch if they are gone, and its agents carry on
+// the conversations they had there.
+func (m *Manager) Reopen(ctx context.Context, slug string) (store.Task, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	t, err := m.store.Task(ctx, slug)
+	swept := false
+	if errors.Is(err, store.ErrNoTask) {
+		if t, err = m.store.SweptTask(ctx, slug); err == nil {
+			swept = true
+			if m.tmux.HasSession(ctx, t.Slug) {
+				return t, fmt.Errorf("%q is in use by another session", t.Slug)
+			}
+		}
+	}
+	if err != nil {
+		return store.Task{}, fmt.Errorf("%q: %w", slug, err)
+	}
+	if t.InPlace {
+		return t, fmt.Errorf("%q works in place and has nothing to reopen; switch to it", t.Slug)
+	}
+	step(ctx, "reopening %s", t.Slug)
+	if err := m.store.Reopen(ctx, t, time.Now()); err != nil {
+		return t, err
+	}
+	if !swept {
+		return t, m.ensure(ctx, t)
+	}
+
+	gone, err := m.store.RemovedWorktrees(ctx, t.ID)
+	if err != nil {
+		return t, err
+	}
+	// A worktree removed and made again more than once is one place.
+	seen := map[string]bool{}
+	var made []store.Worktree
+	for _, old := range gone {
+		if seen[old.Path] || old.Ref == "" || old.Repo.Path == "" {
+			continue
+		}
+		seen[old.Path] = true
+		w, err := m.checkout(ctx, t, old.Repo, old.Ref)
+		if err != nil {
+			return t, err
+		}
+		made = append(made, w)
+	}
+	if t, err = m.store.Task(ctx, t.Slug); err != nil {
+		return t, err
+	}
+	if len(made) == 1 {
+		step(ctx, "opening its window")
+		return t, m.openWindow(ctx, t, made[0], true, "", true)
+	}
+	if err := m.openSession(ctx, t, "", true); err != nil {
+		return t, err
+	}
+	return t, nil
 }
 
 // Here makes a task out of a directory as it is: a session and an agent in
@@ -755,7 +824,7 @@ func (m *Manager) here(ctx context.Context, dir, name, prompt string) (store.Tas
 	if err := m.store.CreateTask(ctx, &t, time.Now()); err != nil {
 		return store.Task{}, err
 	}
-	if err := m.openSession(ctx, t, prompt); err != nil {
+	if err := m.openSession(ctx, t, prompt, false); err != nil {
 		return t, err
 	}
 	return m.store.Task(ctx, slug)
@@ -818,7 +887,7 @@ func (m *Manager) Adopt(ctx context.Context, req api.Adopt) (store.Task, error) 
 	if err := m.store.AddWorktree(ctx, &w, r.DefaultBranch, time.Now()); err != nil {
 		return t, err
 	}
-	if err := m.openWindow(ctx, t, w, false, ""); err != nil {
+	if err := m.openWindow(ctx, t, w, false, "", false); err != nil {
 		return t, err
 	}
 	return m.store.Task(ctx, slug)
@@ -1014,6 +1083,9 @@ func (m *Manager) Reconcile(ctx context.Context) error {
 		}
 	}
 	if err := m.store.LinkStacks(ctx); err != nil {
+		return err
+	}
+	if err := m.store.ReleaseKeptOpen(ctx); err != nil {
 		return err
 	}
 	_, err = m.store.CompleteTasks(ctx, time.Now())

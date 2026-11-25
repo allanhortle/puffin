@@ -56,7 +56,8 @@ Other ways in:
 | `puffin here [PATH]` | A session in any directory, git or not |
 
 Then: `puffin pick` (the list), `tasks [NAME]`, `switch NAME`, `rename`,
-`close [--force]`, `sweep`. `puffin help` has the rest.
+`close [--force]`, `sweep`, `reopen` (more to do on a task whose pull
+requests all merged, even after a sweep). `puffin help` has the rest.
 
 `puffin read [PR]` is for sitting down to a review: the title, author,
 status, branches, size, reviewers and labels, then the description rendered

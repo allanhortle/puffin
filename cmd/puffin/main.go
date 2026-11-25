@@ -69,6 +69,9 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin close [NAME]      remove a task's worktrees, session and directory
       --force              even if a worktree has uncommitted work
   puffin sweep             close every task whose pull requests have all merged or closed
+  puffin reopen [NAME]     there is more to do on a task whose pull requests have all
+                           merged: keep it open until a new one opens. A swept task comes
+                           back with its worktrees, and its agents carry on where they were
   puffin repos             the repositories found under the configured roots; --scan to look again
 
   puffin start             start the daemon in the background, if it is not running
@@ -156,6 +159,8 @@ func main() {
 		err = switchTo(arg)
 	case "close":
 		err = closeTask(args)
+	case "reopen":
+		err = reopen(arg)
 	case "agent":
 		agent(arg) // never an error: it runs inside the agent's own hooks
 	case "here":
@@ -1119,6 +1124,8 @@ func pickLine(t store.Task) string {
 	word, colour := "explore", "colour242"
 	if t.InPlace {
 		word = "here"
+	} else if len(t.Changes) > 0 {
+		word = "local" // more to do than what has merged
 	}
 	threads, more := "", ""
 	if len(live) > 0 {
@@ -1504,6 +1511,24 @@ func rename(args []string) error {
 	}
 	fmt.Println(t.Slug)
 	return nil
+}
+
+func reopen(slug string) error {
+	if slug == "" {
+		var err error
+		if slug, err = currentTask(); err != nil {
+			return errors.New("reopen needs a task, unless you are in its session")
+		}
+	}
+	var t store.Task
+	err := slow("reopening "+slug, func(ctx context.Context, c *client.Client) (err error) {
+		t, err = c.Reopen(ctx, slug)
+		return err
+	})
+	if err != nil {
+		return err
+	}
+	return switchTo(t.Slug)
 }
 
 func sweep() error {

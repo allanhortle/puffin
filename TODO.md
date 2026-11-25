@@ -38,9 +38,10 @@ Written 2026-11-23, at the end of the session that built puffin.
 - **Rebuilding a session drops a root agent**: a task that began as an
   exploration and later had a repo attached comes back with only the worktree
   window.
-- **Agents restart without their conversation** when a session is rebuilt, and
-  `adopt` loses the old worktree's conversation, because Claude keys history
-  by directory.
+- **`adopt` loses the old worktree's conversation**, because Claude keys
+  history by directory. A rebuilt or reopened session carries on with
+  `claude --continue`, falling back to a fresh agent when there is nothing to
+  continue; quitting that agent with an error also starts a fresh one.
 - **Names are word-chopped**, not model-generated as workmux's `auto_name` was,
   and an explicit `--name` or `rename` is cut to four words like any other.
 - **`-r` of the same repo twice in one `new` fails**: both want the same

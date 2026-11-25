@@ -23,6 +23,10 @@ type Config struct {
 	// The flag that lets the agent read a directory outside the one it starts
 	// in. Empty means the agent has no such flag.
 	AgentDirFlag string `toml:"agent_dir_flag"`
+	// The flag that has the agent carry on its last conversation in the
+	// directory it starts in, for a session brought back. Empty means it
+	// always starts afresh.
+	AgentResumeFlag string `toml:"agent_resume_flag"`
 	// What the agent in a new review task is asked to do.
 	ReviewPrompt string `toml:"review_prompt"`
 	// The name of the tmux server to talk to, as given to `tmux -L`. Empty
@@ -64,7 +68,7 @@ type Pane struct {
 // Load reads the file at path. A missing file is not an error: every setting
 // has a default.
 func Load(path string) (Config, error) {
-	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
+	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
 	meta, err := toml.DecodeFile(path, &cfg)
 	if errors.Is(err, fs.ErrNotExist) {
 		return cfg, nil

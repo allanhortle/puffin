@@ -156,6 +156,11 @@ func (c *Client) Rename(ctx context.Context, task, to string) (store.Task, error
 	return t, c.send(ctx, api.RenamePath+"?"+q.Encode(), nil, &t)
 }
 
+func (c *Client) Reopen(ctx context.Context, task string) (store.Task, error) {
+	var t store.Task
+	return t, c.send(ctx, api.ReopenPath+"?"+url.Values{"task": {task}}.Encode(), nil, &t)
+}
+
 func (c *Client) Sweep(ctx context.Context) (api.Swept, error) {
 	var swept api.Swept
 	return swept, c.send(ctx, api.SweepPath, nil, &swept)

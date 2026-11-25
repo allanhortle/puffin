@@ -147,9 +147,26 @@ func (s *Store) RenameTask(ctx context.Context, id int64, slug string) error {
 
 // Tasks is every task that still has its directory, oldest first.
 func (s *Store) Tasks(ctx context.Context) ([]Task, error) {
+	return s.tasks(ctx, `swept_at IS NULL`)
+}
+
+// SweptTask is the task last swept away under that slug.
+func (s *Store) SweptTask(ctx context.Context, slug string) (Task, error) {
+	tasks, err := s.tasks(ctx,
+		`id = (SELECT max(id) FROM task WHERE slug = ? AND swept_at IS NOT NULL)`, slug)
+	if err != nil {
+		return Task{}, err
+	}
+	if len(tasks) == 0 {
+		return Task{}, ErrNoTask
+	}
+	return tasks[0], nil
+}
+
+func (s *Store) tasks(ctx context.Context, where string, args ...any) ([]Task, error) {
 	rows, err := s.DB.QueryContext(ctx, `
 		SELECT id, slug, dir, title, flow, state, coalesce(linear_id, ''), prompt, created_at, in_place
-		FROM task WHERE swept_at IS NULL ORDER BY id`)
+		FROM task WHERE `+where+` ORDER BY id`, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -428,7 +445,7 @@ func (s *Store) LinkStacks(ctx context.Context) error {
 func (s *Store) CompleteTasks(ctx context.Context, now time.Time) ([]string, error) {
 	rows, err := s.DB.QueryContext(ctx, `
 		SELECT id, slug FROM task t
-		WHERE state = 'open'
+		WHERE state = 'open' AND kept_open = 0
 		  AND EXISTS (SELECT 1 FROM change c WHERE c.task_id = t.id)
 		  AND NOT EXISTS (SELECT 1 FROM change c WHERE c.task_id = t.id AND c.state IN ('LOCAL', 'OPEN'))`)
 	if err != nil {
@@ -454,6 +471,56 @@ func (s *Store) CompleteTasks(ctx context.Context, now time.Time) ([]string, err
 		}
 	}
 	return slugs, nil
+}
+
+// Reopen brings a finished task back, swept or not, and keeps it open until
+// a pull request of its own opens.
+func (s *Store) Reopen(ctx context.Context, t Task, now time.Time) error {
+	if _, err := s.DB.ExecContext(ctx, `
+		UPDATE task SET state = 'open', closed_at = NULL, swept_at = NULL, kept_open = 1 WHERE id = ?`,
+		t.ID); err != nil {
+		return err
+	}
+	if t.State == TaskOpen {
+		return nil
+	}
+	_, err := s.DB.ExecContext(ctx,
+		`INSERT INTO event (at, task_id, kind, from_value, to_value) VALUES (?, ?, 'task', ?, 'open')`,
+		stamp(now), t.ID, t.State)
+	return err
+}
+
+// ReleaseKeptOpen lets a reopened task finish again once it has an open pull
+// request: from there it is like any other.
+func (s *Store) ReleaseKeptOpen(ctx context.Context) error {
+	_, err := s.DB.ExecContext(ctx, `
+		UPDATE task SET kept_open = 0
+		WHERE kept_open = 1 AND EXISTS (
+		  SELECT 1 FROM change c WHERE c.task_id = task.id AND c.state = 'OPEN' AND c.pr_number IS NOT NULL)`)
+	return err
+}
+
+// RemovedWorktrees is every worktree a task once had, newest last.
+func (s *Store) RemovedWorktrees(ctx context.Context, task int64) ([]Worktree, error) {
+	rows, err := s.DB.QueryContext(ctx, `
+		SELECT w.id, w.task_id, w.path, coalesce(w.current_ref, ''),
+		       r.id, r.name_with_owner, coalesce(r.main_clone_path, ''), coalesce(r.default_branch, '')
+		FROM worktree w JOIN repo r ON r.id = w.repo_id
+		WHERE w.task_id = ? AND w.removed_at IS NOT NULL ORDER BY w.id`, task)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var out []Worktree
+	for rows.Next() {
+		var w Worktree
+		if err := rows.Scan(&w.ID, &w.TaskID, &w.Path, &w.Ref,
+			&w.Repo.ID, &w.Repo.Name, &w.Repo.Path, &w.Repo.DefaultBranch); err != nil {
+			return nil, err
+		}
+		out = append(out, w)
+	}
+	return out, rows.Err()
 }
 
 func (s *Store) SetTaskState(ctx context.Context, id int64, from, to string, now time.Time) error {

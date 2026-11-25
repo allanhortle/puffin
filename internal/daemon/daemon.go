@@ -129,6 +129,7 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("POST "+api.AttentionPath, d.attention)
 	mux.HandleFunc("POST "+api.NudgePath, d.nudge)
 	mux.HandleFunc("GET "+api.StatsPath, d.stats)
+	mux.HandleFunc("POST "+api.ReopenPath, d.reopen)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -414,6 +415,13 @@ func (d *daemon) rename(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	q := r.URL.Query()
 	t, err := d.tasks.Rename(ctx, q.Get("task"), q.Get("to"))
+	finish(ctx, t, err)
+}
+
+func (d *daemon) reopen(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := detached(w, r)
+	defer cancel()
+	t, err := d.tasks.Reopen(ctx, r.URL.Query().Get("task"))
 	finish(ctx, t, err)
 }
 

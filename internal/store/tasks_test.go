@@ -124,3 +124,67 @@ func TestTaskLifecycle(t *testing.T) {
 		t.Errorf("worktrees after sweep: %+v", live)
 	}
 }
+
+// A finished task reopened, swept or not, stays open with nothing live until
+// a pull request of its own opens, and finishes as usual after that.
+func TestReopen(t *testing.T) {
+	ctx := context.Background()
+	s := open(t, filepath.Join(t.TempDir(), "puffin.db"))
+	now := time.Unix(1_700_000_000, 0)
+	must := func(err error) {
+		t.Helper()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	ship := func(number int, state string) {
+		t.Helper()
+		must(s.ApplyFetch(ctx, now, []pr.PR{{Repo: "o/r", Number: number, Head: "a", Base: "main",
+			State: state, Status: map[string]string{"OPEN": pr.Ready, "MERGED": pr.Merged}[state]}}, nil))
+		must(s.ReleaseKeptOpen(ctx))
+		_, err := s.CompleteTasks(ctx, now)
+		must(err)
+	}
+	must(s.SaveClone(ctx, "o/r", "/clones/r", "main"))
+	repos, err := s.Repos(ctx)
+	must(err)
+	task := Task{Slug: "work", Dir: "/tasks/work", Flow: "work"}
+	must(s.CreateTask(ctx, &task, now))
+	w := Worktree{TaskID: task.ID, Repo: repos[0], Path: "/tasks/work/r", Ref: "a"}
+	must(s.AddWorktree(ctx, &w, "main", now))
+	ship(1, "MERGED")
+
+	got, err := s.Task(ctx, "work")
+	must(err)
+	if got.State != TaskDone {
+		t.Fatalf("state after merging = %s", got.State)
+	}
+	must(s.RemoveWorktree(ctx, w.ID, now))
+	must(s.MarkSwept(ctx, task.ID, now))
+	if _, err := s.Task(ctx, "work"); err != ErrNoTask {
+		t.Fatalf("swept task still live: %v", err)
+	}
+
+	swept, err := s.SweptTask(ctx, "work")
+	must(err)
+	must(s.Reopen(ctx, swept, now))
+	gone, err := s.RemovedWorktrees(ctx, task.ID)
+	must(err)
+	if len(gone) != 1 || gone[0].Ref != "a" || gone[0].Path != "/tasks/work/r" {
+		t.Fatalf("removed worktrees = %+v", gone)
+	}
+	w2 := Worktree{TaskID: task.ID, Repo: repos[0], Path: "/tasks/work/r", Ref: "a"}
+	must(s.AddWorktree(ctx, &w2, "main", now))
+
+	// Nothing live, the old pull request merged: it stays open regardless.
+	ship(1, "MERGED")
+	if got, _ := s.Task(ctx, "work"); got.State != TaskOpen {
+		t.Fatalf("reopened task finished again on its old pull request: %s", got.State)
+	}
+	// A new pull request on the branch opens, then merges: done as usual.
+	ship(2, "OPEN")
+	ship(2, "MERGED")
+	if got, _ := s.Task(ctx, "work"); got.State != TaskDone {
+		t.Errorf("reopened task did not finish after its new pull request merged: %s", got.State)
+	}
+}
