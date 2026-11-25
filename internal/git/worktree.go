@@ -15,6 +15,28 @@ func git(ctx context.Context, clone string, args ...string) (string, error) {
 	return run.In(ctx, clone, slow, "git", args...)
 }
 
+// CheckedOut is every branch some worktree of the clone has checked out.
+func CheckedOut(ctx context.Context, clone string) (map[string]bool, error) {
+	out, err := run.Output(ctx, "git", "-C", clone, "worktree", "list", "--porcelain")
+	if err != nil {
+		return nil, err
+	}
+	branches := map[string]bool{}
+	for _, line := range strings.Split(out, "\n") {
+		if ref, ok := strings.CutPrefix(line, "branch refs/heads/"); ok {
+			branches[ref] = true
+		}
+	}
+	return branches, nil
+}
+
+// HasOwnCommits reports whether branch has any commit origin's base does
+// not. It errs towards yes: anything it cannot tell counts as work.
+func HasOwnCommits(ctx context.Context, clone, base, branch string) bool {
+	out, err := run.Output(ctx, "git", "-C", clone, "rev-list", "--count", "origin/"+base+".."+branch)
+	return err != nil || strings.TrimSpace(out) != "0"
+}
+
 // DefaultBranch is the branch new work starts from.
 func DefaultBranch(ctx context.Context, clone string) string {
 	out, err := run.Output(ctx, "git", "-C", clone, "symbolic-ref", "--short", "refs/remotes/origin/HEAD")

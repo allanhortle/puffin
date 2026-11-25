@@ -317,14 +317,15 @@ func (s *Store) SetWorktreeRef(ctx context.Context, w Worktree, ref string) erro
 
 // LocalBranch is a branch a task owns that has no pull request.
 type LocalBranch struct {
-	ChangeID int64
-	Clone    string
-	Head     string
+	ChangeID      int64
+	Clone         string
+	DefaultBranch string
+	Head          string
 }
 
 func (s *Store) LocalBranches(ctx context.Context) ([]LocalBranch, error) {
 	rows, err := s.DB.QueryContext(ctx, `
-		SELECT c.id, r.main_clone_path, c.head_ref
+		SELECT c.id, r.main_clone_path, coalesce(r.default_branch, ''), c.head_ref
 		FROM change c JOIN repo r ON r.id = c.repo_id
 		WHERE c.pr_number IS NULL AND r.main_clone_path IS NOT NULL`)
 	if err != nil {
@@ -334,7 +335,7 @@ func (s *Store) LocalBranches(ctx context.Context) ([]LocalBranch, error) {
 	var out []LocalBranch
 	for rows.Next() {
 		var b LocalBranch
-		if err := rows.Scan(&b.ChangeID, &b.Clone, &b.Head); err != nil {
+		if err := rows.Scan(&b.ChangeID, &b.Clone, &b.DefaultBranch, &b.Head); err != nil {
 			return nil, err
 		}
 		out = append(out, b)

@@ -29,8 +29,10 @@ Written 2026-11-23, at the end of the session that built puffin.
   the author re-requests review or its head commit changes.
 - **A restack counts as a push**, so `new` can appear with nothing changed.
 - **PRs from forks cannot be reviewed** as tasks.
-- **A leftover local branch holds a task open.** The branch a task started on,
-  if it never got a PR, stops the task going `done` until it is deleted.
+- **A leftover local branch with commits holds a task open.** The branch a
+  task started on stops counting once nothing has it checked out and it has
+  no commits beyond origin's default branch. With commits of its own it still
+  counts, as possibly unpushed work.
 - **`puffin open N` and the click range carry only a number**, which is
   ambiguous across repositories. Your own PR wins.
 - **Rebuilding a session drops a root agent**: a task that began as an

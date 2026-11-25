@@ -979,16 +979,35 @@ func (m *Manager) Reconcile(ctx context.Context) error {
 			return err
 		}
 	}
-	// A branch that was renamed or deleted before it got a pull request is
-	// no longer anybody's work, and would otherwise hold its task open for
-	// good.
+	// A branch with no pull request is no longer anybody's work, and would
+	// otherwise hold its task open for good, when it was renamed or deleted,
+	// or when nothing has it checked out and it has nothing of its own: the
+	// branch a task started on, left behind once the work moved to a stack.
+	// The branch itself is left alone; only puffin stops counting it.
 	local, err := m.store.LocalBranches(ctx)
 	if err != nil {
 		return err
 	}
+	checkedOut := map[string]map[string]bool{}
 	for _, b := range local {
-		if _, err := os.Stat(b.Clone); err != nil || git.BranchExists(ctx, b.Clone, b.Head) {
+		if _, err := os.Stat(b.Clone); err != nil {
 			continue
+		}
+		if git.BranchExists(ctx, b.Clone, b.Head) {
+			if _, ok := checkedOut[b.Clone]; !ok {
+				branches, err := git.CheckedOut(ctx, b.Clone)
+				if err != nil {
+					continue
+				}
+				checkedOut[b.Clone] = branches
+			}
+			base := b.DefaultBranch
+			if base == "" {
+				base = git.DefaultBranch(ctx, b.Clone)
+			}
+			if checkedOut[b.Clone][b.Head] || git.HasOwnCommits(ctx, b.Clone, base, b.Head) {
+				continue
+			}
 		}
 		if err := m.store.DeleteChange(ctx, b.ChangeID); err != nil {
 			return err
