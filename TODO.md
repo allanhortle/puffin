@@ -54,6 +54,13 @@ Written 2026-11-23, at the end of the session that built puffin.
   log keeps only the later one.
 - **GitHub's mergeability flickers to UNKNOWN and back** many times a day and
   each is logged. `stats` ignores them; the event table still fills with them.
+- **`puffin read` smuggles its pictures past tmux.** tmux 3.8 does not know
+  Kitty images, so they go through `allow-passthrough` straight to Ghostty:
+  they are not kept inside the pane, a redraw or a window switch loses them,
+  and they do not scroll back. tmux master has Kitty images (from 2026-10-29,
+  built with `--enable-images`); once a release has them `read` writes them
+  plainly and tmux keeps them, with no change here. Then `allow-passthrough`
+  can come out of `.tmux.conf`. Pictures also mean no pager.
 - **No notifications.** The only signals are the list and the status bar.
 - **The left status needs the daemon.** With it stopped, the status bar stops
   updating.

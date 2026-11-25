@@ -80,6 +80,10 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin watch [target]    follow one pull request; target is a number, branch or worktree
   puffin prs               every pull request the daemon holds; --json for other tools to read
   puffin reviews           the pull requests waiting on your review
+  puffin read [PR]         a pull request's title, people, size and description, rendered,
+                           with its pictures where the terminal can draw them. PR is a
+                           number or link; nothing means this branch's
+      --links              pictures as links, and the pager
   puffin stats             what the last week came to: merged, red builds, reviews, tasks
       --days N             over the last N days; --json for the raw numbers
   puffin open <target>     a pull request number, or "reviews", in the browser
@@ -174,6 +178,8 @@ func main() {
 		err = reviews()
 	case "stats":
 		err = stats(args)
+	case "read":
+		err = read(args)
 	case "open":
 		err = open(arg)
 	case "watch":

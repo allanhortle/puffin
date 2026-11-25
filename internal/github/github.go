@@ -376,6 +376,15 @@ func (c *Client) FetchPRs(ctx context.Context, author string, now time.Time) (*D
 
 // graphql posts one query and decodes its data into out.
 func (c *Client) graphql(ctx context.Context, query string, variables map[string]string, out any) error {
+	vars := make(map[string]any, len(variables))
+	for k, v := range variables {
+		vars[k] = v
+	}
+	return c.graphqlAny(ctx, query, vars, out)
+}
+
+// graphqlAny is graphql for variables that are not all strings.
+func (c *Client) graphqlAny(ctx context.Context, query string, variables map[string]any, out any) error {
 	payload, err := json.Marshal(map[string]any{"query": query, "variables": variables})
 	if err != nil {
 		return err

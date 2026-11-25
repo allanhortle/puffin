@@ -58,6 +58,11 @@ Other ways in:
 Then: `puffin pick` (the list), `tasks [NAME]`, `switch NAME`, `rename`,
 `close [--force]`, `sweep`. `puffin help` has the rest.
 
+`puffin read [PR]` is for sitting down to a review: the title, author,
+status, branches, size, reviewers and labels, then the description rendered
+as Markdown. In Ghostty or kitty its pictures are drawn in place; elsewhere,
+or with `--links`, they are links and the text goes through the pager.
+
 `puffin stats [--days N]` reads the log of status changes: what merged and how
 long it was open, how often CI went red and for how long, time spent with a
 reviewer, reviews asked of you, and tasks started and finished. A pull request
