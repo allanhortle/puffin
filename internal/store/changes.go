@@ -46,9 +46,9 @@ func recordStatus(ctx context.Context, tx execer, at string, changeID int64, tas
 // GitHub: authored is every pull request of mine it returned, reviews every
 // one asking for my review. Each status that moved is recorded as an event.
 //
-// A pull request missing from the answer has aged out of the search. With no
-// task attached its row was only ever a cache, and goes. With one, the row
-// stays, and a review that is no longer requested becomes REVIEWED.
+// A pull request missing from the answer has aged out of the search. Its row
+// stays, as the record of it, and a review that is no longer requested becomes
+// REVIEWED. With no task attached it is archived: kept, and shown nowhere.
 func (s *Store) ApplyFetch(ctx context.Context, now time.Time, authored, reviews []pr.PR) error {
 	tx, err := s.DB.BeginTx(ctx, nil)
 	if err != nil {
@@ -107,7 +107,7 @@ func (s *Store) ApplyFetch(ctx context.Context, now time.Time, authored, reviews
 				if _, err := tx.ExecContext(ctx, `
 					UPDATE change
 					SET base_ref = ?, pr_number = ?, role = ?, author = ?, title = ?, state = ?,
-					    is_draft = ?, status = ?, snapshot = ?, fetched_at = ?,
+					    is_draft = ?, status = ?, snapshot = ?, fetched_at = ?, archived_at = NULL,
 					    last_reviewed_sha = coalesce(?, last_reviewed_sha)
 					WHERE id = ?`,
 					p.Base, p.Number, role, null(p.Author), p.Title, p.State,
@@ -157,17 +157,18 @@ func (s *Store) ApplyFetch(ctx context.Context, now time.Time, authored, reviews
 		return err
 	}
 	for _, r := range unseen {
-		switch {
-		case !r.task.Valid:
-			if _, err := tx.ExecContext(ctx, `DELETE FROM change WHERE id = ?`, r.id); err != nil {
-				return err
-			}
-		case r.role == RoleReviewer && r.status == pr.ReviewRequested:
+		if r.role == RoleReviewer && r.status == pr.ReviewRequested {
 			if _, err := tx.ExecContext(ctx,
 				`UPDATE change SET status = ? WHERE id = ?`, pr.Reviewed, r.id); err != nil {
 				return err
 			}
 			if err := recordStatus(ctx, tx, at, r.id, r.task, r.status, pr.Reviewed); err != nil {
+				return err
+			}
+		}
+		if !r.task.Valid {
+			if _, err := tx.ExecContext(ctx,
+				`UPDATE change SET archived_at = coalesce(archived_at, ?) WHERE id = ?`, at, r.id); err != nil {
 				return err
 			}
 		}
@@ -197,10 +198,12 @@ func (s *Store) WatchedReviews(ctx context.Context) ([]pr.PR, error) {
 	return out, rows.Err()
 }
 
-// Changes is every pull request held in one role, oldest row first.
+// Changes is every pull request held in one role, oldest row first. An
+// archived one is history, and not among them.
 func (s *Store) Changes(ctx context.Context, role string) ([]pr.PR, error) {
 	rows, err := s.DB.QueryContext(ctx,
-		`SELECT snapshot, status FROM change WHERE role = ? AND pr_number IS NOT NULL ORDER BY id`, role)
+		`SELECT snapshot, status FROM change
+		 WHERE role = ? AND pr_number IS NOT NULL AND archived_at IS NULL ORDER BY id`, role)
 	if err != nil {
 		return nil, err
 	}

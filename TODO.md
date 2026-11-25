@@ -45,6 +45,15 @@ Written 2026-11-23, at the end of the session that built puffin.
   branch.
 - **A task across several repos never runs a repo's `setup` commands or pane
   layout**, because its worktrees get no windows. Files are still copied.
+- **`puffin stats` knows nothing from before 2026-11-26 about pull requests
+  that had no task.** Their rows were deleted then, and their events point at
+  nothing. Reviews in particular start from that date.
+- **A review counts as handed back when it stops being asked for**, which is
+  also what a merge without me looks like.
+- **A branch name used twice overwrites the first pull request's row**, so the
+  log keeps only the later one.
+- **GitHub's mergeability flickers to UNKNOWN and back** many times a day and
+  each is logged. `stats` ignores them; the event table still fills with them.
 - **No notifications.** The only signals are the list and the status bar.
 - **The left status needs the daemon.** With it stopped, the status bar stops
   updating.

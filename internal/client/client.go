@@ -71,6 +71,12 @@ func (c *Client) PRs(ctx context.Context) (api.PRs, error) {
 	return all, c.call(ctx, http.MethodGet, api.PRsPath, &all)
 }
 
+// Stats is what the log says about the last so many days.
+func (c *Client) Stats(ctx context.Context, days int) (store.Stats, error) {
+	var stats store.Stats
+	return stats, c.call(ctx, http.MethodGet, api.StatsPath+"?days="+strconv.Itoa(days), &stats)
+}
+
 // PR resolves a query to a pull request. The query's keys are those of the
 // daemon's pr endpoint: target, or repo with branch or number.
 func (c *Client) PR(ctx context.Context, query url.Values) (api.PR, error) {

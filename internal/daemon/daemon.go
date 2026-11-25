@@ -128,6 +128,7 @@ func Run(ctx context.Context, opts Options) error {
 	mux.HandleFunc("POST "+api.HerePath, d.here)
 	mux.HandleFunc("POST "+api.AttentionPath, d.attention)
 	mux.HandleFunc("POST "+api.NudgePath, d.nudge)
+	mux.HandleFunc("GET "+api.StatsPath, d.stats)
 	server := &http.Server{
 		Handler:           mux,
 		ReadHeaderTimeout: 5 * time.Second,
@@ -227,6 +228,21 @@ func (d *daemon) reviews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	reply(w, http.StatusOK, reviews)
+}
+
+// stats reads the log over the last so many days, a week unless told.
+func (d *daemon) stats(w http.ResponseWriter, r *http.Request) {
+	days, err := strconv.Atoi(r.URL.Query().Get("days"))
+	if err != nil || days < 1 {
+		days = 7
+	}
+	now := time.Now()
+	stats, err := d.store.Stats(r.Context(), now.AddDate(0, 0, -days), now)
+	if err != nil {
+		fail(w, err)
+		return
+	}
+	reply(w, http.StatusOK, stats)
 }
 
 func (d *daemon) prs(w http.ResponseWriter, r *http.Request) {

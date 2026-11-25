@@ -58,6 +58,11 @@ Other ways in:
 Then: `puffin pick` (the list), `tasks [NAME]`, `switch NAME`, `rename`,
 `close [--force]`, `sweep`. `puffin help` has the rest.
 
+`puffin stats [--days N]` reads the log of status changes: what merged and how
+long it was open, how often CI went red and for how long, time spent with a
+reviewer, reviews asked of you, and tasks started and finished. A pull request
+is kept in the database after it closes, task or no task.
+
 ## Reading the list and the status bar
 
 `prefix Space` opens `puffin pick`. A row is: `▲` · status · agent · name.

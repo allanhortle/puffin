@@ -29,6 +29,7 @@ const (
 	HerePath      = "/v1/tasks/here"   // POST
 	AttentionPath = "/v1/attention"    // POST; recount what is waiting on me, now
 	NudgePath     = "/v1/nudge"        // POST; something just changed on GitHub, look soon
+	StatsPath     = "/v1/stats"        // GET ?days=
 )
 
 type Status struct {

@@ -80,7 +80,8 @@ func TestApplyFetch(t *testing.T) {
 	}
 
 	// Attach a task to 3 and to the review; then everything drops out of the
-	// answer. Rows with a task survive, the bare cache row does not.
+	// answer. Rows with a task stay in view; the bare one is archived, kept
+	// as a record and out of sight.
 	if _, err := s.DB.ExecContext(ctx, `
 		INSERT INTO task (slug, dir, flow, created_at) VALUES ('t', '/t', 'work', 'now');
 		UPDATE change SET task_id = 1 WHERE pr_number IN (3, 7)`); err != nil {
@@ -94,6 +95,21 @@ func TestApplyFetch(t *testing.T) {
 	reviews, _ := s.Changes(ctx, RoleReviewer)
 	if len(reviews) != 1 || reviews[0].Status != pr.Reviewed {
 		t.Errorf("review after dropping out = %+v", reviews)
+	}
+	var kept, archived int
+	if err := s.DB.QueryRowContext(ctx,
+		`SELECT count(*), count(archived_at) FROM change WHERE pr_number = 2`).Scan(&kept, &archived); err != nil {
+		t.Fatal(err)
+	}
+	if kept != 1 || archived != 1 {
+		t.Errorf("the pull request with no task: %d rows, %d archived, want it kept and archived", kept, archived)
+	}
+
+	// Coming back into the answer brings it back into view.
+	fetch([]pr.PR{mine(2, "a", "OPEN", pr.Ready)}, nil)
+	authored, _ = s.Changes(ctx, RoleAuthor)
+	if got := numbers(authored); !reflect.DeepEqual(got, []int{2, 3}) {
+		t.Errorf("authored after one came back = %v", got)
 	}
 }
 

@@ -80,6 +80,8 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
   puffin watch [target]    follow one pull request; target is a number, branch or worktree
   puffin prs               every pull request the daemon holds; --json for other tools to read
   puffin reviews           the pull requests waiting on your review
+  puffin stats             what the last week came to: merged, red builds, reviews, tasks
+      --days N             over the last N days; --json for the raw numbers
   puffin open <target>     a pull request number, or "reviews", in the browser
   puffin agent STATE       for an agent's hooks: say what the agent in this pane is doing.
                            working, waiting, done, or off
@@ -170,6 +172,8 @@ func main() {
 		err = prs(flag("--json"))
 	case "reviews":
 		err = reviews()
+	case "stats":
+		err = stats(args)
 	case "open":
 		err = open(arg)
 	case "watch":
@@ -437,6 +441,106 @@ func refresh(force bool) error {
 
 // prs lists my own pull requests, the ones needing something first. With
 // --json it is the interface other tools read instead of a state file.
+// stats prints what the log says about the last so many days.
+func stats(args []string) error {
+	flags, _, err := parse(args, "--days")
+	if err != nil {
+		return err
+	}
+	days := 7
+	if given := flags["--days"]; len(given) > 0 {
+		if days, err = strconv.Atoi(given[0]); err != nil || days < 1 {
+			return fmt.Errorf("--days wants a number of days, not %q", given[0])
+		}
+	}
+	ctx, cancel := timeout(clientTimeout)
+	defer cancel()
+	got, err := daemonClient().Stats(ctx, days)
+	if err != nil {
+		return err
+	}
+	if _, ok := flags["--json"]; ok {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(got)
+	}
+	fmt.Print(statsText(got, days))
+	return nil
+}
+
+// span is a length of time to the two units that matter: 14m, 5h 12m, 2d 3h.
+func span(d time.Duration) string {
+	minutes := int(d.Round(time.Minute) / time.Minute)
+	switch {
+	case minutes < 60:
+		return fmt.Sprintf("%dm", minutes)
+	case minutes < 24*60:
+		return fmt.Sprintf("%dh %dm", minutes/60, minutes%60)
+	default:
+		return fmt.Sprintf("%dd %dh", minutes/(24*60), minutes%(24*60)/60)
+	}
+}
+
+func plural(n int, one, many string) string {
+	if n == 1 {
+		return "1 " + one
+	}
+	return strconv.Itoa(n) + " " + many
+}
+
+func statsText(got store.Stats, days int) string {
+	var b strings.Builder
+	heading := "Last " + plural(days, "day", "days")
+	if got.LogStart.IsZero() {
+		return heading + "\n\n  Nothing has been logged yet.\n"
+	}
+	if got.LogStart.After(got.Since) {
+		heading += paint("colour242", "  the log only goes back to "+got.LogStart.Local().Format("2 Jan"))
+	}
+	b.WriteString(heading + "\n\n")
+	row := func(name, count, detail string) {
+		fmt.Fprintf(&b, "  %-9s %-12s %s\n", name, count, paint("colour242", detail))
+	}
+	timed := func(sp store.Spread, what string) string {
+		if sp.N == 0 {
+			return ""
+		}
+		return fmt.Sprintf("median %s %s, longest %s", span(sp.Median), what, span(sp.Longest))
+	}
+
+	shipped := timed(got.MergeTime, "from opened to merged")
+	if got.MergeTime.N > 0 && got.MergeTime.N < got.Merged {
+		shipped += fmt.Sprintf(" (of the %d seen from the start)", got.MergeTime.N)
+	}
+	row("Shipped", strconv.Itoa(got.Merged)+" merged", shipped)
+
+	open, words := 0, []string{}
+	for _, c := range got.Open {
+		open += c.N
+		words = append(words, strconv.Itoa(c.N)+" "+c.Word)
+	}
+	row("Open now", strconv.Itoa(open), strings.Join(words, "  "))
+
+	red := ""
+	if got.Failures > 0 {
+		red = "on " + plural(got.FailedPRs, "pull request", "pull requests")
+		if fixed := timed(got.FixTime, "red"); fixed != "" {
+			red += "; " + fixed
+		}
+	}
+	row("CI", strconv.Itoa(got.Failures)+" red", red)
+	row("Waiting", plural(got.ReviewWait.N, "time", "times"), timed(got.ReviewWait, "with a reviewer"))
+
+	handed := ""
+	if got.ReviewTime.N > 0 {
+		handed = strconv.Itoa(got.ReviewTime.N) + " handed back; " + timed(got.ReviewTime, "each")
+	}
+	row("Reviews", strconv.Itoa(got.Asked)+" asked", handed)
+	row("Tasks", strconv.Itoa(got.TasksStarted)+" started",
+		fmt.Sprintf("%d done  %d discarded", got.TasksDone, got.TasksDiscarded))
+	return b.String()
+}
+
 func prs(asJSON bool) error {
 	ctx, cancel := timeout(clientTimeout)
 	defer cancel()
