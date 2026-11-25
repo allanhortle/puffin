@@ -494,9 +494,6 @@ func statsText(got store.Stats, days int) string {
 	if got.LogStart.IsZero() {
 		return heading + "\n\n  Nothing has been logged yet.\n"
 	}
-	if got.LogStart.After(got.Since) {
-		heading += paint("colour242", "  the log only goes back to "+got.LogStart.Local().Format("2 Jan"))
-	}
 	b.WriteString(heading + "\n\n")
 	row := func(name, count, detail string) {
 		fmt.Fprintf(&b, "  %-9s %-12s %s\n", name, count, paint("colour242", detail))
