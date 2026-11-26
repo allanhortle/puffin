@@ -2,10 +2,12 @@ package github
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -146,6 +148,18 @@ func (c *Client) Download(ctx context.Context, link string, limit int64) ([]byte
 	if err != nil {
 		return nil, err
 	}
+	// A private repository's release files are only served through the API.
+	if m := releaseFile.FindStringSubmatch(u.Host + u.Path); m != nil {
+		asset, err := c.releaseAsset(ctx, m[1], m[2], m[3])
+		if err != nil {
+			return nil, err
+		}
+		if req, err = http.NewRequestWithContext(ctx, http.MethodGet, asset, nil); err != nil {
+			return nil, err
+		}
+		req.Header.Set("Accept", "application/octet-stream")
+		u = req.URL
+	}
 	var res *http.Response
 	if ownedByGitHub(u.Host) {
 		res, err = c.do(ctx, req)
@@ -169,8 +183,45 @@ func (c *Client) Download(ctx context.Context, link string, limit int64) ([]byte
 	return body, nil
 }
 
+var releaseFile = regexp.MustCompile(`^github\.com/([\w.-]+/[\w.-]+)/releases/download/([^/]+)/([^/]+)$`)
+
+// releaseAsset is the API address of one file attached to a release.
+func (c *Client) releaseAsset(ctx context.Context, repo, tag, name string) (string, error) {
+	tag, _ = url.PathUnescape(tag)
+	name, _ = url.PathUnescape(name)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet,
+		"https://api.github.com/repos/"+repo+"/releases/tags/"+url.PathEscape(tag), nil)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Accept", "application/vnd.github+json")
+	res, err := c.do(ctx, req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("release %s of %s: HTTP %d", tag, repo, res.StatusCode)
+	}
+	var release struct {
+		Assets []struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"assets"`
+	}
+	if err := json.NewDecoder(res.Body).Decode(&release); err != nil {
+		return "", err
+	}
+	for _, a := range release.Assets {
+		if a.Name == name {
+			return a.URL, nil
+		}
+	}
+	return "", fmt.Errorf("release %s of %s has no %s", tag, repo, name)
+}
+
 // Go drops the Authorization header itself when a redirect leaves the host,
 // so the signed storage link an attachment redirects to never sees it.
 func ownedByGitHub(host string) bool {
-	return host == "github.com" || strings.HasSuffix(host, ".githubusercontent.com")
+	return host == "github.com" || host == "api.github.com" || strings.HasSuffix(host, ".githubusercontent.com")
 }
