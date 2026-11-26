@@ -117,10 +117,13 @@ type RepoRef struct {
 // is worked on in place. Bare asks for neither: an agent that can read the
 // repositories and nothing more.
 type NewTask struct {
-	Name   string    `json:"name,omitempty"`
-	Prompt string    `json:"prompt,omitempty"`
-	Repos  []RepoRef `json:"repos,omitempty"`
-	Bare   bool      `json:"bare,omitempty"`
+	Name   string `json:"name,omitempty"`
+	Prompt string `json:"prompt,omitempty"`
+	// A name made from the prompt by the name command, for a task that gets
+	// a branch. Name, when given, wins.
+	Suggested string    `json:"suggested,omitempty"`
+	Repos     []RepoRef `json:"repos,omitempty"`
+	Bare      bool      `json:"bare,omitempty"`
 }
 
 // Attach asks for a worktree of Repo in Task, on Branch, or on a branch named

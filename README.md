@@ -45,6 +45,9 @@ repository's to say, in the config, not something to choose each time:
 - `--bare` skips the worktree: an agent that can read the repository and
   nothing more, for a question that is not going to become a change.
 - `-e` writes the prompt in `$EDITOR`.
+- The task and its branch are named by a quick model from the prompt
+  (`name_command`, Claude Haiku unless configured), with any issue id in
+  front. `--name` names it yourself; with no model, the prompt's first words.
 
 Other ways in:
 

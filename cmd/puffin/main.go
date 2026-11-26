@@ -947,9 +947,16 @@ func newTask(args []string) error {
 	}
 	_, bare := flags["--bare"]
 
+	name := last(flags["--name"])
 	var t store.Task
 	err = slow("making the task", func(ctx context.Context, c *client.Client) (err error) {
-		t, err = c.NewTask(ctx, api.NewTask{Name: last(flags["--name"]), Prompt: prompt, Repos: repos, Bare: bare})
+		suggested := ""
+		if name == "" && wantsBranch(repos, bare) {
+			c.OnStep("naming the task")
+			suggested = suggestName(ctx, prompt)
+			c.OnStep("making the task")
+		}
+		t, err = c.NewTask(ctx, api.NewTask{Name: name, Prompt: prompt, Suggested: suggested, Repos: repos, Bare: bare})
 		return err
 	})
 	if err != nil {

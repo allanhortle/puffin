@@ -178,6 +178,22 @@ func Slugify(text string) string {
 	return slug
 }
 
+// SlugifyName cleans a name someone chose, or had made for them, into one
+// that will do for a session and a branch. Unlike Slugify it keeps every
+// word, up to a length a branch can bear.
+func SlugifyName(text string) string {
+	const maxLen = 60
+	slug := strings.Trim(notSlug.ReplaceAllString(strings.ToLower(text), "-"), "-")
+	for len(slug) > maxLen {
+		cut := strings.LastIndex(slug, "-")
+		if cut < 0 {
+			return slug[:maxLen]
+		}
+		slug = slug[:cut]
+	}
+	return slug
+}
+
 func (m *Manager) freeSlug(ctx context.Context, want string) (string, error) {
 	for n := 1; ; n++ {
 		slug := want
@@ -271,7 +287,10 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 		}
 	}
 
-	want := Slugify(req.Name)
+	want := SlugifyName(req.Name)
+	if want == "" {
+		want = SlugifyName(req.Suggested)
+	}
 	if want == "" {
 		want = Slugify(prompt)
 	}
@@ -903,7 +922,7 @@ func (m *Manager) Rename(ctx context.Context, from, to string) (store.Task, erro
 	if err != nil {
 		return store.Task{}, fmt.Errorf("%q: %w", from, err)
 	}
-	slug := Slugify(to)
+	slug := SlugifyName(to)
 	if slug == "" {
 		return t, fmt.Errorf("%q has nothing in it a name can be made from", to)
 	}

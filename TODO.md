@@ -42,8 +42,9 @@ Written 2026-11-23, at the end of the session that built puffin.
   history by directory. A rebuilt or reopened session carries on with
   `claude --continue`, falling back to a fresh agent when there is nothing to
   continue; quitting that agent with an error also starts a fresh one.
-- **Names are word-chopped**, not model-generated as workmux's `auto_name` was,
-  and an explicit `--name` or `rename` is cut to four words like any other.
+- **A task named by the model takes a few seconds longer to make**, about 2.5s
+  for Haiku. Reviews, `adopt` and `here` are still named by title, branch or
+  directory.
 - **`-r` of the same repo twice in one `new` fails**: both want the same
   branch.
 - **A task across several repos never runs a repo's `setup` commands or pane

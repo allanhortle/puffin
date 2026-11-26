@@ -12,6 +12,11 @@ agent = "claude"
 # session is brought back or a task reopened. "" always starts afresh.
 # agent_resume_flag = "--continue"
 
+# What names a new task and its branch from its prompt. It is given an
+# instruction and the prompt on stdin, and answers with the name. "" names a
+# task by its prompt's first few words.
+# name_command = 'claude -p --model haiku --no-session-persistence --tools "" --setting-sources "" --strict-mcp-config'
+
 # The tmux server to talk to, as given to `tmux -L`. Leave unset for the
 # default server.
 # tmux_socket = "work"

@@ -27,6 +27,10 @@ type Config struct {
 	// directory it starts in, for a session brought back. Empty means it
 	// always starts afresh.
 	AgentResumeFlag string `toml:"agent_resume_flag"`
+	// What names a new task, and so its branch, from its prompt: a shell
+	// command given an instruction and the prompt on stdin, which answers
+	// with the name. Empty names a task by its prompt's first words.
+	NameCommand string `toml:"name_command"`
 	// What the agent in a new review task is asked to do.
 	ReviewPrompt string `toml:"review_prompt"`
 	// The name of the tmux server to talk to, as given to `tmux -L`. Empty
@@ -68,7 +72,7 @@ type Pane struct {
 // Load reads the file at path. A missing file is not an error: every setting
 // has a default.
 func Load(path string) (Config, error) {
-	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
+	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", NameCommand: DefaultNameCommand, ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
 	meta, err := toml.DecodeFile(path, &cfg)
 	if errors.Is(err, fs.ErrNotExist) {
 		return cfg, nil
@@ -96,3 +100,7 @@ func Load(path string) (Config, error) {
 	}
 	return cfg, nil
 }
+
+// DefaultNameCommand asks a small, quick model, with none of the user's
+// settings, hooks, tools or MCP servers, and keeps no record of having asked.
+const DefaultNameCommand = `claude -p --model haiku --no-session-persistence --tools "" --setting-sources "" --strict-mcp-config`
