@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -19,15 +20,6 @@ const (
 	// More than this of a prompt says nothing more about what to call it.
 	namePromptLimit = 4000
 )
-
-const nameInstruction = `Write a git branch name for the task below.
-Lowercase words joined by hyphens, at most six words, saying what the change does.
-If the task names an issue id such as PROD-1234, start with it in lowercase.
-If the task suggests a branch name, use that.
-Reply with the branch name and nothing else.
-
-Task:
-`
 
 var issueID = regexp.MustCompile(`\b[A-Za-z]{2,10}-\d+\b`)
 
@@ -63,8 +55,9 @@ func wantsBranch(repos []api.RepoRef, bare bool) bool {
 	return false
 }
 
-// suggestName asks the configured name command what to call a task. Any
-// failure is no suggestion: the task is then named by the prompt's words.
+// suggestName asks the configured name command what to call a task, with
+// the configured instructions in PUFFIN_NAME_PROMPT and the task on stdin.
+// Any failure is no suggestion: the task is then named by the prompt's words.
 func suggestName(ctx context.Context, prompt string) string {
 	prompt = strings.TrimSpace(prompt)
 	if prompt == "" {
@@ -82,7 +75,8 @@ func suggestName(ctx context.Context, prompt string) string {
 	cmd := exec.CommandContext(ctx, "sh", "-c", cfg.NameCommand)
 	// Somewhere with nothing of the project in it to read.
 	cmd.Dir = os.TempDir()
-	cmd.Stdin = strings.NewReader(nameInstruction + prompt + "\n")
+	cmd.Env = append(os.Environ(), "PUFFIN_NAME_PROMPT="+cfg.NamePrompt)
+	cmd.Stdin = strings.NewReader("Task: " + strconv.Quote(prompt) + "\n")
 	out, err := cmd.Output()
 	if err != nil {
 		return ""
@@ -91,13 +85,17 @@ func suggestName(ctx context.Context, prompt string) string {
 }
 
 // cleanName makes a branch name of the command's answer: its last line, with
-// the issue id the prompt opens with in front, if the answer left it off.
+// the issue id the prompt names in front, if the answer left it off. A line
+// of prose is no name.
 func cleanName(answer, prompt string) string {
 	var line string
 	for _, l := range strings.Split(answer, "\n") {
-		if l = strings.Trim(strings.TrimSpace(l), "`'\""); l != "" {
+		if l = strings.Trim(strings.TrimSpace(l), "`'\"."); l != "" {
 			line = l
 		}
+	}
+	if len(strings.Fields(line)) > 1 {
+		return ""
 	}
 	name := task.SlugifyName(line)
 	if name == "" {

@@ -15,7 +15,12 @@ agent = "claude"
 # What names a new task and its branch from its prompt. It is given an
 # instruction and the prompt on stdin, and answers with the name. "" names a
 # task by its prompt's first few words.
-# name_command = 'claude -p --model haiku --no-session-persistence --tools "" --setting-sources "" --strict-mcp-config'
+# name_command = 'claude -p --model haiku --system-prompt "$PUFFIN_NAME_PROMPT" --no-session-persistence --tools "" --setting-sources "" --strict-mcp-config'
+# The instructions it is given, as $PUFFIN_NAME_PROMPT. The default asks for
+# a 2-4 word kebab-case name with any Linear id in front.
+# name_prompt = """
+# You output a single git branch name. Nothing else.
+# """
 
 # The tmux server to talk to, as given to `tmux -L`. Leave unset for the
 # default server.

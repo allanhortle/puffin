@@ -46,8 +46,9 @@ repository's to say, in the config, not something to choose each time:
   nothing more, for a question that is not going to become a change.
 - `-e` writes the prompt in `$EDITOR`.
 - The task and its branch are named by a quick model from the prompt
-  (`name_command`, Claude Haiku unless configured), with any issue id in
-  front. `--name` names it yourself; with no model, the prompt's first words.
+  (`name_command`, Claude Haiku unless configured) following the
+  instructions in `name_prompt` (workmux's `auto_name` system prompt by
+  default), with any issue id in front. `--name` names it yourself; with no model, the prompt's first words.
 
 Other ways in:
 

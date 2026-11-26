@@ -31,6 +31,9 @@ type Config struct {
 	// command given an instruction and the prompt on stdin, which answers
 	// with the name. Empty names a task by its prompt's first words.
 	NameCommand string `toml:"name_command"`
+	// The instructions the name command is run with, as PUFFIN_NAME_PROMPT.
+	// The default command gives it to the model as its system prompt.
+	NamePrompt string `toml:"name_prompt"`
 	// What the agent in a new review task is asked to do.
 	ReviewPrompt string `toml:"review_prompt"`
 	// The name of the tmux server to talk to, as given to `tmux -L`. Empty
@@ -72,7 +75,7 @@ type Pane struct {
 // Load reads the file at path. A missing file is not an error: every setting
 // has a default.
 func Load(path string) (Config, error) {
-	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", NameCommand: DefaultNameCommand, ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
+	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", NameCommand: DefaultNameCommand, NamePrompt: DefaultNamePrompt, ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
 	meta, err := toml.DecodeFile(path, &cfg)
 	if errors.Is(err, fs.ErrNotExist) {
 		return cfg, nil
@@ -103,4 +106,26 @@ func Load(path string) (Config, error) {
 
 // DefaultNameCommand asks a small, quick model, with none of the user's
 // settings, hooks, tools or MCP servers, and keeps no record of having asked.
-const DefaultNameCommand = `claude -p --model haiku --no-session-persistence --tools "" --setting-sources "" --strict-mcp-config`
+const DefaultNameCommand = `claude -p --model haiku --system-prompt "$PUFFIN_NAME_PROMPT" --no-session-persistence --tools "" --setting-sources "" --strict-mcp-config`
+
+// DefaultNamePrompt is the auto_name system prompt from workmux.
+const DefaultNamePrompt = `You output a single git branch name. Nothing else.
+
+Your ENTIRE response must be one line: the branch name. Do not think out
+loud, restate the task, explain your choice, or add any preamble, quotes,
+punctuation, or trailing text. The first and only thing you write is the
+branch name itself.
+
+Rules:
+- kebab-case (lowercase, hyphen-separated)
+- 2-4 words, 40 characters MAX (hard limit)
+- name the core task/feature, not the implementation details
+- no feat/, fix/, chore/ prefixes
+- if the prompt is a Linear dump, prefix with the lowercase identifier:
+  hoth-123-short-title, prod-456-short-title
+
+Examples:
+Task: "I need permission to read that file. Once you grant it I can examine
+the workmux config and help shorten the auto-naming prompt." -> shorten-auto-name-prompt
+Task: "PROD-5259 build a team reporting page for admins" -> prod-5259-team-reporting
+`
