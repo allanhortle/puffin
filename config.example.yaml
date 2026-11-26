@@ -45,16 +45,22 @@ repos:
     # Run in a worktree before it is removed.
     pre_remove:
       - yarn stack down || true
-    # The window's panes, in order. <agent> stands for the agent command.
+    # The window's panes, in order, for each type of task: work, and review
+    # (somebody else's pull request). A type left out uses work's. <agent>
+    # stands for the agent command, <setup> for the setup commands.
     panes:
-      - command: clear
-        # In a task made to review a pull request, this pane runs this instead.
-        review: puffin read
-      - split: horizontal
-        command: tail -f setup.log
-      - split: vertical
-        command: <agent>
-        focus: true
+      work:
+        - command: clear
+        - split: horizontal
+          command: tail -f setup.log
+        - split: vertical
+          command: <agent>
+          focus: true
+      review:
+        - command: puffin read
+        - split: vertical
+          command: <agent>
+          focus: true
 
 # How `puffin read` shows a description.
 read:

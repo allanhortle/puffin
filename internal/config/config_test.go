@@ -38,7 +38,7 @@ func TestExampleParses(t *testing.T) {
 	if !repo.Worktree {
 		t.Error("the example repository is not marked for worktrees")
 	}
-	if len(repo.Copy) == 0 || len(repo.PreRemove) == 0 || len(repo.Panes) != 3 {
+	if len(repo.Copy) == 0 || len(repo.PreRemove) == 0 || len(repo.Panes.Work) != 3 || len(repo.Panes.For("review")) == 0 {
 		t.Errorf("repo section incomplete: %+v", repo)
 	}
 	if strings.HasPrefix(cfg.Roots[0], "~") {
@@ -50,7 +50,9 @@ func TestRejectsWhatItDoesNotUnderstand(t *testing.T) {
 	for name, body := range map[string]string{
 		"unknown key":        "agnet: claude",
 		"unknown nested key": "repos:\n  a/b:\n    worktre: true",
-		"bad split":          "repos:\n  a/b:\n    panes:\n      - split: diagonal",
+		"bad split":          "repos:\n  a/b:\n    panes:\n      review:\n        - split: diagonal",
+		"unknown task type":  "repos:\n  a/b:\n    panes:\n      explore:\n        - command: x",
+		"panes as a list":    "repos:\n  a/b:\n    panes:\n      - command: x",
 	} {
 		if _, err := Load(write(t, body)); err == nil {
 			t.Errorf("%s was accepted", name)
@@ -72,5 +74,19 @@ func TestEmptyFileGivesDefaults(t *testing.T) {
 	cfg, err := Load(write(t, ""))
 	if err != nil || cfg.Agent != "claude" || len(cfg.Read.Hide) == 0 {
 		t.Errorf("empty file: %+v, %v", cfg, err)
+	}
+}
+
+func TestLayoutsFor(t *testing.T) {
+	work := []Pane{{Command: "<agent>"}}
+	review := []Pane{{Command: "puffin read"}, {Command: "<agent>"}}
+	if got := (Layouts{Work: work}).For("review"); len(got) != 1 {
+		t.Errorf("review with no layout of its own = %+v, want work's", got)
+	}
+	if got := (Layouts{Work: work, Review: review}).For("review"); len(got) != 2 {
+		t.Errorf("review = %+v", got)
+	}
+	if got := (Layouts{Work: work, Review: review}).For("work"); len(got) != 1 {
+		t.Errorf("work = %+v", got)
 	}
 }

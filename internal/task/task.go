@@ -636,7 +636,7 @@ func (m *Manager) openSession(ctx context.Context, t store.Task, prompt string, 
 // run. resume has its agent carry on the conversation it had there.
 func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree, fresh bool, prompt string, resume bool) error {
 	rc := m.cfg.Repo[w.Repo.Name]
-	panes := rc.Panes
+	panes := rc.Panes.For(t.Flow)
 	if len(panes) == 0 {
 		panes = []config.Pane{{Command: agentToken, Focus: true}}
 	}
@@ -675,11 +675,7 @@ func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree
 				return err
 			}
 		}
-		command := p.Command
-		if t.Flow == "review" && p.Review != "" {
-			command = p.Review
-		}
-		command = strings.ReplaceAll(command, agentToken, m.agent(nil, file, resume))
+		command := strings.ReplaceAll(p.Command, agentToken, m.agent(nil, file, resume))
 		command = strings.TrimSpace(strings.ReplaceAll(command, setupToken, setup))
 		if i == 0 && !placed && setup != "" {
 			command = strings.TrimSuffix(setup+" ; "+command, " ; ")

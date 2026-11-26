@@ -65,8 +65,26 @@ type Repo struct {
 	Setup []string `yaml:"setup"`
 	// Shell commands run in a worktree before it is removed.
 	PreRemove []string `yaml:"pre_remove"`
-	// The window's panes, in order. Empty means a single agent pane.
-	Panes []Pane `yaml:"panes"`
+	// How a worktree's window is laid out, for each type of task.
+	Panes Layouts `yaml:"panes"`
+}
+
+// Layouts is a window's panes, in order, for each type of task. A type with
+// none uses work's, and work with none is a single agent pane.
+type Layouts struct {
+	// A task made to change something: from a prompt, adopted, or one of my
+	// own pull requests picked back up.
+	Work []Pane `yaml:"work"`
+	// A task made to review somebody else's pull request.
+	Review []Pane `yaml:"review"`
+}
+
+// For is the panes a task of the flow gets.
+func (l Layouts) For(flow string) []Pane {
+	if flow == "review" && len(l.Review) > 0 {
+		return l.Review
+	}
+	return l.Work
 }
 
 type Pane struct {
@@ -76,9 +94,6 @@ type Pane struct {
 	// "horizontal" or "vertical"; empty for the window's first pane.
 	Split string `yaml:"split"`
 	Focus bool   `yaml:"focus"`
-	// What the pane runs instead in a task made to review a pull request,
-	// such as "puffin read". The same tokens stand.
-	Review string `yaml:"review"`
 }
 
 // Read is how `puffin read` shows a description.
@@ -114,12 +129,14 @@ func Load(path string) (Config, error) {
 		return cfg, fmt.Errorf("%s: %w", path, err)
 	}
 	for name, repo := range cfg.Repo {
-		for i, pane := range repo.Panes {
-			switch pane.Split {
-			case "", "horizontal", "vertical":
-			default:
-				return cfg, fmt.Errorf("%s: repo %q pane %d: split must be horizontal or vertical, not %q",
-					path, name, i+1, pane.Split)
+		for flow, panes := range map[string][]Pane{"work": repo.Panes.Work, "review": repo.Panes.Review} {
+			for i, pane := range panes {
+				switch pane.Split {
+				case "", "horizontal", "vertical":
+				default:
+					return cfg, fmt.Errorf("%s: repo %q %s pane %d: split must be horizontal or vertical, not %q",
+						path, name, flow, i+1, pane.Split)
+				}
 			}
 		}
 	}
