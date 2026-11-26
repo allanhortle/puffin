@@ -43,6 +43,8 @@ type Config struct {
 	DefaultRepo string `toml:"default_repo"`
 	// Keyed by owner/name.
 	Repo map[string]Repo `toml:"repo"`
+	// How `puffin read` shows a description.
+	Read Read `toml:"read"`
 }
 
 // Repo is what a fresh worktree of one repository needs before it is usable,
@@ -70,12 +72,24 @@ type Pane struct {
 	// "horizontal" or "vertical"; empty for the window's first pane.
 	Split string `toml:"split"`
 	Focus bool   `toml:"focus"`
+	// What the pane runs instead in a task made to review a pull request,
+	// such as "puffin read". The same tokens stand.
+	Review string `toml:"review"`
+}
+
+// Read is how `puffin read` shows a description.
+type Read struct {
+	// Blocks a description carries that are not worth reading, each named by
+	// the HTML comments around it: "CURSOR_SUMMARY" hides everything from
+	// <!-- CURSOR_SUMMARY --> to <!-- /CURSOR_SUMMARY -->.
+	Hide []string `toml:"hide"`
 }
 
 // Load reads the file at path. A missing file is not an error: every setting
 // has a default.
 func Load(path string) (Config, error) {
-	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", NameCommand: DefaultNameCommand, NamePrompt: DefaultNamePrompt, ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
+	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", NameCommand: DefaultNameCommand, NamePrompt: DefaultNamePrompt, ReviewPrompt: "/code-review", TasksDir: paths.Tasks(),
+		Read: Read{Hide: []string{"CURSOR_SUMMARY"}}}
 	meta, err := toml.DecodeFile(path, &cfg)
 	if errors.Is(err, fs.ErrNotExist) {
 		return cfg, nil

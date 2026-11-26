@@ -24,7 +24,7 @@ func TestPrepare(t *testing.T) {
 		"ok<br>",
 		"</details>",
 	}, "\n")
-	got, pictures := prepare(body)
+	got, pictures := prepare(body, nil)
 
 	want := []picture{
 		{"old", "https://x/old.png"},
@@ -68,5 +68,16 @@ func TestPRLink(t *testing.T) {
 	}
 	if prLink.MatchString("9604") {
 		t.Error("a bare number read as a link")
+	}
+}
+
+func TestPrepareHides(t *testing.T) {
+	body := "Keep this.\n<!-- CURSOR_SUMMARY -->\n> [!NOTE]\n> Low risk\n<!-- /CURSOR_SUMMARY -->\nAnd this."
+	got, _ := prepare(body, []string{"CURSOR_SUMMARY"})
+	if strings.Contains(got, "Low risk") || !strings.Contains(got, "Keep this.") || !strings.Contains(got, "And this.") {
+		t.Errorf("hidden block not removed cleanly:\n%s", got)
+	}
+	if kept, _ := prepare(body, nil); !strings.Contains(kept, "Low risk") {
+		t.Errorf("a block was hidden with nothing named:\n%s", kept)
 	}
 }

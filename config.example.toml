@@ -45,6 +45,8 @@ pre_remove = ["yarn stack down || true"]
 # The window's panes, in order. "<agent>" stands for the agent command.
 [[repo."owner/name".panes]]
 command = "clear"
+# In a task made to review a pull request, this pane runs this instead.
+review = "puffin read"
 
 [[repo."owner/name".panes]]
 split = "horizontal"
@@ -54,3 +56,8 @@ command = "tail -f setup.log"
 split = "vertical"
 command = "<agent>"
 focus = true
+
+# How `puffin read` shows a description.
+[read]
+# Blocks to leave out, each named by the HTML comments around it.
+hide = ["CURSOR_SUMMARY"]

@@ -675,7 +675,11 @@ func (m *Manager) openWindow(ctx context.Context, t store.Task, w store.Worktree
 				return err
 			}
 		}
-		command := strings.ReplaceAll(p.Command, agentToken, m.agent(nil, file, resume))
+		command := p.Command
+		if t.Flow == "review" && p.Review != "" {
+			command = p.Review
+		}
+		command = strings.ReplaceAll(command, agentToken, m.agent(nil, file, resume))
 		command = strings.TrimSpace(strings.ReplaceAll(command, setupToken, setup))
 		if i == 0 && !placed && setup != "" {
 			command = strings.TrimSuffix(setup+" ; "+command, " ; ")
