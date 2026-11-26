@@ -5,7 +5,7 @@ Written 2026-11-23, at the end of the session that built puffin.
 ## Loose ends outside this repo
 
 - **Dotfiles are uncommitted.** `.tmux.conf`,
-  `.local/bin/ctx-fzf.mjs` and the new `.config/puffin/config.toml` all carry
+  `.local/bin/ctx-fzf.mjs` and the new `.config/puffin/config.yaml` all carry
   puffin changes.
 - **`~/.claude/settings.json` was edited by hand**: workmux's four status hooks
   removed, puffin's five added. There is no `puffin` command that installs

@@ -35,7 +35,7 @@ repository's to say, in the config, not something to choose each time:
 
 | The repository | What `puffin new` gives you |
 |---|---|
-| has `worktree = true` | a branch, a worktree, and an agent in it on the prompt |
+| has `worktree: true` | a branch, a worktree, and an agent in it on the prompt |
 | anything else | a session in the clone itself, worked on in place. One per clone: asking again goes to it |
 | none (not in a repo) | `default_repo` from the config, or failing that an agent with no repo |
 
@@ -64,7 +64,7 @@ Then: `puffin pick` (the list), `tasks [NAME]`, `switch NAME`, `rename`,
 requests all merged, even after a sweep). `puffin help` has the rest.
 
 A pane's `review` command runs in its place in a review task, so
-`review = "puffin read"` opens a review on the description. `[read] hide`
+`review: puffin read` opens a review on the description. `read: hide:`
 leaves out blocks named by the HTML comments around them, such as Cursor's
 `CURSOR_SUMMARY` (the default).
 
@@ -109,8 +109,8 @@ go build -o ~/.local/bin/puffin ./cmd/puffin
 puffin start
 ```
 
-- **Config**: `~/.config/puffin/config.toml`; see `config.example.toml`.
-  `roots` are scanned for clones, and each `[repo."owner/name"]` section says
+- **Config**: `~/.config/puffin/config.yaml`; see `config.example.yaml`.
+  `roots` are scanned for clones, and each entry under `repos:` says
   whether the repository uses worktrees and what a new one needs (`copy`,
   `setup`, `pre_remove`, `panes`).
 - **tmux**: start the daemon from `.tmux.conf`, bind `puffin pick` to a key,

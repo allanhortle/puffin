@@ -3,8 +3,8 @@ module github.com/allanhortle/puffin
 go 1.27.3
 
 require (
-	github.com/BurntSushi/toml v1.6.0
 	github.com/charmbracelet/glamour v1.0.0
+	go.yaml.in/yaml/v3 v3.0.6
 	golang.org/x/term v0.36.0
 	modernc.org/sqlite v1.63.0
 )

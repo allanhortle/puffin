@@ -281,7 +281,7 @@ func (m *Manager) New(ctx context.Context, req api.NewTask) (store.Task, error) 
 				continue
 			}
 			if len(places) > 1 {
-				return store.Task{}, fmt.Errorf("%s is worked on in place, so it cannot share a task; set `worktree = true` for it in the config to give it worktrees", filepath.Base(p.dir))
+				return store.Task{}, fmt.Errorf("%s is worked on in place, so it cannot share a task; set `worktree: true` for it in the config to give it worktrees", filepath.Base(p.dir))
 			}
 			return m.here(ctx, p.dir, req.Name, prompt)
 		}

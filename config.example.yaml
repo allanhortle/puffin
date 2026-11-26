@@ -1,0 +1,62 @@
+# Copy to ~/.config/puffin/config.yaml. Every key is optional.
+
+# Directories scanned for the main clone of each repository.
+roots: [~/code]
+
+# Where each task's directory is made. Worktrees are mounted inside it.
+# tasks_dir: ~/.local/share/puffin/tasks
+
+# The command an agent window runs.
+agent: claude
+
+# How the agent carries on its last conversation in a directory, used when a
+# session is brought back or a task reopened. "" always starts afresh.
+# agent_resume_flag: --continue
+
+# What names a new task and its branch from its prompt. It is given the task
+# on stdin and the instructions below as $PUFFIN_NAME_PROMPT, and answers with
+# the name. "" names a task by its prompt's first few words.
+# name_command: claude -p --model haiku --system-prompt "$PUFFIN_NAME_PROMPT" --no-session-persistence --tools "" --setting-sources "" --strict-mcp-config
+# name_prompt: |
+#   You output a single git branch name. Nothing else.
+#   ...
+
+# The tmux server to talk to, as given to `tmux -L`. Leave unset for the
+# default server.
+# tmux_socket: work
+
+# The repository a new task is for when `puffin new` is run outside any.
+# default_repo: owner/name
+
+# What each repository needs, keyed by owner/name.
+repos:
+  owner/name:
+    # Work here happens on branches, each task in a worktree of its own.
+    # Without this the repository is worked on in place: a task is a session
+    # in the clone itself, and nothing below applies.
+    worktree: true
+    # Globs, relative to the main clone, copied into a new worktree.
+    copy:
+      - packages/*/.env
+      - packages/*/.env.local
+    # Run in a new worktree.
+    setup:
+      - yarn install
+    # Run in a worktree before it is removed.
+    pre_remove:
+      - yarn stack down || true
+    # The window's panes, in order. <agent> stands for the agent command.
+    panes:
+      - command: clear
+        # In a task made to review a pull request, this pane runs this instead.
+        review: puffin read
+      - split: horizontal
+        command: tail -f setup.log
+      - split: vertical
+        command: <agent>
+        focus: true
+
+# How `puffin read` shows a description.
+read:
+  # Blocks to leave out, each named by the HTML comments around it.
+  hide: [CURSOR_SUMMARY]

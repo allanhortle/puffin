@@ -38,7 +38,7 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
 
   puffin new [prompt...]   make a task for the repository you are standing in, and an agent
                            on the prompt. the repository's config says what kind: with
-                           "worktree = true" a branch and a worktree, otherwise a session
+                           "worktree: true" a branch and a worktree, otherwise a session
                            in the clone itself, which is returned to if it already exists
       -r, --repo REPO      a repository other than the one you are in; repeat it for a
                            task across several, side by side under one agent

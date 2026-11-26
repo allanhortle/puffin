@@ -26,7 +26,7 @@ func configDir() string { return xdg("XDG_CONFIG_HOME", ".config") }
 func dataDir() string   { return xdg("XDG_DATA_HOME", ".local", "share") }
 func stateDir() string  { return xdg("XDG_STATE_HOME", ".local", "state") }
 
-func Config() string { return filepath.Join(configDir(), "config.toml") }
+func Config() string { return filepath.Join(configDir(), "config.yaml") }
 func DB() string     { return filepath.Join(dataDir(), "puffin.db") }
 func Tasks() string  { return filepath.Join(dataDir(), "tasks") }
 func Log() string    { return filepath.Join(stateDir(), "daemon.log") }
