@@ -91,3 +91,19 @@ Written 2026-11-23, at the end of the session that built puffin.
 - `puffin adopt` on a real monorepo worktree, in particular whether
   `node_modules` survives the move.
 - Clicking a letter or the review count in the status bar.
+- **`puffin diff` posting a note has never been run against GitHub.** The
+  mutation's shape was checked against the schema with a pull request that
+  does not exist; the first real `y` is the test.
+- **A note written in the last second before quitting hunk is lost.** hunk
+  forgets notes when its window closes, so `puffin diff` reads them out once
+  a second while it runs.
+- **`puffin diff` shows none of the comments already on the pull request.**
+  hunk can take them (`hunk session comment apply`); nothing feeds it yet.
+- **A version is only what a force push replaced.** GitHub records no plain
+  push, so commits added on top between two force pushes have no version of
+  their own; name the commit with `--since` instead.
+- **A review can only be submitted as an approval.** `puffin approve` sends
+  the pending review with its notes; asking for changes, or commenting
+  without a verdict, is still done on GitHub or Graphite.
+- **`puffin approve` has never been run against GitHub**, for the same reason
+  as posting a note.

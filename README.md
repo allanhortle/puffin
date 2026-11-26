@@ -74,6 +74,28 @@ status, branches, size, reviewers and labels, then the description rendered
 as Markdown. In Ghostty or kitty its pictures are drawn in place; elsewhere,
 or with `--links`, they are links and the text goes through the pager.
 
+`puffin diff [PR]` shows the changes in [hunk](https://github.com/modem-dev/hunk).
+A pull request you have reviewed opens on what its author changed since your
+last review, not the whole of it again. `--since` starts somewhere else:
+`base` (everything), `reviewed`, a version (`v1`, `v2`: what each force push
+replaced), or any commit. `--pick` chooses from a list and `--versions`
+prints it.
+
+- A rebase in between does not bring in what landed on the base. The old
+  version is replayed onto the new base in memory and the diff is against
+  that, in a stack too, where the branch below was rewritten as well.
+- Where the replay conflicts, those files carry conflict markers on the old
+  side and so show how the author resolved them. puffin says when this happens.
+- A push that changed nothing, such as a restack, says so and opens nothing.
+- Notes written in hunk (`c`) are offered, when it closes, as comments on
+  your pending review: a draft only you see until you submit it on GitHub or
+  Graphite. GitHub only takes a comment on a line the pull request's whole
+  diff shows, so any other note goes on the file with its line in the text.
+
+`puffin approve [PR] [-m TEXT]` approves the pull request at the commit it
+is on now. If you have a pending review, that is what is submitted, so the
+notes from `puffin diff` go out with the approval.
+
 `puffin stats [--days N]` reads the log of status changes: what merged and how
 long it was open, how often CI went red and for how long, time spent with a
 reviewer, reviews asked of you, and tasks started and finished. A pull request
