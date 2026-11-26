@@ -2,6 +2,9 @@ package git
 
 import (
 	"context"
+	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -109,12 +112,36 @@ func MoveWorktree(ctx context.Context, clone, from, to string) error {
 }
 
 // RemoveWorktree refuses a worktree with uncommitted work unless forced.
-func RemoveWorktree(ctx context.Context, clone, path string, force bool) error {
-	args := []string{"worktree", "remove"}
-	if force {
-		args = append(args, "--force")
+//
+// Deleting a worktree is mostly deleting what its build left in it, which
+// for a large repository takes many seconds. So the directory is moved into
+// trash, which must be on the same disk for that to be instant, git is told
+// it has gone, and the deleting goes on after this returns. When it cannot
+// be moved, git removes it in its own time.
+func RemoveWorktree(ctx context.Context, clone, path, trash string, force bool) error {
+	if !force {
+		// What `git worktree remove` checks for itself, and how it says so.
+		out, err := git(ctx, path, "status", "--porcelain")
+		if err != nil {
+			return err
+		}
+		if strings.TrimSpace(out) != "" {
+			return fmt.Errorf("%s contains modified or untracked files", path)
+		}
 	}
-	_, err := git(ctx, clone, append(args, path)...)
+	gone := filepath.Join(trash, fmt.Sprintf("%s-%d", filepath.Base(path), time.Now().UnixNano()))
+	if os.MkdirAll(trash, 0o755) != nil || os.Rename(path, gone) != nil {
+		args := []string{"worktree", "remove"}
+		if force {
+			args = append(args, "--force")
+		}
+		_, err := git(ctx, clone, append(args, path)...)
+		return err
+	}
+	// All of the trash, so that what a stopped daemon left half deleted
+	// goes too.
+	go os.RemoveAll(trash)
+	_, err := git(ctx, clone, "worktree", "prune")
 	return err
 }
 

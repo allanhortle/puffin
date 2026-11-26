@@ -958,6 +958,12 @@ func (m *Manager) Close(ctx context.Context, slug string, force bool) error {
 	return m.close(ctx, t, force)
 }
 
+// trash is where a removed worktree waits to be deleted: beside the tasks
+// and not among them, so nothing takes it for one.
+func (m *Manager) trash() string {
+	return filepath.Join(filepath.Dir(m.cfg.TasksDir), "trash")
+}
+
 func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 	// Never trust a stored path enough to delete it without checking where
 	// it points. A task that lives in a directory it does not own has
@@ -976,7 +982,7 @@ func (m *Manager) close(ctx context.Context, t store.Task, force bool) error {
 				}
 			}
 			step(ctx, "removing the %s worktree", filepath.Base(w.Path))
-			if err := git.RemoveWorktree(ctx, w.Repo.Path, w.Path, force); err != nil {
+			if err := git.RemoveWorktree(ctx, w.Repo.Path, w.Path, m.trash(), force); err != nil {
 				// The reason first and short: this is read in one line of the
 				// picker as often as in a terminal.
 				if strings.Contains(err.Error(), "modified or untracked") {
