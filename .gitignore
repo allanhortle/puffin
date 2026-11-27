@@ -1,1 +1,5 @@
 /bin/
+# Where the isolated run in the README keeps its data, state and config.
+/c/
+/d/
+/s/

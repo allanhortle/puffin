@@ -1,29 +1,19 @@
 # puffin
 
-puffin runs agentic development from tmux. Each piece of work gets a tmux
-session, a directory, git worktrees and an agent, and puffin tracks its pull
-requests on GitHub so the status bar always says whose move it is.
+puffin is a PR-first workflow for tmux.
 
-It replaces `prstatusd` (pull request status in the tmux bar) and most of
-`workmux` (worktrees and agent windows).
+Instead of organising your work around agents, puffin organises it around
+pull requests: the ones you created, and the ones you have been asked to
+review. It gives you a unified view of all the things you need to pay
+attention to, and lets you jump quickly to the next thing that requires your
+attention.
 
-## The model
+When you create a new task, puffin gives it a tmux session, git worktrees and
+an agent, and keeps track of its state all the way from draft to merged.
 
-- **A task** is what you sit down to do. It owns one tmux session and one
-  directory, and belongs to no repository.
-- **A worktree** is mounted inside the task's directory, one per Graphite
-  stack. A task can have none (an exploration), one, or several across
-  repositories.
-- **A change** is a branch and, once it exists, its pull request. Stacks are
-  not stored. They are worked out from each pull request's base and head.
-- **The bottom pull request of a stack speaks for the task.** The task's
-  status, whether it is waiting on you, and where it sorts in the list all
-  come from that one pull request.
-- **Live tmux state is never stored.** Sessions carry `@puffin_task`, windows
-  carry `@puffin_worktree` and `@puffin_agent`, and the daemon reads them back.
-
-puffin is one binary. `puffin daemon` is the only writer to the SQLite
-database. Every other command is a client that talks to it over a unix socket.
+When someone requests a review from you, puffin adds it to your task list
+just like your other work, so it's ready for you to explore the code or ask
+an agent about.
 
 ## Starting a task
 
@@ -34,11 +24,11 @@ puffin new [-e] [prompt…]
 This makes a task for the repository you are standing in. The repository's
 entry in the config decides what kind of task you get:
 
-| The repository | What `puffin new` gives you |
-|---|---|
-| has `worktree: true` | A branch, a worktree, and an agent in it working on the prompt. |
-| anything else | A session in the clone itself, worked on in place. There is one per clone, so asking again takes you to it. |
-| none (you are not in a repository) | A task for `default_repo` from the config. Without that, an agent with no repository. |
+| The repository                     | What `puffin new` gives you                                                                                 |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| has `worktree: true`               | A branch, a worktree, and an agent in it working on the prompt.                                             |
+| anything else                      | A session in the clone itself, worked on in place. There is one per clone, so asking again takes you to it. |
+| none (you are not in a repository) | A task for `default_repo` from the config. Without that, an agent with no repository.                       |
 
 Options:
 
@@ -58,26 +48,51 @@ first words.
 
 Other ways to start:
 
-| Command | What you get |
-|---|---|
-| `puffin attach REPO` | Another worktree in the task you are in, with its own window and agent. |
-| `puffin pr N` | A task for an open pull request: your own to carry on with, or someone else's to review. |
-| `puffin adopt [PATH]` | A new task made from an existing worktree, which is moved into it as it stands. |
-| `puffin here [PATH]` | A session in any directory, git or not. Closing it leaves the directory alone. |
+| Command               | What you get                                                                             |
+| --------------------- | ---------------------------------------------------------------------------------------- |
+| `puffin attach REPO`  | Another worktree in the task you are in, with its own window and agent.                  |
+| `puffin pr N`         | A task for an open pull request: your own to carry on with, or someone else's to review. |
+| `puffin adopt [PATH]` | A new task made from an existing worktree, which is moved into it as it stands.          |
+| `puffin here [PATH]`  | A session in any directory, git or not. Closing it leaves the directory alone.           |
 
-## Moving between tasks
+## Switching tasks
 
-| Command | What it does |
-|---|---|
-| `puffin pick` | Opens the list of your tasks and the reviews asked of you. Enter goes to one. |
-| `puffin tasks [NAME]` | Prints every task, or one, with its worktrees and pull requests. |
-| `puffin switch NAME` | Goes to a task's session, rebuilding it if it has gone. |
-| `puffin rename [NAME] NEW` | Renames a task and its session. The directory and branches keep their names. |
-| `puffin close [NAME]` | Removes a task's worktrees, session and directory. A worktree with uncommitted work stops it unless you pass `--force`. |
-| `puffin sweep` | Closes every task whose pull requests have all merged or closed. |
-| `puffin reopen [NAME]` | Keeps a task open after its pull requests have merged, because there is more to do. A swept task comes back with its worktrees. |
+At the heart of the puffin workflow is a fuzzy finder for your current work. It's a list of your open prs and reviews.
+The list is sorted by state, and the things you need to act on now are at the top.
 
-`puffin help` lists every command.
+`prefix Space` opens `puffin pick`, to show the list of tasks and reviews.
+
+- **`▲`** marks a row that is waiting on you.
+- **Agent states** are `~` while it working, `?` when it is asking you something,
+  and `•` when it has finished its turn.
+
+The status words:
+
+| Whose           | Word               | Meaning                                         |
+| --------------- | ------------------ | ----------------------------------------------- |
+| Yours           | `ready`            | Nothing is in the way of merging.               |
+|                 | `draft`            | Ready, and still a draft.                       |
+|                 | `building`         | Checks are running.                             |
+|                 | `queued`           | In the merge queue.                             |
+|                 | `blocked`          | Held up on you.                                 |
+|                 | `failing`          | A check failed.                                 |
+|                 | `conflict`         | It conflicts with its base.                     |
+|                 | `review`           | A review is asked of you.                       |
+|                 | `changes`          | A reviewer requested changes.                   |
+| Someone else's  | `review`           | A review is asked of you.                       |
+|                 | `waiting`          | Out with a reviewer.                            |
+|                 | `updated`          | The author pushed since you reviewed.           |
+|                 | `reviewed`         | You reviewed it and it is back with the author. |
+| No pull request | `local`            | A branch that has no pull request yet.          |
+|                 | `explore`          | A task with no worktree.                        |
+|                 | `here`             | Adhoc tasks that have no syncronised state      |
+|                 | `merged`, `closed` | Finished.                                       |
+
+A row is waiting on you in three cases:
+
+- Its bottom pull request is failing, conflicted, blocked on you, or has changes requested.
+- A review is asked of you and no agent is working on it.
+- Its agent is asking you something.
 
 ## Reviewing a pull request
 
@@ -114,12 +129,12 @@ last review. Otherwise it shows the whole change.
 
 `--since` starts from somewhere else:
 
-| Value | Diffs from |
-|---|---|
-| `base` | The base branch, which is the whole change. |
-| `reviewed` | The commit your last review was made on. |
+| Value         | Diffs from                                             |
+| ------------- | ------------------------------------------------------ |
+| `base`        | The base branch, which is the whole change.            |
+| `reviewed`    | The commit your last review was made on.               |
 | `v1`, `v2`, … | A version: what the branch was before each force push. |
-| a commit | That commit. |
+| a commit      | That commit.                                           |
 
 `--pick` chooses the starting point from a list, and `--versions` prints the
 list.
@@ -140,9 +155,7 @@ conflict.
 
 Notes you write in hunk (press `c`) are offered as comments on your pending
 review when hunk closes. A pending review is a draft that only you can see
-until you submit it. GitHub accepts a comment only on a line that the pull
-request's whole diff shows, so a note anywhere else goes on the file, with
-its line number in the text.
+until you submit it.
 
 ### `puffin approve [PR] [-m TEXT]`
 
@@ -150,69 +163,42 @@ Approves the pull request at the commit it is on now. If you have a pending
 review, puffin submits that, so the notes from `puffin diff` go out with the
 approval.
 
-## The list and the status bar
+## Managing tasks
 
-`prefix Space` opens `puffin pick`. A row has four parts:
+| Command                    | What it does                                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `puffin tasks [NAME]`      | Prints every task, or one, with its worktrees and pull requests.                                                                |
+| `puffin switch NAME`       | Goes to a task's session, rebuilding it if it has gone.                                                                         |
+| `puffin rename [NAME] NEW` | Renames a task and its session. The directory and branches keep their names.                                                    |
+| `puffin close [NAME]`      | Removes a task's worktrees, session and directory. A worktree with uncommitted work stops it unless you pass `--force`.         |
+| `puffin sweep`             | Closes every task whose pull requests have all merged or closed.                                                                |
+| `puffin reopen [NAME]`     | Keeps a task open after its pull requests have merged, because there is more to do. A swept task comes back with its worktrees. |
 
-```
-▲ status agent name
-```
+`puffin help` lists every command.
 
-- **`▲`** marks a row that is waiting on you. The `▲N` in the status bar is
-  the number of marked rows.
-- **Status** is a word for where the bottom pull request of the task's stack
-  stands. A red number after it counts unresolved threads, and `+N` counts
-  the rest of the stack.
-- **Agent** is `~` while it is working, `?` when it is asking you something,
-  and `•` when it has finished its turn.
+## The daemon
 
-The status words:
+puffin is one binary. `puffin daemon` runs in the background and does the
+watching:
 
-| Whose | Word | Meaning |
-|---|---|---|
-| Yours | `ready` | Nothing is in the way of merging. |
-| | `draft` | Ready, and still a draft. |
-| | `building` | Checks are running. |
-| | `queued` | In the merge queue. |
-| | `waiting` | Out with a reviewer. |
-| | `blocked` | Held up on you. |
-| | `failing` | A check failed. |
-| | `conflict` | It conflicts with its base. |
-| | `changes` | A reviewer requested changes. |
-| | `merged`, `closed` | Finished. |
-| Someone else's | `review` | A review is asked of you. |
-| | `updated` | The author pushed since you reviewed. |
-| | `reviewed` | You reviewed it and it is back with the author. |
-| No pull request | `local` | A branch that has no pull request yet. |
-| | `explore` | A task with no worktree. |
-| | `here` | A task that lives in a directory in place. |
+- It asks GitHub about your pull requests and the reviews asked of you. It
+  checks GitHub's notification feed about once a minute and refetches when
+  something moved. It also refetches every 5 minutes regardless, or every 30
+  seconds while a build is running or a pull request is in the merge queue.
+- It reads tmux to see which sessions and windows belong to which task, and
+  writes the status words and counts back to the status bar.
+- It is the only writer to the SQLite database. Every other command is a
+  client that talks to it over a unix socket.
 
-A row is waiting on you in three cases:
-
-- Its bottom pull request is failing, conflicted, blocked on you, or has
-  changes requested. Unresolved threads count too, once the build has
-  settled.
-- A review is asked of you and no agent is working on it.
-- Its agent is asking you something.
-
-A pull request that is building or queued is the machine's move.
-
-The left of the status bar shows the same status word and agent icon in front
-of the session name. A window outside any task has no room for a word, so its
-tab shows a single letter instead (`G D B Q W F C R M X`).
-
-## Stats
-
-`puffin stats [--days N]` reads the log of status changes and reports:
-
-- what merged, and how long each pull request was open
-- how often CI went red, and for how long
-- how long pull requests spent with a reviewer
-- how many reviews were asked of you
-- how many tasks were started and finished
-
-A pull request stays in the database after it closes, whether or not it had a
-task.
+| Command          | What it does                                                  |
+| ---------------- | ------------------------------------------------------------- |
+| `puffin start`   | Starts the daemon in the background, if it is not running.    |
+| `puffin stop`    | Stops it and clears the status bar.                           |
+| `puffin restart` | Stops and starts it. Do this after rebuilding.                |
+| `puffin toggle`  | Stops it if it is running, starts it if it is not.            |
+| `puffin status`  | Shows whether it is running, and when it last fetched.        |
+| `puffin refresh` | Runs one poll now. `--force` refetches even if nothing moved. |
+| `puffin daemon`  | Runs it in the foreground.                                    |
 
 ## Setup
 
@@ -253,31 +239,16 @@ In `.tmux.conf`:
 Claude Code hooks tell puffin what the agent in a pane is doing by calling
 `puffin agent STATE`:
 
-| Hook | State |
-|---|---|
+| Hook                              | State     |
+| --------------------------------- | --------- |
 | `UserPromptSubmit`, `PostToolUse` | `working` |
-| `Notification` | `waiting` |
-| `Stop` | `done` |
-| `SessionEnd` | `off` |
+| `Notification`                    | `waiting` |
+| `Stop`                            | `done`    |
+| `SessionEnd`                      | `off`     |
 
 ### Where data lives
 
-| Directory | Contents |
-|---|---|
+| Directory                | Contents                               |
+| ------------------------ | -------------------------------------- |
 | `~/.local/share/puffin/` | The database and the task directories. |
-| `~/.local/state/puffin/` | The socket, lock and log. |
-
-## Developing
-
-`go test ./...` covers status derivation, stacks, ranking, the store, and the
-git side of `puffin diff`.
-
-To run puffin without touching the live tmux server or database, point it at
-throwaway locations:
-
-- Set `XDG_STATE_HOME`, `XDG_DATA_HOME` and `XDG_CONFIG_HOME` to relative
-  paths. The socket path must stay under 104 bytes.
-- Set `tmux_socket: something` in that config.
-- Set `GH_CONFIG_DIR=~/.config/gh` so `gh` still finds its login.
-
-[TODO.md](TODO.md) lists what is not done.
+| `~/.local/state/puffin/` | The socket, lock and log.              |
