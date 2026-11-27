@@ -132,3 +132,26 @@ func TestStatusNamesTheAuthorOfAReview(t *testing.T) {
 		t.Errorf("my own pull request names an author: %q", got)
 	}
 }
+
+// The list and a session's status are the same summary, so a task whose pull
+// requests have all merged says so in both instead of going blank in one.
+func TestSummaryOfATaskWithNothingOpen(t *testing.T) {
+	done := store.Task{State: store.TaskDone, Changes: []store.TaskChange{
+		{Head: "fix", Number: 7, State: "MERGED", Status: pr.Merged},
+	}}
+	if got := Summarise(done); got.Word != "merged" || got.Number != 7 {
+		t.Errorf("a finished task: %+v", got)
+	}
+	if got := letter(done); !strings.Contains(got, "merged") || !strings.Contains(got, "range=user|7") {
+		t.Errorf("its session shows %q", got)
+	}
+	for word, task := range map[string]store.Task{
+		"here":    {State: store.TaskOpen, InPlace: true},
+		"explore": {State: store.TaskOpen},
+		"local":   {State: store.TaskOpen, Changes: []store.TaskChange{{Head: "fix", State: "LOCAL"}}},
+	} {
+		if got := letter(task); !strings.Contains(got, word) || strings.Contains(got, "range") {
+			t.Errorf("want %s with nothing to click, got %q", word, got)
+		}
+	}
+}

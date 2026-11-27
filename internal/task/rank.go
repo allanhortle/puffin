@@ -164,28 +164,62 @@ func StatusStyle(state string) string {
 	return "#[fg=" + icon.Colour + "]" + icon.Glyph + "#[default]"
 }
 
-// letter is a task's pull request state as its session shows it: the letter
-// of the change that speaks for the task, how many of its threads are
-// unresolved, and whose it is when it is one I review. Clicking it is a click
-// on that pull request.
-func letter(t store.Task) string {
+// Summary is where a task stands, in the few words there is room for. The
+// list and a session's status both draw it, so they cannot disagree.
+type Summary struct {
+	Word   string
+	Colour string // a tmux colour name
+	// Of the pull request that speaks for the task, when there is one.
+	Number     int
+	Unresolved int
+	Author     string
+	More       int // its other pull requests, which say nothing here
+}
+
+// Summarise is the word for a task: the status of the pull request that
+// speaks for it, and for a finished task how it ended. With no pull request
+// there is still something to say: that the task lives in a directory as it
+// is, that it has not got as far as one, or that it is an exploration.
+func Summarise(t store.Task) Summary {
 	live := Live(t)
+	if t.State != store.TaskOpen {
+		live = t.Changes // a finished task shows how it ended
+	}
+	out := Summary{Word: "explore", Colour: "colour242"}
+	if t.InPlace {
+		out.Word = "here"
+	} else if len(t.Changes) > 0 {
+		out.Word = "local" // more to do than what has merged
+	}
 	if len(live) == 0 {
-		return ""
+		return out
 	}
 	first := Headline(live)
-	if first.Number == 0 {
-		return ""
+	out.Word, out.More = "local", len(live)-1
+	if first.Number != 0 {
+		label := pr.PR{Status: first.Status, IsDraft: first.IsDraft}.Label()
+		out.Word, out.Colour = label.Word, label.Colour
+		out.Number, out.Unresolved, out.Author = first.Number, first.Unresolved, first.Author
 	}
-	label := pr.PR{Status: first.Status, IsDraft: first.IsDraft}.Label()
-	out := "#[range=user|" + strconv.Itoa(first.Number) + "]#[fg=" + label.Colour + "]" + label.Word
-	if first.Unresolved > 0 {
-		out += " #[fg=red]" + strconv.Itoa(first.Unresolved)
+	return out
+}
+
+// letter is a task's summary as its session shows it: the word, how many
+// threads are unresolved, and whose pull request it is when it is one I
+// review. Clicking it is a click on that pull request.
+func letter(t store.Task) string {
+	s := Summarise(t)
+	out := "#[fg=" + s.Colour + "]" + s.Word
+	if s.Unresolved > 0 {
+		out += " #[fg=red]" + strconv.Itoa(s.Unresolved)
 	}
-	if first.Author != "" {
-		out += " #[fg=white]" + first.Author
+	if s.Author != "" {
+		out += " #[fg=white]" + s.Author
 	}
-	return out + "#[norange]#[default]"
+	if s.Number != 0 {
+		out = "#[range=user|" + strconv.Itoa(s.Number) + "]" + out + "#[norange]"
+	}
+	return out + "#[default]"
 }
 
 // SyncStatus makes every session show, in front of its name, where its task's

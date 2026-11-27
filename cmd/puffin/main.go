@@ -1134,32 +1134,13 @@ const (
 // pressing, which is the one that decides where the task sorts, then how many
 // more there are. A stack of eight is one piece of work, not eight letters.
 func pickLine(t store.Task) string {
-	live := task.Live(t)
-	if t.State != store.TaskOpen {
-		live = t.Changes // a finished task shows how it ended
+	sum := task.Summarise(t)
+	word, colour, threads, more := sum.Word, sum.Colour, "", ""
+	if sum.Unresolved > 0 {
+		threads = strconv.Itoa(sum.Unresolved)
 	}
-	// With no pull request there is still something to say about a task:
-	// where it lives, or that it has not got as far as one.
-	word, colour := "explore", "colour242"
-	if t.InPlace {
-		word = "here"
-	} else if len(t.Changes) > 0 {
-		word = "local" // more to do than what has merged
-	}
-	threads, more := "", ""
-	if len(live) > 0 {
-		first := task.Headline(live)
-		word = "local"
-		if first.Number != 0 {
-			label := changeLabel(first)
-			word, colour = label.Word, label.Colour
-			if first.Unresolved > 0 {
-				threads = strconv.Itoa(first.Unresolved)
-			}
-		}
-		if len(live) > 1 {
-			more = "+" + strconv.Itoa(len(live)-1)
-		}
+	if sum.More > 0 {
+		more = "+" + strconv.Itoa(sum.More)
 	}
 	// Three columns of fixed width, so every row's name starts in the same
 	// place: the word, its unresolved threads, the rest of its stack.
