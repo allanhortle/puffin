@@ -27,7 +27,9 @@ Written 2026-11-23, at the end of the session that built puffin.
 
 - **Replies without a push are invisible.** A reviewed PR only comes back when
   the author re-requests review or its head commit changes.
-- **A restack counts as a push**, so `new` can appear with nothing changed.
+- **A restack counts as a push**, so a review can say `updated` with nothing
+  changed. `puffin diff` then says so and opens nothing; the status still
+  moves.
 - **PRs from forks cannot be reviewed** as tasks.
 - **A leftover local branch with commits holds a task open.** The branch a
   task started on stops counting once nothing has it checked out and it has
@@ -71,9 +73,9 @@ Written 2026-11-23, at the end of the session that built puffin.
 
 ## Not built
 
-- Browsing every open PR in the org, and viewing a PR's diff without a
-  worktree. Both went with `prq`, which was removed on 2026-11-23.
-  `puffin pr N` only knows your own PRs and your review requests.
+- Browsing every open PR in the org. It went with `prq`, which was removed
+  on 2026-11-23. `puffin pr N` only knows your own PRs and your review
+  requests.
 - `tmux -C` control mode. Windows outside a task are still matched to PRs by
   polling pane directories, as prstatusd did.
 - The `agent_run` table is in the schema and unused: agent state lives in tmux
@@ -86,8 +88,8 @@ Written 2026-11-23, at the end of the session that built puffin.
 
 ## Not yet seen on real work
 
-- The review states after the first: author pushed, re-requested, merged.
-  Unit tested only.
+- A review being re-requested. Unit tested only; the author pushing and the
+  pull request merging have both been seen.
 - `puffin adopt` on a real monorepo worktree, in particular whether
   `node_modules` survives the move.
 - Clicking a letter or the review count in the status bar.
