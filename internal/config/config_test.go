@@ -72,7 +72,7 @@ func TestAnOldTOMLConfigIsNotSilentlyIgnored(t *testing.T) {
 
 func TestEmptyFileGivesDefaults(t *testing.T) {
 	cfg, err := Load(write(t, ""))
-	if err != nil || cfg.Agent != "claude" || len(cfg.Read.Hide) == 0 {
+	if err != nil || cfg.Agent != "claude" || len(cfg.Read.Hide) != 0 {
 		t.Errorf("empty file: %+v, %v", cfg, err)
 	}
 }

@@ -62,7 +62,12 @@ repos:
           command: <agent>
           focus: true
 
-# How `puffin read` shows a description.
+# What `puffin read` and `puffin comments` leave out. Nothing, unless said here.
 read:
-  # Blocks to leave out, each named by the HTML comments around it.
-  hide: [CURSOR_SUMMARY]
+  # Regular expressions for what to cut out of a description or a comment.
+  hide:
+    # Cursor's summary block in a description.
+    - '(?s)<!--\s*CURSOR_SUMMARY\s*-->.*?<!--\s*/CURSOR_SUMMARY\s*-->'
+    # The buttons and signature under a Cursor Bugbot comment.
+    - '(?s)<div><a href="https://cursor\.com/.*?</div>'
+    - '(?s)<sup>Reviewed by \[Cursor Bugbot\].*?</sup>'

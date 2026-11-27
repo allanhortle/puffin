@@ -87,6 +87,10 @@ const help = `puffin: tasks, worktrees and pull requests, in tmux
                            with its pictures where the terminal can draw them. PR is a
                            number or link; nothing means this branch's
       --links              pictures as links, and the pager
+  puffin comments [PR]     what has been said on a pull request, rendered: the conversation,
+                           then each thread on the diff with the lines it is about
+      --unresolved         only the threads still open
+      --all                with what bots posted under it too
   puffin diff [PR]         a pull request's changes, in hunk. one you have reviewed opens on
                            what its author changed since, even across a rebase
       --since WHERE        from somewhere else: base, reviewed, a version (v1, v2), a commit
@@ -193,6 +197,8 @@ func main() {
 		err = stats(args)
 	case "read":
 		err = read(args)
+	case "comments":
+		err = comments(args)
 	case "diff":
 		err = diff(args)
 	case "approve":

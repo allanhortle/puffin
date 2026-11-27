@@ -96,19 +96,18 @@ type Pane struct {
 	Focus bool   `yaml:"focus"`
 }
 
-// Read is how `puffin read` shows a description.
+// Read is what `puffin read` and `puffin comments` leave out.
 type Read struct {
-	// Blocks a description carries that are not worth reading, each named by
-	// the HTML comments around it: "CURSOR_SUMMARY" hides everything from
-	// <!-- CURSOR_SUMMARY --> to <!-- /CURSOR_SUMMARY -->.
+	// Regular expressions for what to cut out of a description or a comment
+	// before it is drawn: a block a bot fills in, the buttons and signature
+	// it ends every comment with. Nothing is hidden unless the config says so.
 	Hide []string `yaml:"hide"`
 }
 
 // Load reads the file at path. A missing file is not an error: every setting
 // has a default.
 func Load(path string) (Config, error) {
-	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", NameCommand: DefaultNameCommand, NamePrompt: DefaultNamePrompt, ReviewPrompt: "/code-review", TasksDir: paths.Tasks(),
-		Read: Read{Hide: []string{"CURSOR_SUMMARY"}}}
+	cfg := Config{Agent: "claude", AgentDirFlag: "--add-dir", AgentResumeFlag: "--continue", NameCommand: DefaultNameCommand, NamePrompt: DefaultNamePrompt, ReviewPrompt: "/code-review", TasksDir: paths.Tasks()}
 	data, err := os.ReadFile(path)
 	if errors.Is(err, fs.ErrNotExist) {
 		// The config was TOML once. Running on defaults instead of it would

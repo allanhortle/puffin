@@ -65,14 +65,20 @@ requests all merged, even after a sweep). `puffin help` has the rest.
 
 A repository's `panes` are laid out per type of task, `work` and `review`,
 so a review can open on `puffin read`; a type left out uses `work`'s.
-`read: hide:`
-leaves out blocks named by the HTML comments around them, such as Cursor's
-`CURSOR_SUMMARY` (the default).
+`read: hide:` is regular expressions for what to cut out of a description
+or a comment: Cursor's summary block, the buttons and signature under every
+Cursor Bugbot comment. It has no default; `config.example.yaml` has those.
 
 `puffin read [PR]` is for sitting down to a review: the title, author,
 status, branches, size, reviewers and labels, then the description rendered
 as Markdown. In Ghostty or kitty its pictures are drawn in place; elsewhere,
 or with `--links`, they are links and the text goes through the pager.
+
+`puffin comments [PR]` lists what has been said: the conversation under the
+pull request and each review's verdict, then every thread on the diff with
+the lines it was started on and whether it is resolved. `--unresolved` keeps
+only the open threads. What bots post under a pull request, and Graphite's
+stack comment, are left out unless `--all`; a bot's threads on the diff stay.
 
 `puffin diff [PR]` shows the changes in [hunk](https://github.com/modem-dev/hunk).
 A pull request you have reviewed opens on what its author changed since your

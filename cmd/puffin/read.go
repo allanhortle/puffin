@@ -77,11 +77,8 @@ func read(args []string) error {
 		mode = detectGraphics(ctx)
 	}
 
-	var hide []string
-	if cfg, err := config.Load(paths.Config()); err == nil {
-		hide = cfg.Read.Hide
-	}
-	body, images := prepare(d.Body, hide)
+	cfg, _ := config.Load(paths.Config())
+	body, images := prepare(d.Body, cfg.Read)
 	rendered := paint("colour242", "  No description.") + "\n"
 	if strings.TrimSpace(body) != "" {
 		style := styles.DarkStyle
@@ -245,16 +242,18 @@ var (
 )
 
 // prepare turns a description into Markdown the renderer draws well: blocks
-// named in hide go, the HTML that pull request templates leave behind goes,
+// whatever the config says to hide goes, the HTML that pull request templates leave behind goes,
 // and each picture is
 // taken out and left as a marker on a line of its own, to be drawn in its
 // place. A picture inside a table is drawn once the table ends.
-func prepare(body string, hide []string) (string, []picture) {
+func prepare(body string, show config.Read) (string, []picture) {
 	body = strings.ReplaceAll(body, "\r\n", "\n")
-	for _, name := range hide {
-		n := regexp.QuoteMeta(strings.TrimSpace(name))
-		block := regexp.MustCompile(`(?s)<!--\s*` + n + `\s*-->.*?<!--\s*/` + n + `\s*-->`)
-		body = block.ReplaceAllString(body, "")
+	for _, pattern := range show.Hide {
+		// One that does not compile is somebody's typo in the config, and
+		// not a reason to show nothing.
+		if cut, err := regexp.Compile(pattern); err == nil {
+			body = cut.ReplaceAllString(body, "")
+		}
 	}
 	body = htmlComment.ReplaceAllString(body, "")
 	body = imgTag.ReplaceAllStringFunc(body, func(tag string) string {
